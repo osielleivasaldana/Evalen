@@ -3,7 +3,9 @@
     "allow": [
       "Bash(powershell:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker-compose up:*)"
     ],
     "deny": [],
     "ask": []
