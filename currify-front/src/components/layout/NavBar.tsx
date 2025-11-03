@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import {
   Bars3Icon,
@@ -8,6 +8,7 @@ import {
   Squares2X2Icon,
   PlusCircleIcon,
   BriefcaseIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/api';
 
@@ -17,6 +18,19 @@ interface NavBarProps {
 
 const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const profile = await apiService.getProfile();
+        setUserRole(profile.role);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+    fetchUserProfile();
+  }, []);
 
   const handleLogout = () => {
     apiService.clearToken();
@@ -30,6 +44,7 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
   const menuItems = [
     { label: 'Dashboard', icon: Squares2X2Icon, href: '/dashboard' },
     { label: 'Nueva Campaña', icon: PlusCircleIcon, href: '/create-campaign' },
+    ...(userRole === 'ADMIN' ? [{ label: 'Gestionar Usuarios', icon: UsersIcon, href: '/admin/users' }] : []),
   ];
 
   return (

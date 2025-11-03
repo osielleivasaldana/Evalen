@@ -13,6 +13,9 @@ import CandidatesManagerNew from './candidates/CandidatesManagerNew';
 import CandidateDetail from './candidates/CandidateDetail';
 import CandidateProcessPanel from './processes/CandidateProcessPanel';
 
+// Admin Components
+import UserManagement from './admin/UserManagement';
+
 // Public Components
 import PublicCampaign from './public/PublicCampaign';
 
@@ -134,6 +137,10 @@ const AppRouter: React.FC = () => {
             <Route
               path="/campaigns/:campaignId/candidates/:candidateId/process"
               element={<CandidateProcessPanel />}
+            />
+            <Route
+              path="/admin/users"
+              element={<UserManagement />}
             />
             <Route
               path="/"
