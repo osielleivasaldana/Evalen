@@ -25,6 +25,7 @@ interface AuthResponse {
     email: string;
     name: string;
     company: string;
+    role: string;
   };
 }
 
@@ -33,14 +34,42 @@ interface UserProfile {
   email: string;
   name: string;
   company: string;
+  role: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// User Management interfaces
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  company?: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface CreateUserRequest {
+  email: string;
+  password: string;
+  name: string;
+  company?: string;
+  role: string;
+}
+
+interface UpdateUserRequest {
+  email?: string;
+  password?: string;
+  name?: string;
+  company?: string;
+  role?: string;
 }
 
 // New enums and types
 export type CandidateStatus = 'NEW' | 'IN_PROCESS' | 'NOT_SELECTED' | 'SELECTED';
 export type StageStatus = 'PENDING' | 'ACTIVE' | 'ACCEPTED' | 'REJECTED';
-export type UserRole = 'ADMIN' | 'RECRUITER' | 'TECHNICAL_REVIEWER';
+export type UserRole = 'ADMIN' | 'RECRUITER' | 'INTERVIEWER';
 
 // Stage Template interfaces
 export interface StageTemplate {
@@ -636,6 +665,35 @@ class ApiService {
     });
   }
 
+  // User management methods (ADMIN only)
+  async getUsers(): Promise<User[]> {
+    return this.apiCall('/users');
+  }
+
+  async getUser(userId: string): Promise<User> {
+    return this.apiCall(`/users/${userId}`);
+  }
+
+  async createUser(userData: CreateUserRequest): Promise<User> {
+    return this.apiCall('/users', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    });
+  }
+
+  async updateUser(userId: string, userData: UpdateUserRequest): Promise<User> {
+    return this.apiCall(`/users/${userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(userData)
+    });
+  }
+
+  async deleteUser(userId: string): Promise<{ message: string }> {
+    return this.apiCall(`/users/${userId}`, {
+      method: 'DELETE'
+    });
+  }
+
   // Token management
   setToken(token: string) {
     this.token = token;
@@ -662,6 +720,9 @@ export type {
   LoginRequest,
   AuthResponse,
   UserProfile,
+  User,
+  CreateUserRequest,
+  UpdateUserRequest,
   Campaign,
   CreateCampaignRequest,
   CampaignStats,
