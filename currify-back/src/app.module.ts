@@ -10,6 +10,7 @@ import { ScoringModule } from './scoring/scoring.module';
 import { AuditModule } from './audit/audit.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ProcessesModule } from './processes/processes.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ProcessesModule } from './processes/processes.module';
     ]),
     PrismaModule,
     AuthModule,
+    UsersModule,
     CampaignsModule,
     DocumentsModule,
     CandidatesModule,

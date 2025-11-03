@@ -25,23 +25,29 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Check if this is the first user (will be ADMIN)
+    const userCount = await this.prisma.user.count();
+    const isFirstUser = userCount === 0;
+
     const user = await this.prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
         company,
+        role: isFirstUser ? 'ADMIN' : 'RECRUITER', // First user is ADMIN
       },
       select: {
         id: true,
         email: true,
         name: true,
         company: true,
+        role: true,
         createdAt: true,
       },
     });
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, role: user.role };
     const token = this.jwtService.sign(payload);
 
     return {
@@ -67,7 +73,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, role: user.role };
     const token = this.jwtService.sign(payload);
 
     return {
@@ -76,6 +82,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         company: user.company,
+        role: user.role,
         createdAt: user.createdAt,
       },
       access_token: token,
@@ -90,6 +97,7 @@ export class AuthService {
         email: true,
         name: true,
         company: true,
+        role: true,
         createdAt: true,
       },
     });
