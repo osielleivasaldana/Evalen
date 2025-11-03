@@ -1,0 +1,776 @@
+import React, { useState } from 'react';
+import { apiService, CreateCampaignRequest, Campaign } from '../../services/api';
+import CampaignCreated from './CampaignCreated';
+
+interface CreateCampaignProps {
+  onCampaignCreated: (campaign: Campaign) => void;
+  onCancel: () => void;
+  onGoToDashboard: () => void;
+  onManageCandidates: (campaignId: string) => void;
+}
+
+const CreateCampaign: React.FC<CreateCampaignProps> = ({
+  onCampaignCreated,
+  onCancel,
+  onGoToDashboard,
+  onManageCandidates
+}) => {
+  const [formData, setFormData] = useState<CreateCampaignRequest>({
+    title: '',
+    description: '',
+    requirements: '',
+    conditions: '',
+    location: '',
+    workType: undefined,
+    modality: undefined,
+    duration: undefined,
+    inclusionPosition: false,
+    salary: undefined,
+    currency: 'CLP',
+    showSalary: false
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState(false);
+  const [createdCampaign, setCreatedCampaign] = useState<Campaign | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log('Datos a enviar:', formData);
+      const campaign = await apiService.createCampaign(formData);
+      console.log('Campaña creada:', campaign);
+      setCreatedCampaign(campaign);
+      onCampaignCreated(campaign);
+    } catch (err: any) {
+      setError(err.message || 'Error al crear la campaña');
+      console.error('Error creating campaign:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+
+    const newValue = type === 'checkbox' ? checked :
+                     type === 'number' ? (value ? Number(value) : undefined) :
+                     value === '' ? undefined : value;
+
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: newValue
+      };
+      console.log(`Campo ${name} actualizado:`, newValue, 'FormData completo:', newData);
+      return newData;
+    });
+  };
+
+  const isFormValid = () => {
+    return formData.title?.trim() &&
+           formData.description?.trim() &&
+           formData.requirements?.trim() &&
+           formData.conditions?.trim();
+  };
+
+  // Show success page after campaign creation
+  if (createdCampaign) {
+    return (
+      <CampaignCreated
+        campaign={createdCampaign}
+        onGoToDashboard={onGoToDashboard}
+        onManageCandidates={() => onManageCandidates(createdCampaign.id)}
+      />
+    );
+  }
+
+  if (preview) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', padding: '20px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              backgroundColor: '#3498db',
+              color: 'white',
+              padding: '30px',
+              textAlign: 'center'
+            }}>
+              <h1 style={{ margin: '0 0 10px 0', fontSize: '32px' }}>
+                {formData.title}
+              </h1>
+              <p style={{ margin: 0, fontSize: '16px', opacity: 0.9 }}>
+                Únete a nuestro equipo
+              </p>
+            </div>
+
+            <div style={{ padding: '30px' }}>
+              <section style={{ marginBottom: '30px' }}>
+                <h2 style={{
+                  color: '#2c3e50',
+                  fontSize: '20px',
+                  marginBottom: '15px',
+                  borderBottom: '2px solid #3498db',
+                  paddingBottom: '5px'
+                }}>
+                  📋 Descripción del Puesto
+                </h2>
+                <p style={{
+                  color: '#555',
+                  lineHeight: '1.6',
+                  fontSize: '16px',
+                  margin: 0
+                }}>
+                  {formData.description}
+                </p>
+              </section>
+
+              <section style={{ marginBottom: '30px' }}>
+                <h2 style={{
+                  color: '#2c3e50',
+                  fontSize: '20px',
+                  marginBottom: '15px',
+                  borderBottom: '2px solid #27ae60',
+                  paddingBottom: '5px'
+                }}>
+                  ✅ Requisitos
+                </h2>
+                <p style={{
+                  color: '#555',
+                  lineHeight: '1.6',
+                  fontSize: '16px',
+                  margin: 0
+                }}>
+                  {formData.requirements}
+                </p>
+              </section>
+
+              <section style={{ marginBottom: '30px' }}>
+                <h2 style={{
+                  color: '#2c3e50',
+                  fontSize: '20px',
+                  marginBottom: '15px',
+                  borderBottom: '2px solid #f39c12',
+                  paddingBottom: '5px'
+                }}>
+                  💼 Condiciones y Beneficios
+                </h2>
+                <p style={{
+                  color: '#555',
+                  lineHeight: '1.6',
+                  fontSize: '16px',
+                  margin: 0
+                }}>
+                  {formData.conditions}
+                </p>
+              </section>
+
+              <div style={{
+                backgroundColor: '#f8f9fa',
+                padding: '20px',
+                borderRadius: '8px',
+                border: '1px solid #e1e5e9'
+              }}>
+                <h3 style={{ color: '#2c3e50', margin: '0 0 15px 0' }}>
+                  📄 ¿Cómo aplicar?
+                </h3>
+                <p style={{ margin: '0 0 15px 0', color: '#666' }}>
+                  Sube tu currículum vitae y nos pondremos en contacto contigo si tu perfil encaja con lo que estamos buscando.
+                </p>
+                <div style={{
+                  border: '2px dashed #3498db',
+                  borderRadius: '8px',
+                  padding: '30px',
+                  textAlign: 'center',
+                  backgroundColor: '#f0f8ff'
+                }}>
+                  <div style={{ fontSize: '32px', marginBottom: '10px' }}>📎</div>
+                  <p style={{ margin: 0, color: '#3498db', fontWeight: '500' }}>
+                    Aquí aparecería el formulario de subida de CV
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            marginTop: '20px',
+            display: 'flex',
+            gap: '10px',
+            justifyContent: 'center'
+          }}>
+            <button
+              onClick={() => setPreview(false)}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#95a5a6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              ← Volver a Editar
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              style={{
+                padding: '12px 24px',
+                backgroundColor: loading ? '#bdc3c7' : '#27ae60',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                fontWeight: '500'
+              }}
+            >
+              {loading ? 'Creando...' : '✅ Crear Campaña'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa', padding: '20px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+          padding: '30px',
+          border: '1px solid #e1e5e9'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '30px',
+            paddingBottom: '20px',
+            borderBottom: '1px solid #e1e5e9'
+          }}>
+            <h1 style={{
+              color: '#2c3e50',
+              fontSize: '28px',
+              fontWeight: 'bold',
+              margin: 0
+            }}>
+              ➕ Crear Nueva Campaña
+            </h1>
+            <button
+              onClick={onCancel}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#95a5a6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              Cancelar
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '25px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: '#2c3e50',
+                fontWeight: '600',
+                fontSize: '16px'
+              }}>
+                🎯 Título del Puesto *
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={formData.title || ''}
+                onChange={handleInputChange}
+                placeholder="Ej: Desarrollador Full Stack Senior"
+                required
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #e1e5e9',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  transition: 'border-color 0.3s ease'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#3498db'}
+                onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+              />
+            </div>
+
+            {/* Ubicación Geográfica */}
+            <div style={{ marginBottom: '25px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: '#2c3e50',
+                fontWeight: '600',
+                fontSize: '16px'
+              }}>
+                📍 Ubicación Geográfica
+              </label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location || ''}
+                onChange={handleInputChange}
+                placeholder="Ej: Santiago, Chile / Remoto"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #e1e5e9',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  transition: 'border-color 0.3s ease'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#3498db'}
+                onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+              />
+            </div>
+
+            {/* Fila de selects */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr 1fr',
+              gap: '20px',
+              marginBottom: '25px'
+            }}>
+              {/* Tipo de trabajo */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  color: '#2c3e50',
+                  fontWeight: '600',
+                  fontSize: '16px'
+                }}>
+                  💼 Tipo de Trabajo
+                </label>
+                <select
+                  name="workType"
+                  value={formData.workType || ''}
+                  onChange={handleInputChange}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px solid #e1e5e9',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    backgroundColor: 'white',
+                    transition: 'border-color 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#3498db'}
+                  onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+                >
+                  <option value="">Seleccionar...</option>
+                  <option value="FULL_TIME">Full Time</option>
+                  <option value="PART_TIME">Part Time</option>
+                  <option value="INTERNSHIP">Práctica</option>
+                </select>
+              </div>
+
+              {/* Modalidad */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  color: '#2c3e50',
+                  fontWeight: '600',
+                  fontSize: '16px'
+                }}>
+                  🏠 Modalidad
+                </label>
+                <select
+                  name="modality"
+                  value={formData.modality || ''}
+                  onChange={handleInputChange}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px solid #e1e5e9',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    backgroundColor: 'white',
+                    transition: 'border-color 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#3498db'}
+                  onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+                >
+                  <option value="">Seleccionar...</option>
+                  <option value="REMOTE">Remoto</option>
+                  <option value="HYBRID">Híbrido</option>
+                  <option value="ON_SITE">Presencial</option>
+                </select>
+              </div>
+
+              {/* Duración */}
+              <div>
+                <label style={{
+                  display: 'block',
+                  marginBottom: '8px',
+                  color: '#2c3e50',
+                  fontWeight: '600',
+                  fontSize: '16px'
+                }}>
+                  ⏱️ Duración
+                </label>
+                <select
+                  name="duration"
+                  value={formData.duration || ''}
+                  onChange={handleInputChange}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px solid #e1e5e9',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    backgroundColor: 'white',
+                    transition: 'border-color 0.3s ease'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#3498db'}
+                  onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+                >
+                  <option value="">Seleccionar...</option>
+                  <option value="INDEFINITE">Indefinido</option>
+                  <option value="FIXED_TERM">Plazo Fijo</option>
+                  <option value="PROJECT">Proyecto</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Checkbox Ley de Inclusión */}
+            <div style={{ marginBottom: '25px' }}>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                color: '#2c3e50',
+                fontWeight: '600'
+              }}>
+                <input
+                  type="checkbox"
+                  name="inclusionPosition"
+                  checked={formData.inclusionPosition || false}
+                  onChange={handleInputChange}
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    cursor: 'pointer'
+                  }}
+                />
+                ♿ Puesto de Ley de Inclusión
+              </label>
+            </div>
+
+            {/* Sección de Renta */}
+            <div style={{
+              marginBottom: '25px',
+              padding: '20px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px',
+              border: '1px solid #e1e5e9'
+            }}>
+              <h3 style={{
+                margin: '0 0 15px 0',
+                color: '#2c3e50',
+                fontSize: '18px',
+                fontWeight: '600'
+              }}>
+                💰 Información Salarial
+              </h3>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '150px 1fr',
+                gap: '15px',
+                marginBottom: '15px',
+                alignItems: 'end'
+              }}>
+                {/* Selector de moneda */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    color: '#2c3e50',
+                    fontWeight: '600',
+                    fontSize: '14px'
+                  }}>
+                    Moneda
+                  </label>
+                  <select
+                    name="currency"
+                    value={formData.currency || 'CLP'}
+                    onChange={handleInputChange}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '2px solid #e1e5e9',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                      backgroundColor: 'white'
+                    }}
+                  >
+                    <option value="CLP">CLP</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="UF">UF</option>
+                  </select>
+                </div>
+
+                {/* Campo de salario */}
+                <div>
+                  <label style={{
+                    display: 'block',
+                    marginBottom: '8px',
+                    color: '#2c3e50',
+                    fontWeight: '600',
+                    fontSize: '14px'
+                  }}>
+                    Monto del Salario
+                  </label>
+                  <input
+                    type="number"
+                    name="salary"
+                    value={formData.salary || ''}
+                    onChange={handleInputChange}
+                    placeholder="Ej: 800000"
+                    min="0"
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '2px solid #e1e5e9',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      boxSizing: 'border-box',
+                      outline: 'none',
+                      transition: 'border-color 0.3s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#3498db'}
+                    onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+                  />
+                </div>
+              </div>
+
+              {/* Checkbox mostrar renta */}
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                color: '#2c3e50',
+                fontWeight: '500'
+              }}>
+                <input
+                  type="checkbox"
+                  name="showSalary"
+                  checked={formData.showSalary || false}
+                  onChange={handleInputChange}
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    cursor: 'pointer'
+                  }}
+                />
+                👁️ Mostrar salario en la publicación pública
+              </label>
+            </div>
+
+            <div style={{ marginBottom: '25px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: '#2c3e50',
+                fontWeight: '600',
+                fontSize: '16px'
+              }}>
+                📝 Descripción del Puesto *
+              </label>
+              <textarea
+                name="description"
+                value={formData.description || ''}
+                onChange={handleInputChange}
+                placeholder="Describe las responsabilidades principales, el ambiente de trabajo, y qué hace especial esta oportunidad..."
+                required
+                rows={5}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #e1e5e9',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  resize: 'vertical',
+                  minHeight: '120px',
+                  transition: 'border-color 0.3s ease'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#3498db'}
+                onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+              />
+            </div>
+
+            <div style={{ marginBottom: '25px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: '#2c3e50',
+                fontWeight: '600',
+                fontSize: '16px'
+              }}>
+                ✅ Requisitos y Habilidades *
+              </label>
+              <textarea
+                name="requirements"
+                value={formData.requirements || ''}
+                onChange={handleInputChange}
+                placeholder="Detalla la experiencia requerida, tecnologías, habilidades blandas, formación académica, etc..."
+                required
+                rows={4}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #e1e5e9',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  resize: 'vertical',
+                  minHeight: '100px',
+                  transition: 'border-color 0.3s ease'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#3498db'}
+                onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+              />
+            </div>
+
+            <div style={{ marginBottom: '30px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: '#2c3e50',
+                fontWeight: '600',
+                fontSize: '16px'
+              }}>
+                💰 Condiciones y Beneficios *
+              </label>
+              <textarea
+                name="conditions"
+                value={formData.conditions || ''}
+                onChange={handleInputChange}
+                placeholder="Incluye información sobre salario, modalidad de trabajo, beneficios, horarios, vacaciones, etc..."
+                required
+                rows={4}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  border: '2px solid #e1e5e9',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  boxSizing: 'border-box',
+                  outline: 'none',
+                  resize: 'vertical',
+                  minHeight: '100px',
+                  transition: 'border-color 0.3s ease'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#3498db'}
+                onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+              />
+            </div>
+
+            {error && (
+              <div style={{
+                color: '#e74c3c',
+                marginBottom: '20px',
+                padding: '12px 16px',
+                backgroundColor: '#fdf2f2',
+                border: '1px solid #f5c6cb',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}>
+                ❌ {error}
+              </div>
+            )}
+
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+              justifyContent: 'flex-end',
+              paddingTop: '20px',
+              borderTop: '1px solid #e1e5e9'
+            }}>
+              <button
+                type="button"
+                onClick={() => setPreview(true)}
+                disabled={!isFormValid()}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: !isFormValid() ? '#bdc3c7' : '#3498db',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: !isFormValid() ? 'not-allowed' : 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '500'
+                }}
+              >
+                👁️ Vista Previa
+              </button>
+              <button
+                type="submit"
+                disabled={loading || !isFormValid()}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: (loading || !isFormValid()) ? '#bdc3c7' : '#27ae60',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: (loading || !isFormValid()) ? 'not-allowed' : 'pointer',
+                  fontSize: '16px',
+                  fontWeight: '500'
+                }}
+              >
+                {loading ? 'Creando...' : '✅ Crear Campaña'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CreateCampaign;

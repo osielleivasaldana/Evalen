@@ -1,0 +1,9 @@
+CV length: 2748 chars
+Starting extraction...
+
+============================================================
+FINAL RESULTS:
+Confidence: 0.85
+Email: osielleivasaldana@gmail.com
+Titular: No extraído
+Missing fields: ['formacion_academica']

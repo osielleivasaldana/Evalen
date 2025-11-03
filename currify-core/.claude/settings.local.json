@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(python:*)",
+      "Bash(curl:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)",
+      "Bash(cat:*)",
+      "Bash(dir:*)",
+      "Bash(tree:*)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(uvicorn:*)",
+      "Bash(timeout:*)",
+      "Bash(findstr:*)",
+      "Bash(venvScripts:*)",
+      "Bash(venvScriptsactivate.bat)",
+      "Bash(cmd /c \"venv\\Scripts\\activate && python -c \"\"import slowapi; print(''slowapi imported successfully'')\"\"\")",
+      "Bash(cmd /c:*)",
+      "Bash(powershell:*)",
+      "Bash(venv\\Scripts\\python.exe -m uvicorn:*)",
+      "Bash(./venv/Scripts/python.exe -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000)",
+      "Bash(./venv/Scripts/python.exe test_services.py)",
+      "Bash(./venv/Scripts/pip install requests)",
+      "Read(//c/Users/osiel/OneDrive/Escritorio/Currify/currify-back/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

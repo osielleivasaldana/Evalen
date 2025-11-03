@@ -1,0 +1,292 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum WorkType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+}
+
+enum Modality {
+  REMOTE
+  HYBRID
+  ON_SITE
+}
+
+enum Duration {
+  INDEFINITE
+  FIXED_TERM
+  PROJECT
+}
+
+enum Currency {
+  CLP
+  USD
+  EUR
+  UF
+}
+
+enum CandidateStatus {
+  NEW
+  IN_PROCESS
+  NOT_SELECTED
+  SELECTED
+}
+
+enum StageStatus {
+  PENDING
+  ACTIVE
+  ACCEPTED
+  REJECTED
+}
+
+enum UserRole {
+  ADMIN
+  RECRUITER
+  TECHNICAL_REVIEWER
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  company   String?
+  role      UserRole @default(RECRUITER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaigns              Campaign[]
+  stageTemplates         StageTemplate[]
+  assignedStageInstances StageInstance[]
+  auditLogs              AuditLog[]
+  notifications          Notification[]
+
+  @@map("users")
+}
+
+model Campaign {
+  id               String         @id @default(cuid())
+  title            String
+  description      String
+  requirements     String?
+  conditions       String?
+  location         String?
+  workType         WorkType?
+  modality         Modality?
+  duration         Duration?
+  inclusionPosition Boolean       @default(false)
+  salary           Decimal?
+  currency         Currency      @default(CLP)
+  showSalary       Boolean       @default(false)
+  status           CampaignStatus @default(DRAFT)
+  publicId         String         @unique @default(cuid())
+  parsedJobData    Json?
+  parsedJobDataAt  DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  candidates       Candidate[]
+  stageTemplates   StageTemplate[]
+  processInstances ProcessInstance[]
+
+  @@map("campaigns")
+}
+
+model Candidate {
+  id               String           @id @default(cuid())
+  email            String?
+  name             String?
+  phone            String?
+  structuredData   Json?
+  processingStatus ProcessingStatus @default(PENDING)
+  candidateStatus  CandidateStatus  @default(NEW)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  documents        Document[]
+  scoring          CandidateScoring?
+  processInstances ProcessInstance[]
+
+  @@map("candidates")
+}
+
+model Document {
+  id               String           @id @default(cuid())
+  originalName     String
+  fileName         String
+  filePath         String
+  mimeType         String
+  fileSize         Int
+  processingStatus ProcessingStatus @default(PENDING)
+  extractedText    String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  candidateId String?
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  stageInstanceId String?
+  stageInstance   StageInstance? @relation("StageAttachments", fields: [stageInstanceId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+model CandidateScoring {
+  id              String   @id @default(cuid())
+  overallScore    Float
+  recommendation  String
+  breakdown       Json
+  strengths       Json
+  gaps            Json
+  summary         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  candidateId String    @unique
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@map("candidate_scorings")
+}
+
+model StageTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  responsibleId String
+  responsible   User   @relation(fields: [responsibleId], references: [id])
+
+  stageInstances StageInstance[]
+
+  @@map("stage_templates")
+  @@index([campaignId, order])
+}
+
+model ProcessInstance {
+  id                String   @id @default(cuid())
+  startDate         DateTime @default(now())
+  endDate           DateTime?
+  currentStageOrder Int      @default(1)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  stageInstances StageInstance[]
+  auditLogs      AuditLog[]
+
+  @@unique([campaignId, candidateId])
+  @@map("process_instances")
+}
+
+model StageInstance {
+  id        String      @id @default(cuid())
+  status    StageStatus @default(PENDING)
+  feedback  String?
+  decision  String?
+  decidedAt DateTime?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  processInstanceId String
+  processInstance   ProcessInstance @relation(fields: [processInstanceId], references: [id], onDelete: Cascade)
+
+  stageTemplateId String
+  stageTemplate   StageTemplate @relation(fields: [stageTemplateId], references: [id])
+
+  responsibleId String
+  responsible   User   @relation(fields: [responsibleId], references: [id])
+
+  attachments Document[] @relation("StageAttachments")
+  auditLogs   AuditLog[]
+
+  @@map("stage_instances")
+  @@index([processInstanceId, stageTemplateId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  processInstanceId String?
+  processInstance   ProcessInstance? @relation(fields: [processInstanceId], references: [id], onDelete: Cascade)
+
+  stageInstanceId String?
+  stageInstance   StageInstance? @relation(fields: [stageInstanceId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  metadata  Json?
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+  @@index([userId, read])
+}

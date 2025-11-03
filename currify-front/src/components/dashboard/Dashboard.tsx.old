@@ -1,0 +1,1090 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Avatar,
+  Chip,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  LinearProgress,
+  Button,
+  Divider,
+  Stack,
+  Menu,
+  MenuItem,
+  Alert,
+  Fab,
+  useTheme,
+  useMediaQuery,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  ListItemAvatar,
+} from '@mui/material';
+import {
+  Work as WorkIcon,
+  TrendingUp,
+  Group as GroupIcon,
+  PersonAdd as PersonAddIcon,
+  Visibility,
+  Email,
+  Phone,
+  LocationOn,
+  CalendarToday,
+  CheckCircle,
+  Cancel,
+  Download,
+  Star,
+  Add as AddIcon,
+  MoreVert as MoreVertIcon,
+  Edit as EditIcon,
+  Visibility as VisibilityIcon,
+  Share as ShareIcon,
+  Delete as DeleteIcon,
+  PlayArrow as PlayArrowIcon,
+  Pause as PauseIcon,
+  FiberManualRecord as DotIcon,
+  OpenInNew as OpenInNewIcon,
+  ContentCopy as ContentCopyIcon,
+} from '@mui/icons-material';
+import Layout from '../layout/Layout';
+import { apiService, Campaign, CampaignStats, UserProfile, Candidate as ApiCandidate } from '../../services/api';
+
+interface DashboardProps {
+  onNavigateToCampaign: (campaignId: string) => void;
+  onCreateCampaign: () => void;
+  onEditCampaign: (campaignId: string) => void;
+  onLogout: () => void;
+}
+
+// Interfaz para candidatos con datos combinados
+interface CandidateWithCampaign extends ApiCandidate {
+  campaignTitle?: string;
+  campaignPosition?: string;
+  skills?: string[];
+  location?: string;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({
+  onNavigateToCampaign,
+  onCreateCampaign,
+  onEditCampaign,
+  onLogout
+}) => {
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [stats, setStats] = useState<CampaignStats | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<CandidateWithCampaign | null>(null);
+  const [candidates, setCandidates] = useState<CandidateWithCampaign[]>([]);
+  const [anchorEls, setAnchorEls] = useState<{ [key: string]: HTMLElement | null }>({});
+  const [snackbarMessage, setSnackbarMessage] = useState<string>('');
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const loadDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [userProfile, campaignsList, campaignStats] = await Promise.all([
+        apiService.getProfile(),
+        apiService.getCampaigns(),
+        apiService.getCampaignStats()
+      ]);
+
+      setUser(userProfile);
+      setCampaigns(campaignsList);
+      setStats(campaignStats);
+
+      // Cargar candidatos de todas las campañas
+      const allCandidates: CandidateWithCampaign[] = [];
+      for (const campaign of campaignsList) {
+        try {
+          const campaignCandidates = await apiService.getCandidates(campaign.id);
+          const candidatesWithCampaign = campaignCandidates.map(candidate => ({
+            ...candidate,
+            campaignTitle: campaign.title,
+            campaignPosition: campaign.title, // Usaremos el título de campaña como posición por ahora
+            skills: candidate.structuredData?.datos_cv?.habilidades?.habilidades_tecnicas?.map(h => h.skill) || [],
+            location: candidate.structuredData?.datos_cv?.datos_contacto?.ubicacion || undefined
+          }));
+          allCandidates.push(...candidatesWithCampaign);
+        } catch (err) {
+          console.error(`Error loading candidates for campaign ${campaign.id}:`, err);
+        }
+      }
+
+      // Ordenar por fecha de creación (más recientes primero)
+      allCandidates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      setCandidates(allCandidates);
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar los datos');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
+
+  const handleMenuOpen = (campaignId: string, event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEls(prev => ({ ...prev, [campaignId]: event.currentTarget }));
+  };
+
+  const handleMenuClose = (campaignId: string) => {
+    setAnchorEls(prev => ({ ...prev, [campaignId]: null }));
+  };
+
+  const handleCopyLink = (publicId: string) => {
+    const link = `${window.location.origin}/apply/${publicId}`;
+    navigator.clipboard.writeText(link);
+    setSnackbarMessage('¡Enlace copiado al portapapeles!');
+    setTimeout(() => setSnackbarMessage(''), 3000);
+  };
+
+  const handleToggleCampaignStatus = async (campaignId: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+      await apiService.updateCampaign(campaignId, { status: newStatus });
+      await loadDashboardData();
+      setSnackbarMessage(`Campaña ${newStatus === 'ACTIVE' ? 'activada' : 'pausada'} correctamente`);
+      setTimeout(() => setSnackbarMessage(''), 3000);
+    } catch (err: any) {
+      setError(err.message || 'Error al actualizar el estado de la campaña');
+    }
+  };
+
+  const handleDeleteCampaign = async (campaignId: string) => {
+    const campaign = campaigns.find(c => c.id === campaignId);
+    if (!campaign) return;
+
+    if (campaign._count && campaign._count.candidates > 0) {
+      setError('No se puede eliminar una campaña con candidatos activos');
+      return;
+    }
+
+    if (window.confirm(`¿Eliminar "${campaign.title}"? Esta acción no se puede deshacer.`)) {
+      try {
+        await apiService.deleteCampaign(campaignId);
+        await loadDashboardData();
+        setSnackbarMessage('Campaña eliminada correctamente');
+        setTimeout(() => setSnackbarMessage(''), 3000);
+      } catch (err: any) {
+        setError(err.message || 'Error al eliminar la campaña');
+      }
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'ACTIVE': return 'success';
+      case 'DRAFT': return 'warning';
+      case 'PAUSED': return 'error';
+      case 'CLOSED': return 'default';
+      default: return 'default';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'ACTIVE': return 'Activa';
+      case 'DRAFT': return 'Borrador';
+      case 'PAUSED': return 'Pausada';
+      case 'CLOSED': return 'Cerrada';
+      default: return status;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Funciones para los estados de candidatos
+  const getCandidateStatusColor = (status: string): 'primary' | 'warning' | 'success' | 'error' | 'default' => {
+    switch (status) {
+      case 'PENDING': return 'warning';
+      case 'PROCESSING': return 'primary';
+      case 'COMPLETED': return 'success';
+      case 'ERROR': return 'error';
+      default: return 'default';
+    }
+  };
+
+  const getCandidateStatusText = (status: string): string => {
+    switch (status) {
+      case 'PENDING': return 'Pendiente';
+      case 'PROCESSING': return 'Procesando';
+      case 'COMPLETED': return 'Completado';
+      case 'ERROR': return 'Error';
+      default: return status;
+    }
+  };
+
+  const getScoreColor = (score: number): string => {
+    if (score >= 90) return '#4caf50';
+    if (score >= 80) return '#8bc34a';
+    if (score >= 70) return '#ff9800';
+    return '#f44336';
+  };
+
+  const getInitials = (name: string): string => {
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
+  if (loading) {
+    return (
+      <Layout showNavBar={true} showFooter={true}>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+            <Typography variant="h6" color="text.secondary">
+              Cargando dashboard...
+            </Typography>
+          </Box>
+        </Container>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout showNavBar={true} showFooter={true}>
+        <Container maxWidth="xl" sx={{ py: 4 }}>
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+          <Button variant="contained" onClick={loadDashboardData}>
+            Reintentar
+          </Button>
+        </Container>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout showNavBar={true} showFooter={true}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        {/* Header */}
+        <Box sx={{ mb: 5 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+            <Box>
+              <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5, letterSpacing: '-0.5px' }}>
+                ¡Hola, {user?.name}! 👋
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.1rem' }}>
+                Aquí está el resumen de tu actividad de reclutamiento
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Stats Cards - Modern Design */}
+        <Box sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
+          gap: 3,
+          mb: 5
+        }}>
+          <Card
+            elevation={0}
+            sx={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '150px',
+                height: '150px',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '50%',
+                transform: 'translate(50%, -50%)',
+              },
+            }}
+          >
+            <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    p: 1.5,
+                    borderRadius: 2,
+                    backdropFilter: 'blur(10px)',
+                  }}
+                >
+                  <WorkIcon sx={{ fontSize: 28 }} />
+                </Box>
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5 }}>
+                {stats?.totalCampaigns || 0}
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                Total Campañas
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card
+            elevation={0}
+            sx={{
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              color: 'white',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '150px',
+                height: '150px',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '50%',
+                transform: 'translate(50%, -50%)',
+              },
+            }}
+          >
+            <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    p: 1.5,
+                    borderRadius: 2,
+                    backdropFilter: 'blur(10px)',
+                  }}
+                >
+                  <TrendingUp sx={{ fontSize: 28 }} />
+                </Box>
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5 }}>
+                {stats?.activeCampaigns || 0}
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                Campañas Activas
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card
+            elevation={0}
+            sx={{
+              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+              color: 'white',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '150px',
+                height: '150px',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '50%',
+                transform: 'translate(50%, -50%)',
+              },
+            }}
+          >
+            <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    p: 1.5,
+                    borderRadius: 2,
+                    backdropFilter: 'blur(10px)',
+                  }}
+                >
+                  <GroupIcon sx={{ fontSize: 28 }} />
+                </Box>
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5 }}>
+                {stats?.totalCandidates || 0}
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                Total Candidatos
+              </Typography>
+            </CardContent>
+          </Card>
+
+          <Card
+            elevation={0}
+            sx={{
+              background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+              color: 'white',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '150px',
+                height: '150px',
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '50%',
+                transform: 'translate(50%, -50%)',
+              },
+            }}
+          >
+            <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                <Box
+                  sx={{
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    p: 1.5,
+                    borderRadius: 2,
+                    backdropFilter: 'blur(10px)',
+                  }}
+                >
+                  <PersonAddIcon sx={{ fontSize: 28 }} />
+                </Box>
+              </Box>
+              <Typography variant="h3" sx={{ fontWeight: 800, mb: 0.5 }}>
+                {stats?.recentApplications || 0}
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                Nuevos esta semana
+              </Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Campaigns Section */}
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: 3,
+            overflow: 'hidden',
+            border: '1px solid',
+            borderColor: 'divider',
+            mb: 4,
+          }}
+        >
+          <Box sx={{
+            p: 3,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          }}>
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: 'white', mb: 0.5 }}>
+                Mis Campañas
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                {campaigns.length} campaña{campaigns.length !== 1 ? 's' : ''} · Gestiona tu reclutamiento
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={onCreateCampaign}
+              sx={{
+                bgcolor: 'white',
+                color: 'primary.main',
+                fontWeight: 600,
+                px: 3,
+                '&:hover': {
+                  bgcolor: 'grey.100',
+                  transform: 'translateY(-2px)',
+                  boxShadow: 4,
+                },
+                transition: 'all 0.2s',
+                display: { xs: 'none', sm: 'flex' }
+              }}
+            >
+              Nueva Campaña
+            </Button>
+          </Box>
+
+          {campaigns.length === 0 ? (
+            <Box sx={{ p: 8, textAlign: 'center' }}>
+              <Box
+                sx={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: '50%',
+                  bgcolor: 'primary.50',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto',
+                  mb: 3,
+                }}
+              >
+                <WorkIcon sx={{ fontSize: 60, color: 'primary.main' }} />
+              </Box>
+              <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 600 }}>
+                Aún no tienes campañas
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
+                Comienza creando tu primera campaña de reclutamiento y empieza a recibir candidatos de manera automatizada.
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<AddIcon />}
+                onClick={onCreateCampaign}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: '1rem',
+                }}
+              >
+                Crear mi primera campaña
+              </Button>
+            </Box>
+          ) : (
+            <List sx={{ p: 0 }}>
+              {campaigns.map((campaign, index) => (
+                <React.Fragment key={campaign.id}>
+                  <ListItem
+                    disablePadding
+                    sx={{
+                      '&:hover': {
+                        bgcolor: 'action.hover',
+                      },
+                      transition: 'background-color 0.2s',
+                    }}
+                    secondaryAction={
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleCampaignStatus(campaign.id, campaign.status);
+                          }}
+                          sx={{
+                            bgcolor: campaign.status === 'ACTIVE' ? 'warning.50' : 'success.50',
+                            '&:hover': {
+                              bgcolor: campaign.status === 'ACTIVE' ? 'warning.100' : 'success.100',
+                            },
+                          }}
+                          title={campaign.status === 'ACTIVE' ? 'Pausar campaña' : 'Activar campaña'}
+                        >
+                          {campaign.status === 'ACTIVE' ? (
+                            <PauseIcon fontSize="small" color="warning" />
+                          ) : (
+                            <PlayArrowIcon fontSize="small" color="success" />
+                          )}
+                        </IconButton>
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMenuOpen(campaign.id, e);
+                          }}
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
+                      </Stack>
+                    }
+                  >
+                    <ListItemButton
+                      onClick={() => onNavigateToCampaign(campaign.id)}
+                      sx={{ py: 2.5, px: 3 }}
+                    >
+                      <ListItemAvatar>
+                        <Avatar
+                          sx={{
+                            bgcolor: campaign.status === 'ACTIVE' ? 'success.main' : 'grey.400',
+                            width: 56,
+                            height: 56,
+                            mr: 1,
+                          }}
+                        >
+                          <WorkIcon />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                              {campaign.title}
+                            </Typography>
+                            <Chip
+                              icon={<DotIcon sx={{ fontSize: 12 }} />}
+                              label={getStatusLabel(campaign.status)}
+                              color={getStatusColor(campaign.status) as any}
+                              size="small"
+                              sx={{ height: 24 }}
+                            />
+                          </Box>
+                        }
+                        secondary={
+                          <Stack spacing={1} sx={{ mt: 1 }}>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              {campaign.description}
+                            </Typography>
+                            <Stack direction="row" spacing={2} alignItems="center">
+                              <Stack direction="row" spacing={0.5} alignItems="center">
+                                <GroupIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
+                                <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                                  {campaign._count?.candidates || 0} candidatos
+                                </Typography>
+                              </Stack>
+                              <Typography variant="caption" color="text.secondary">
+                                •
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Creada el {formatDate(campaign.createdAt)}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopyLink(campaign.publicId);
+                                }}
+                                sx={{ ml: 'auto', p: 0.5 }}
+                                title="Copiar enlace público"
+                              >
+                                <ContentCopyIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.open(`/apply/${campaign.publicId}`, '_blank');
+                                }}
+                                sx={{ p: 0.5 }}
+                                title="Abrir página pública"
+                              >
+                                <OpenInNewIcon sx={{ fontSize: 16 }} />
+                              </IconButton>
+                            </Stack>
+                          </Stack>
+                        }
+                      />
+                    </ListItemButton>
+
+                    {/* Menu */}
+                    <Menu
+                      anchorEl={anchorEls[campaign.id]}
+                      open={Boolean(anchorEls[campaign.id])}
+                      onClose={() => handleMenuClose(campaign.id)}
+                      PaperProps={{
+                        elevation: 8,
+                        sx: {
+                          minWidth: 200,
+                          borderRadius: 2,
+                          mt: 1,
+                        },
+                      }}
+                    >
+                      <MenuItem
+                        onClick={() => {
+                          onNavigateToCampaign(campaign.id);
+                          handleMenuClose(campaign.id);
+                        }}
+                      >
+                        <VisibilityIcon sx={{ mr: 2, fontSize: 20 }} />
+                        Ver candidatos
+                      </MenuItem>
+                      <MenuItem onClick={() => {
+                        onEditCampaign(campaign.id);
+                        handleMenuClose(campaign.id);
+                      }}>
+                        <EditIcon sx={{ mr: 2, fontSize: 20 }} />
+                        Editar campaña
+                      </MenuItem>
+                      <MenuItem onClick={() => {
+                        handleCopyLink(campaign.publicId);
+                        handleMenuClose(campaign.id);
+                      }}>
+                        <ShareIcon sx={{ mr: 2, fontSize: 20 }} />
+                        Copiar enlace
+                      </MenuItem>
+                      <Divider />
+                      <MenuItem
+                        onClick={() => {
+                          handleDeleteCampaign(campaign.id);
+                          handleMenuClose(campaign.id);
+                        }}
+                        disabled={campaign._count && campaign._count.candidates > 0}
+                        sx={{ color: 'error.main' }}
+                      >
+                        <DeleteIcon sx={{ mr: 2, fontSize: 20 }} />
+                        Eliminar
+                      </MenuItem>
+                    </Menu>
+                  </ListItem>
+                  {index < campaigns.length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            </List>
+          )}
+        </Paper>
+
+        {/* Sección Principal con Tabla de Candidatos y Panel Lateral */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: selectedCandidate ? { xs: '1fr', md: '2fr 1fr' } : '1fr',
+            gap: 3
+          }}
+        >
+          {/* Tabla de Candidatos */}
+          <Box>
+            <Paper elevation={0} sx={{ border: 1, borderColor: 'divider' }}>
+              <Box p={2.5} borderBottom={1} borderColor="divider">
+                <Typography variant="h6" fontWeight="bold">
+                  Candidatos Recientes
+                </Typography>
+              </Box>
+
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Candidato</TableCell>
+                      <TableCell>Posición</TableCell>
+                      <TableCell>Campaña</TableCell>
+                      <TableCell>Estado</TableCell>
+                      <TableCell>Score</TableCell>
+                      <TableCell>Fecha</TableCell>
+                      <TableCell align="center">Acciones</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {candidates.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            No hay candidatos disponibles
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      candidates.map((candidate) => {
+                        // Calcular un score simulado basado en la confianza general del CV
+                        const score = candidate.structuredData?.confianza_general
+                          ? Math.round(candidate.structuredData.confianza_general * 100)
+                          : 0;
+
+                        return (
+                          <TableRow
+                            key={candidate.id}
+                            hover
+                            sx={{
+                              cursor: 'pointer',
+                              bgcolor: selectedCandidate?.id === candidate.id ? 'action.hover' : 'inherit'
+                            }}
+                            onClick={() => setSelectedCandidate(candidate)}
+                          >
+                            <TableCell>
+                              <Stack direction="row" spacing={2} alignItems="center">
+                                <Avatar sx={{ bgcolor: '#9e9e9e' }}>
+                                  {getInitials(candidate.name)}
+                                </Avatar>
+                                <Box>
+                                  <Typography variant="body2" fontWeight={500}>
+                                    {candidate.name}
+                                  </Typography>
+                                  <Typography variant="caption" color="text.secondary">
+                                    {candidate.email}
+                                  </Typography>
+                                </Box>
+                              </Stack>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {candidate.structuredData?.datos_cv?.titular_profesional?.titular || 'N/A'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {candidate.campaignTitle || 'N/A'}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={getCandidateStatusText(candidate.status)}
+                                color={getCandidateStatusColor(candidate.status)}
+                                size="small"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography
+                                variant="body2"
+                                fontWeight="bold"
+                                sx={{ color: getScoreColor(score) }}
+                              >
+                                {score}%
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2">
+                                {formatDate(candidate.createdAt)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="center">
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCandidate(candidate);
+                                }}
+                              >
+                                <Visibility fontSize="small" />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Paper>
+          </Box>
+
+          {/* Panel Lateral de Detalles del Candidato */}
+          {selectedCandidate && (() => {
+            const score = selectedCandidate.structuredData?.confianza_general
+              ? Math.round(selectedCandidate.structuredData.confianza_general * 100)
+              : 0;
+
+            return (
+              <Box>
+                <Paper elevation={0} sx={{ border: 1, borderColor: 'divider', position: 'sticky', top: 16 }}>
+                  <Box p={2.5} textAlign="center" borderBottom={1} borderColor="divider">
+                    <Avatar
+                      sx={{
+                        width: 80,
+                        height: 80,
+                        mx: 'auto',
+                        mb: 2,
+                        bgcolor: '#9e9e9e',
+                        fontSize: '2rem'
+                      }}
+                    >
+                      {getInitials(selectedCandidate.name)}
+                    </Avatar>
+                    <Typography variant="h6" fontWeight="bold" gutterBottom>
+                      {selectedCandidate.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      {selectedCandidate.structuredData?.datos_cv?.titular_profesional?.titular || 'N/A'}
+                    </Typography>
+                    <Chip
+                      label={getCandidateStatusText(selectedCandidate.status)}
+                      color={getCandidateStatusColor(selectedCandidate.status)}
+                      size="small"
+                      sx={{ mt: 1 }}
+                    />
+                  </Box>
+
+                  <Box p={2.5}>
+                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Star fontSize="small" /> Score de Compatibilidad
+                    </Typography>
+                    <Box display="flex" alignItems="center" gap={1} mb={2}>
+                      <LinearProgress
+                        variant="determinate"
+                        value={score}
+                        sx={{
+                          flexGrow: 1,
+                          height: 8,
+                          borderRadius: 1,
+                          bgcolor: 'grey.200',
+                          '& .MuiLinearProgress-bar': {
+                            bgcolor: getScoreColor(score)
+                          }
+                        }}
+                      />
+                      <Typography variant="body2" fontWeight="bold" sx={{ color: getScoreColor(score) }}>
+                        {score}%
+                      </Typography>
+                    </Box>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                      Información de Contacto
+                    </Typography>
+                    <Stack spacing={1.5} mb={2}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Email fontSize="small" color="action" />
+                        <Typography variant="body2">{selectedCandidate.email}</Typography>
+                      </Box>
+                      {selectedCandidate.phone && (
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Phone fontSize="small" color="action" />
+                          <Typography variant="body2">{selectedCandidate.phone}</Typography>
+                        </Box>
+                      )}
+                      {selectedCandidate.location && (
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <LocationOn fontSize="small" color="action" />
+                          <Typography variant="body2">{selectedCandidate.location}</Typography>
+                        </Box>
+                      )}
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <CalendarToday fontSize="small" color="action" />
+                        <Typography variant="body2">Aplicó: {formatDate(selectedCandidate.createdAt)}</Typography>
+                      </Box>
+                    </Stack>
+
+                    <Divider sx={{ my: 2 }} />
+
+                    {selectedCandidate.skills && selectedCandidate.skills.length > 0 && (
+                      <>
+                        <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                          Habilidades
+                        </Typography>
+                        <Stack direction="row" flexWrap="wrap" gap={1} mb={2}>
+                          {selectedCandidate.skills.slice(0, 10).map((skill, index) => (
+                            <Chip key={index} label={skill} size="small" variant="outlined" />
+                          ))}
+                        </Stack>
+                        <Divider sx={{ my: 2 }} />
+                      </>
+                    )}
+
+                    <Stack spacing={1.5}>
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        startIcon={<Download />}
+                        size="small"
+                        onClick={async () => {
+                          if (selectedCandidate.documentId) {
+                            try {
+                              const blob = await apiService.downloadDocument(selectedCandidate.documentId);
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `CV_${selectedCandidate.name}.pdf`;
+                              a.click();
+                              window.URL.revokeObjectURL(url);
+                            } catch (err) {
+                              console.error('Error downloading CV:', err);
+                              setError('Error al descargar el CV');
+                            }
+                          }
+                        }}
+                        disabled={!selectedCandidate.documentId}
+                      >
+                        Descargar CV
+                      </Button>
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        startIcon={<CheckCircle />}
+                        color="success"
+                        size="small"
+                      >
+                        Aprobar
+                      </Button>
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        startIcon={<Cancel />}
+                        color="error"
+                        size="small"
+                      >
+                        Rechazar
+                      </Button>
+                    </Stack>
+                  </Box>
+                </Paper>
+              </Box>
+            );
+          })()}
+        </Box>
+
+        {/* Snackbar for notifications */}
+        {snackbarMessage && (
+          <Paper
+            elevation={6}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              px: 3,
+              py: 2,
+              borderRadius: 2,
+              bgcolor: 'success.main',
+              color: 'white',
+              zIndex: 9999,
+              animation: 'slideUp 0.3s ease-out',
+              '@keyframes slideUp': {
+                from: {
+                  opacity: 0,
+                  transform: 'translateX(-50%) translateY(20px)',
+                },
+                to: {
+                  opacity: 1,
+                  transform: 'translateX(-50%) translateY(0)',
+                },
+              },
+            }}
+          >
+            <Typography variant="body2" fontWeight={500}>
+              {snackbarMessage}
+            </Typography>
+          </Paper>
+        )}
+
+        {/* Floating Action Button para móvil */}
+        {isMobile && (
+          <Fab
+            color="primary"
+            aria-label="add"
+            onClick={onCreateCampaign}
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+            }}
+          >
+            <AddIcon />
+          </Fab>
+        )}
+      </Container>
+    </Layout>
+  );
+};
+
+export default Dashboard;

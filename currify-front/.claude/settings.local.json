@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm start)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(dir:*)",
+      "Bash(timeout:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(del \"c:\\Users\\osiel\\OneDrive\\Escritorio\\Currify\\currify-front\\src\\components\\dashboard\\DashboardFinal.tsx\")",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(node_modules.bintailwindcss init -p)",
+      "Bash(npx kill-port:*)",
+      "Read(//c/Users/osiel/OneDrive/Escritorio/Currify/**)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(curl -X POST http://localhost:8000/auth/login -H \"Content-Type: application/json\" -d \"{\"\"username\"\":\"\"kinich\"\",\"\"password\"\":\"\"kinich!\"\"}\")",
+      "Bash(npm run start:dev:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
