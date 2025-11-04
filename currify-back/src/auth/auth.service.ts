@@ -29,6 +29,8 @@ export class AuthService {
     const userCount = await this.prisma.user.count();
     const isFirstUser = userCount === 0;
 
+    console.log(`[AUTH] Registering user. Total users: ${userCount}, isFirstUser: ${isFirstUser}`);
+
     const user = await this.prisma.user.create({
       data: {
         email,
@@ -46,6 +48,8 @@ export class AuthService {
         createdAt: true,
       },
     });
+
+    console.log(`[AUTH] User created with role: ${user.role}`);
 
     const payload = { sub: user.id, email: user.email, role: user.role };
     const token = this.jwtService.sign(payload);
