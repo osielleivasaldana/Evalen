@@ -140,12 +140,12 @@ const UserManagement: React.FC = () => {
     const roleLabels: Record<string, string> = {
       ADMIN: 'Administrador',
       RECRUITER: 'Reclutador',
-      INTERVIEWER: 'Entrevistador'
+      TECHNICAL_REVIEWER: 'Revisor Técnico'
     };
     const colors: Record<string, string> = {
       ADMIN: 'bg-red-100 text-red-800',
       RECRUITER: 'bg-blue-100 text-blue-800',
-      INTERVIEWER: 'bg-green-100 text-green-800'
+      TECHNICAL_REVIEWER: 'bg-green-100 text-green-800'
     };
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${colors[role] || 'bg-gray-100 text-gray-800'}`}>
@@ -334,7 +334,7 @@ const UserManagement: React.FC = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="RECRUITER">Reclutador</option>
-                      <option value="INTERVIEWER">Entrevistador</option>
+                      <option value="TECHNICAL_REVIEWER">Revisor Técnico</option>
                       <option value="ADMIN">Administrador</option>
                     </select>
                   </div>

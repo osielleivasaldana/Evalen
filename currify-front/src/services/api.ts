@@ -69,7 +69,7 @@ interface UpdateUserRequest {
 // New enums and types
 export type CandidateStatus = 'NEW' | 'IN_PROCESS' | 'NOT_SELECTED' | 'SELECTED';
 export type StageStatus = 'PENDING' | 'ACTIVE' | 'ACCEPTED' | 'REJECTED';
-export type UserRole = 'ADMIN' | 'RECRUITER' | 'INTERVIEWER';
+export type UserRole = 'ADMIN' | 'RECRUITER' | 'TECHNICAL_REVIEWER';
 
 // Stage Template interfaces
 export interface StageTemplate {
