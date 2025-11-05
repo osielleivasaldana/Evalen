@@ -4,6 +4,7 @@ import { apiService } from '../services/api';
 
 // Auth Components
 import AuthContainer from './auth/AuthContainer';
+import ActivateAccount from './auth/ActivateAccount';
 
 // Dashboard Components
 import Dashboard from './dashboard/Dashboard';
@@ -75,7 +76,7 @@ const AppRouter: React.FC = () => {
         fontSize: '18px',
         color: '#666'
       }}>
-        Cargando Currify...
+        Cargando Evalen...
       </div>
     );
   }
@@ -87,6 +88,10 @@ const AppRouter: React.FC = () => {
         <Route
           path="/apply/:publicId"
           element={<PublicCampaignWrapper />}
+        />
+        <Route
+          path="/activate-account/:token"
+          element={<ActivateAccount />}
         />
 
         {/* Legacy Routes (for backward compatibility) */}
@@ -300,7 +305,7 @@ const LegacyApp: React.FC = () => {
             margin: '0',
             fontWeight: 'bold'
           }}>
-            🔍 Currify Legacy
+            🔍 Evalen Legacy
           </h1>
           <p style={{
             color: '#666',

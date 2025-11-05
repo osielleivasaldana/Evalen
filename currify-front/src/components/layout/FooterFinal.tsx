@@ -12,12 +12,12 @@ const FooterFinal: React.FC = () => {
           <div className="flex items-center gap-2">
             <BriefcaseIcon className="w-6 h-6 text-blue-600" />
             <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Currify
+              Evalen
             </span>
           </div>
 
           <p className="text-sm text-gray-600">
-            © {currentYear} Currify. Todos los derechos reservados.
+            © {currentYear} Evalen. Todos los derechos reservados.
           </p>
 
           {/* Links */}

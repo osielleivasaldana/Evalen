@@ -60,7 +60,7 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onSwitchToLogin 
           Crear Cuenta
         </h2>
         <p style={{ color: '#7f8c8d', fontSize: '16px', margin: 0 }}>
-          Únete a Currify y comienza a gestionar tus procesos de selección
+          Únete a Evalen y comienza a gestionar tus procesos de selección
         </p>
       </div>
 

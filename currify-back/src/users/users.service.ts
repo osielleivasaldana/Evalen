@@ -1,13 +1,18 @@
 import { Injectable, NotFoundException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
   async create(createUserDto: CreateUserDto, currentUserId: string) {
     const { email, password, name, company, role } = createUserDto;
@@ -20,7 +25,13 @@ export class UsersService {
       throw new ConflictException('Email already registered');
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Generate activation token
+    const activationToken = crypto.randomBytes(32).toString('hex');
+    const activationExpiry = new Date();
+    activationExpiry.setHours(activationExpiry.getHours() + 48); // Token expires in 48 hours
+
+    // Hash password if provided (for direct creation), otherwise null
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
 
     const user = await this.prisma.user.create({
       data: {
@@ -29,6 +40,9 @@ export class UsersService {
         name,
         company,
         role: role as UserRole,
+        isActive: false,
+        activationToken,
+        activationExpiry,
       },
       select: {
         id: true,
@@ -36,10 +50,20 @@ export class UsersService {
         name: true,
         company: true,
         role: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
     });
+
+    // Send activation email
+    try {
+      await this.emailService.sendActivationEmail(email, name, activationToken);
+      console.log(`[USERS] Activation email sent to ${email}`);
+    } catch (error) {
+      console.error(`[USERS] Failed to send activation email to ${email}:`, error);
+      // Don't throw error, user was created successfully
+    }
 
     return user;
   }
@@ -145,5 +169,23 @@ export class UsersService {
     await this.prisma.user.delete({ where: { id } });
 
     return { message: 'User deleted successfully' };
+  }
+
+  async findByCompany(company: string) {
+    return this.prisma.user.findMany({
+      where: {
+        company,
+        isActive: true, // Only return active users
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
   }
 }

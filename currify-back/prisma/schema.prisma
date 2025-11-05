@@ -73,14 +73,17 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  company   String?
-  role      UserRole @default(RECRUITER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  password           String?
+  name               String
+  company            String?
+  role               UserRole  @default(RECRUITER)
+  isActive           Boolean   @default(false)
+  activationToken    String?   @unique
+  activationExpiry   DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   campaigns              Campaign[]
   stageTemplates         StageTemplate[]

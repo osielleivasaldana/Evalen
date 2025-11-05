@@ -71,6 +71,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.password) {
+      throw new UnauthorizedException('Please activate your account first');
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -105,5 +109,51 @@ export class AuthService {
         createdAt: true,
       },
     });
+  }
+
+  async activateAccount(token: string, password: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { activationToken: token },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid activation token');
+    }
+
+    if (user.activationExpiry && user.activationExpiry < new Date()) {
+      throw new UnauthorizedException('Activation token has expired');
+    }
+
+    if (user.isActive) {
+      throw new ConflictException('Account is already active');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        isActive: true,
+        activationToken: null,
+        activationExpiry: null,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        company: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    const payload = { sub: updatedUser.id, email: updatedUser.email, role: updatedUser.role };
+    const jwtToken = this.jwtService.sign(payload);
+
+    return {
+      user: updatedUser,
+      access_token: jwtToken,
+    };
   }
 }

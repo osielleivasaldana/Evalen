@@ -40,4 +40,10 @@ export class UsersController {
   remove(@Param('id') id: string, @Request() req: any) {
     return this.usersService.remove(id, req.user.id);
   }
+
+  @Get('by-company/:company')
+  @Roles('ADMIN', 'RECRUITER')
+  findByCompany(@Param('company') company: string) {
+    return this.usersService.findByCompany(company);
+  }
 }

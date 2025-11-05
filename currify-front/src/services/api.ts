@@ -52,7 +52,7 @@ interface User {
 
 interface CreateUserRequest {
   email: string;
-  password: string;
+  password?: string;
   name: string;
   company?: string;
   role: string;
@@ -442,6 +442,22 @@ class ApiService {
     return data;
   }
 
+  async activateAccount(token: string, password: string): Promise<AuthResponse> {
+    const response = await fetch(`${API_BASE_URL}/auth/activate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, password })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Activation failed');
+    }
+
+    const data = await response.json();
+    return data;
+  }
+
   async getProfile(): Promise<UserProfile> {
     return this.apiCall('/auth/profile');
   }
@@ -692,6 +708,10 @@ class ApiService {
     return this.apiCall(`/users/${userId}`, {
       method: 'DELETE'
     });
+  }
+
+  async getUsersByCompany(company: string): Promise<User[]> {
+    return this.apiCall(`/users/by-company/${encodeURIComponent(company)}`);
   }
 
   // Token management

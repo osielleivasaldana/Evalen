@@ -6,7 +6,12 @@
       "Bash(git commit:*)",
       "Bash(docker-compose build:*)",
       "Bash(docker-compose up:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(docker exec:*)",
+      "Bash(npm install)",
+      "Bash(docker-compose restart:*)",
+      "Bash(docker logs:*)",
+      "Bash(docker-compose:*)"
     ],
     "deny": [],
     "ask": []

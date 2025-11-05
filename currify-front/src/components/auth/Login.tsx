@@ -58,7 +58,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
           Iniciar Sesión
         </h2>
         <p style={{ color: '#7f8c8d', fontSize: '16px', margin: 0 }}>
-          Accede a tu cuenta de Currify
+          Accede a tu cuenta de Evalen
         </p>
       </div>
 

@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { CampaignStatus } from '@prisma/client';
 
 @Injectable()
 export class CampaignsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
   async create(userId: string, createCampaignDto: CreateCampaignDto) {
     const { stageTemplates, ...campaignData } = createCampaignDto;
@@ -38,7 +42,7 @@ export class CampaignsService {
       }));
     }
 
-    return this.prisma.campaign.create({
+    const campaign = await this.prisma.campaign.create({
       data: {
         ...campaignData,
         userId,
@@ -63,6 +67,37 @@ export class CampaignsService {
         }
       }
     });
+
+    // Enviar emails de notificación a los usuarios asignados
+    const uniqueResponsibles = new Map<string, { name: string; email: string }>();
+
+    campaign.stageTemplates.forEach(stage => {
+      if (stage.responsible && stage.responsible.id !== userId) {
+        uniqueResponsibles.set(stage.responsible.id, {
+          name: stage.responsible.name,
+          email: stage.responsible.email
+        });
+      }
+    });
+
+    // Enviar emails en paralelo sin bloquear la respuesta
+    Promise.all(
+      Array.from(uniqueResponsibles.values()).map(async (responsible) => {
+        try {
+          await this.emailService.sendCampaignAssignmentEmail(
+            responsible.email,
+            responsible.name,
+            campaign.title,
+            campaign.id
+          );
+          console.log(`[CAMPAIGNS] Assignment email sent to ${responsible.email} for campaign ${campaign.title}`);
+        } catch (error) {
+          console.error(`[CAMPAIGNS] Failed to send assignment email to ${responsible.email}:`, error);
+        }
+      })
+    ).catch(err => console.error('[CAMPAIGNS] Error sending assignment emails:', err));
+
+    return campaign;
   }
 
   async findAll(userId: string) {

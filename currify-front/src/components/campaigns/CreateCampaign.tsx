@@ -57,6 +57,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
 }) => {
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [availableUsers, setAvailableUsers] = useState<Array<{ id: string; name: string; email: string; role: string }>>([]);
   const [formData, setFormData] = useState<CreateCampaignRequest>({
     title: '',
     description: '',
@@ -81,12 +82,18 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
   const [requirementsModalOpen, setRequirementsModalOpen] = useState(false);
   const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
 
-  // Load user profile on mount
+  // Load user profile and available users on mount
   useEffect(() => {
     const loadUserProfile = async () => {
       try {
         const profile = await apiService.getProfile();
         setCurrentUser(profile);
+
+        // Load available users from the same company
+        if (profile.company) {
+          const users = await apiService.getUsersByCompany(profile.company);
+          setAvailableUsers(users);
+        }
       } catch (err) {
         console.error('Failed to load user profile:', err);
       }
@@ -740,8 +747,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Responsable <span className="text-red-500">*</span>
                             </label>
-                            <input
-                              type="text"
+                            <select
                               value={stage.responsibleId}
                               onChange={(e) => {
                                 const newStages = [...formData.stageTemplates];
@@ -751,15 +757,20 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                                   stageTemplates: newStages
                                 });
                               }}
-                              placeholder="ID del usuario responsable"
                               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
                                 errors[`stage_${index}_responsible`] ? 'border-red-500' : 'border-gray-300'
                               }`}
-                            />
+                            >
+                              <option value="">Selecciona un responsable...</option>
+                              {availableUsers.map(user => (
+                                <option key={user.id} value={user.id}>
+                                  {user.name} - {user.role === 'ADMIN' ? 'Administrador' : user.role === 'RECRUITER' ? 'Reclutador' : 'Revisor Técnico'}
+                                </option>
+                              ))}
+                            </select>
                             {errors[`stage_${index}_responsible`] && (
                               <p className="text-sm text-red-600 mt-1">{errors[`stage_${index}_responsible`]}</p>
                             )}
-                            <p className="text-xs text-gray-500 mt-1">Por ahora ingresa el ID del usuario. En futuras versiones habrá un selector.</p>
                           </div>
                         </div>
                       </div>
