@@ -28,7 +28,8 @@ const UserManagement: React.FC = () => {
       setUserRole(profile.role);
       setCurrentUserCompany(profile.company || '');
 
-      if (profile.role === 'ADMIN') {
+      // Both ADMIN and RECRUITER can access user management
+      if (profile.role === 'ADMIN' || profile.role === 'RECRUITER') {
         loadUsers();
       } else {
         setLoading(false);
@@ -151,8 +152,8 @@ const UserManagement: React.FC = () => {
     );
   };
 
-  // Si no es ADMIN, mostrar página de no autorizado
-  if (!loading && userRole !== 'ADMIN') {
+  // Si no es ADMIN ni RECRUITER, mostrar página de no autorizado
+  if (!loading && userRole !== 'ADMIN' && userRole !== 'RECRUITER') {
     return <Unauthorized />;
   }
 
@@ -344,7 +345,7 @@ const UserManagement: React.FC = () => {
                     >
                       <option value="RECRUITER">Reclutador</option>
                       <option value="TECHNICAL_REVIEWER">Revisor Técnico</option>
-                      <option value="ADMIN">Administrador</option>
+                      {/* ADMIN role can only be created through registration, not in user management */}
                     </select>
                   </div>
 

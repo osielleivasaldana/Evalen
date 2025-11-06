@@ -17,12 +17,47 @@ export class UsersService {
   async create(createUserDto: CreateUserDto, currentUserId: string) {
     const { email, password, name, company, role } = createUserDto;
 
+    // Get current user to check permissions
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: currentUserId },
+    });
+
+    if (!currentUser) {
+      throw new ForbiddenException('Current user not found');
+    }
+
+    // Validate role-based user creation permissions
+    if (currentUser.role === UserRole.RECRUITER) {
+      // RECRUITER can only create RECRUITER and TECHNICAL_REVIEWER
+      if (role !== UserRole.RECRUITER && role !== UserRole.TECHNICAL_REVIEWER) {
+        throw new ForbiddenException('Recruiters can only create RECRUITER and TECHNICAL_REVIEWER users');
+      }
+    } else if (currentUser.role === UserRole.TECHNICAL_REVIEWER) {
+      // TECHNICAL_REVIEWER cannot create any users
+      throw new ForbiddenException('Technical reviewers cannot create users');
+    }
+    // ADMIN can create any role (no restriction)
+
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
       throw new ConflictException('Email already registered');
+    }
+
+    // Enforce one ADMIN per company constraint
+    if (role === UserRole.ADMIN) {
+      const existingAdmin = await this.prisma.user.findFirst({
+        where: {
+          company: company || currentUser.company,
+          role: UserRole.ADMIN,
+        },
+      });
+
+      if (existingAdmin) {
+        throw new ConflictException('This company already has an administrator. Only one ADMIN is allowed per company.');
+      }
     }
 
     // Generate activation token
@@ -38,7 +73,7 @@ export class UsersService {
         email,
         password: hashedPassword,
         name,
-        company,
+        company: company || currentUser.company, // Use current user's company if not provided
         role: role as UserRole,
         isActive: false,
         activationToken,
@@ -68,14 +103,21 @@ export class UsersService {
     return user;
   }
 
-  async findAll() {
+  async findAll(company?: string) {
+    const where: any = {};
+    if (company) {
+      where.company = company;
+    }
+
     return this.prisma.user.findMany({
+      where,
       select: {
         id: true,
         email: true,
         name: true,
         company: true,
         role: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },

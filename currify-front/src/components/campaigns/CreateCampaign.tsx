@@ -74,7 +74,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
     stageTemplates: []
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start as loading while checking permissions
+  const [permissionError, setPermissionError] = useState<string | null>(null);
   const [createdCampaign, setCreatedCampaign] = useState<Campaign | null>(null);
 
   // Modal states for fullscreen editing
@@ -89,6 +90,13 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
         const profile = await apiService.getProfile();
         setCurrentUser(profile);
 
+        // Check if user has permission to create campaigns (ADMIN or RECRUITER only)
+        if (profile.role !== 'ADMIN' && profile.role !== 'RECRUITER') {
+          setPermissionError('No tienes permisos suficientes para crear campañas. Solo usuarios ADMIN y RECRUITER pueden crear campañas.');
+          setLoading(false);
+          return;
+        }
+
         // Load available users from the same company
         if (profile.company) {
           const users = await apiService.getUsersByCompany(profile.company);
@@ -96,7 +104,9 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
         }
       } catch (err) {
         console.error('Failed to load user profile:', err);
+        setPermissionError('Error al cargar el perfil del usuario');
       }
+      setLoading(false);
     };
     loadUserProfile();
   }, []);
@@ -232,6 +242,33 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
         onGoToDashboard={onGoToDashboard}
         onManageCandidates={() => onManageCandidates(createdCampaign.id)}
       />
+    );
+  }
+
+  // Show error message if user doesn't have permission
+  if (permissionError) {
+    return (
+      <Layout>
+        <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center px-4">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                <svg className="h-10 w-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h2>
+              <p className="text-gray-600 mb-6">{permissionError}</p>
+              <button
+                onClick={onCancel}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+              >
+                Volver al Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </Layout>
     );
   }
 

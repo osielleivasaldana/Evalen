@@ -43,8 +43,10 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
 
   const menuItems = [
     { label: 'Dashboard', icon: Squares2X2Icon, href: '/dashboard' },
-    { label: 'Nueva Campaña', icon: PlusCircleIcon, href: '/create-campaign' },
-    ...(userRole === 'ADMIN' ? [{ label: 'Gestionar Usuarios', icon: UsersIcon, href: '/admin/users' }] : []),
+    // Only ADMIN and RECRUITER can create campaigns
+    ...(userRole === 'ADMIN' || userRole === 'RECRUITER' ? [{ label: 'Nueva Campaña', icon: PlusCircleIcon, href: '/create-campaign' }] : []),
+    // ADMIN and RECRUITER can manage users
+    ...(userRole === 'ADMIN' || userRole === 'RECRUITER' ? [{ label: 'Gestionar Usuarios', icon: UsersIcon, href: '/admin/users' }] : []),
   ];
 
   return (

@@ -102,7 +102,12 @@ export class CampaignsService {
 
   async findAll(userId: string) {
     return this.prisma.campaign.findMany({
-      where: { userId },
+      where: {
+        OR: [
+          { userId }, // Campaigns created by the user
+          { stageTemplates: { some: { responsibleId: userId } } } // Campaigns where user is assigned as responsible
+        ]
+      },
       include: {
         _count: {
           select: { candidates: true }
@@ -129,6 +134,14 @@ export class CampaignsService {
             createdAt: true,
           },
           orderBy: { createdAt: 'desc' }
+        },
+        stageTemplates: {
+          include: {
+            responsible: {
+              select: { id: true, name: true, email: true }
+            }
+          },
+          orderBy: { order: 'asc' }
         }
       }
     });
@@ -137,8 +150,14 @@ export class CampaignsService {
       throw new NotFoundException('Campaign not found');
     }
 
-    if (campaign.userId !== userId) {
-      throw new ForbiddenException('You can only access your own campaigns');
+    // Allow access if user is the creator OR assigned as responsible in any stage
+    const isCreator = campaign.userId === userId;
+    const isResponsible = campaign.stageTemplates.some(
+      stage => stage.responsibleId === userId
+    );
+
+    if (!isCreator && !isResponsible) {
+      throw new ForbiddenException('You do not have access to this campaign');
     }
 
     return campaign;
@@ -231,13 +250,49 @@ export class CampaignsService {
     });
   }
 
+  // Helper function to check if user has access to a campaign (creator or assigned as responsible)
+  private async checkCampaignAccess(campaignId: string, userId: string): Promise<boolean> {
+    const campaign = await this.prisma.campaign.findUnique({
+      where: { id: campaignId },
+      include: {
+        stageTemplates: {
+          select: { responsibleId: true }
+        }
+      }
+    });
+
+    if (!campaign) {
+      return false;
+    }
+
+    const isCreator = campaign.userId === userId;
+    const isResponsible = campaign.stageTemplates.some(
+      stage => stage.responsibleId === userId
+    );
+
+    return isCreator || isResponsible;
+  }
+
   async getStats(userId: string) {
+    // Get campaigns where user is creator OR assigned as responsible
+    const campaignsWhereClause = {
+      OR: [
+        { userId }, // Campaigns created by user
+        { stageTemplates: { some: { responsibleId: userId } } } // Campaigns where user is assigned
+      ]
+    };
+
     const [totalCampaigns, activeCampaigns, totalCandidates] = await Promise.all([
-      this.prisma.campaign.count({ where: { userId } }),
-      this.prisma.campaign.count({ where: { userId, status: CampaignStatus.ACTIVE } }),
+      this.prisma.campaign.count({ where: campaignsWhereClause }),
+      this.prisma.campaign.count({
+        where: {
+          ...campaignsWhereClause,
+          status: CampaignStatus.ACTIVE
+        }
+      }),
       this.prisma.candidate.count({
         where: {
-          campaign: { userId }
+          campaign: campaignsWhereClause
         }
       })
     ]);
@@ -268,8 +323,10 @@ export class CampaignsService {
       throw new NotFoundException('Campaign not found');
     }
 
-    if (campaign.userId !== userId) {
-      throw new ForbiddenException('You can only access your own campaigns');
+    // Check if user is creator or assigned as responsible
+    const hasAccess = await this.checkCampaignAccess(campaignId, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this campaign');
     }
 
     return campaign.stageTemplates;

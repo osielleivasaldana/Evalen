@@ -7,17 +7,34 @@ import { Prisma } from '@prisma/client';
 export class CandidatesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(campaignId: string, userId: string, searchDto?: SearchCandidatesDto) {
+  // Helper function to check if user has access to a campaign
+  private async checkCampaignAccess(campaignId: string, userId: string): Promise<boolean> {
     const campaign = await this.prisma.campaign.findUnique({
       where: { id: campaignId },
+      include: {
+        stageTemplates: {
+          select: { responsibleId: true }
+        }
+      }
     });
 
     if (!campaign) {
-      throw new NotFoundException('Campaign not found');
+      return false;
     }
 
-    if (campaign.userId !== userId) {
-      throw new ForbiddenException('You can only access candidates from your own campaigns');
+    const isCreator = campaign.userId === userId;
+    const isResponsible = campaign.stageTemplates.some(
+      stage => stage.responsibleId === userId
+    );
+
+    return isCreator || isResponsible;
+  }
+
+  async findAll(campaignId: string, userId: string, searchDto?: SearchCandidatesDto) {
+    // Check if user has access to this campaign
+    const hasAccess = await this.checkCampaignAccess(campaignId, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this campaign');
     }
 
     const where: Prisma.CandidateWhereInput = {
@@ -98,8 +115,10 @@ export class CandidatesService {
       throw new NotFoundException('Candidate not found');
     }
 
-    if (candidate.campaign.userId !== userId) {
-      throw new ForbiddenException('You can only access candidates from your own campaigns');
+    // Check if user has access to this campaign
+    const hasAccess = await this.checkCampaignAccess(candidate.campaignId, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this candidate');
     }
 
     return candidate;
@@ -115,16 +134,10 @@ export class CandidatesService {
   }
 
   async getCandidateStats(campaignId: string, userId: string) {
-    const campaign = await this.prisma.campaign.findUnique({
-      where: { id: campaignId },
-    });
-
-    if (!campaign) {
-      throw new NotFoundException('Campaign not found');
-    }
-
-    if (campaign.userId !== userId) {
-      throw new ForbiddenException('You can only access stats from your own campaigns');
+    // Check if user has access to this campaign
+    const hasAccess = await this.checkCampaignAccess(campaignId, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this campaign');
     }
 
     const [total, processed, failed, pending] = await Promise.all([
@@ -158,8 +171,10 @@ export class CandidatesService {
       throw new NotFoundException('Candidate not found');
     }
 
-    if (candidate.campaign.userId !== userId) {
-      throw new ForbiddenException('You can only delete candidates from your own campaigns');
+    // Check if user has access to this campaign
+    const hasAccess = await this.checkCampaignAccess(candidate.campaignId, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to delete this candidate');
     }
 
     return this.prisma.candidate.delete({
@@ -168,12 +183,10 @@ export class CandidatesService {
   }
 
   async searchBySkills(campaignId: string, userId: string, skills: string[]) {
-    const campaign = await this.prisma.campaign.findUnique({
-      where: { id: campaignId },
-    });
-
-    if (!campaign || campaign.userId !== userId) {
-      throw new ForbiddenException('Access denied');
+    // Check if user has access to this campaign
+    const hasAccess = await this.checkCampaignAccess(campaignId, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to this campaign');
     }
 
     return this.prisma.candidate.findMany({

@@ -12,31 +12,31 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'RECRUITER')
   create(@Body() createUserDto: CreateUserDto, @Request() req: any) {
     return this.usersService.create(createUserDto, req.user.id);
   }
 
   @Get()
-  @Roles('ADMIN')
-  findAll() {
-    return this.usersService.findAll();
+  @Roles('ADMIN', 'RECRUITER')
+  findAll(@Request() req: any) {
+    return this.usersService.findAll(req.user.company);
   }
 
   @Get(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'RECRUITER')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'RECRUITER')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Request() req: any) {
     return this.usersService.update(id, updateUserDto, req.user.id, req.user.role);
   }
 
   @Delete(':id')
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'RECRUITER')
   remove(@Param('id') id: string, @Request() req: any) {
     return this.usersService.remove(id, req.user.id);
   }

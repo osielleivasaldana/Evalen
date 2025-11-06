@@ -315,13 +315,16 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {campaigns.length} campaña{campaigns.length !== 1 ? 's' : ''} · Gestiona tu reclutamiento
               </p>
             </div>
-            <button
-              onClick={onCreateCampaign}
-              className="hidden sm:flex items-center gap-2 bg-white text-indigo-600 px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition-all hover:-translate-y-0.5 shadow-lg"
-            >
-              <PlusIcon className="w-5 h-5" />
-              Nueva Campaña
-            </button>
+            {/* Only ADMIN and RECRUITER can create campaigns */}
+            {user && (user.role === 'ADMIN' || user.role === 'RECRUITER') && (
+              <button
+                onClick={onCreateCampaign}
+                className="hidden sm:flex items-center gap-2 bg-white text-indigo-600 px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition-all hover:-translate-y-0.5 shadow-lg"
+              >
+                <PlusIcon className="w-5 h-5" />
+                Nueva Campaña
+              </button>
+            )}
           </div>
 
           {campaigns.length === 0 ? (
@@ -329,17 +332,23 @@ const Dashboard: React.FC<DashboardProps> = ({
               <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6">
                 <BriefcaseIcon className="w-12 h-12 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">Aún no tienes campañas</h3>
+              <h3 className="text-xl font-semibold mb-3">
+                {user?.role === 'TECHNICAL_REVIEWER' ? 'No tienes campañas asignadas' : 'Aún no tienes campañas'}
+              </h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                Comienza creando tu primera campaña de reclutamiento y empieza a recibir candidatos de manera automatizada.
+                {user?.role === 'TECHNICAL_REVIEWER'
+                  ? 'Espera a que te asignen como responsable en alguna campaña para verla aquí.'
+                  : 'Comienza creando tu primera campaña de reclutamiento y empieza a recibir candidatos de manera automatizada.'}
               </p>
-              <button
-                onClick={onCreateCampaign}
-                className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
-              >
-                <PlusIcon className="w-5 h-5" />
-                Crear mi primera campaña
-              </button>
+              {user && (user.role === 'ADMIN' || user.role === 'RECRUITER') && (
+                <button
+                  onClick={onCreateCampaign}
+                  className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
+                >
+                  <PlusIcon className="w-5 h-5" />
+                  Crear mi primera campaña
+                </button>
+              )}
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
