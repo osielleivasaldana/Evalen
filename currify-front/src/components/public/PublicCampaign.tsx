@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { apiService, Campaign, UploadDocumentRequest } from '../../services/api';
+import { unescapeHtml } from '../../utils/htmlUtils';
 
 interface PublicCampaignProps {
   publicId: string;
@@ -56,6 +57,13 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
   useEffect(() => {
     loadCampaign();
   }, [loadCampaign]);
+
+  useEffect(() => {
+    if (campaign) {
+      console.log('Raw campaign description:', campaign.description);
+      console.log('Unescaped description:', unescapeHtml(campaign.description));
+    }
+  }, [campaign]);
 
   const validateStep1 = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -236,6 +244,8 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
     return durations[duration] || duration;
   };
 
+
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-50">
@@ -389,8 +399,8 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                 <CurrencyDollarIcon className="w-5 h-5" />
                 <span className="font-bold">
                   {campaign.currency === 'CLP' ? `$${campaign.salary.toLocaleString('es-CL')}` :
-                   campaign.currency === 'USD' ? `$${campaign.salary.toLocaleString('en-US')}` :
-                   `${campaign.salary} ${campaign.currency}`}
+                    campaign.currency === 'USD' ? `$${campaign.salary.toLocaleString('en-US')}` :
+                      `${campaign.salary} ${campaign.currency}`}
                 </span>
               </div>
             )}
@@ -427,9 +437,10 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                 </div>
                 Descripción del Puesto
               </h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {campaign?.description}
-              </p>
+              <div
+                className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: unescapeHtml(campaign?.description || '') }}
+              />
             </div>
 
             {/* Requirements */}
@@ -440,9 +451,10 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                 </div>
                 Requisitos
               </h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {campaign?.requirements}
-              </p>
+              <div
+                className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: unescapeHtml(campaign?.requirements || '') }}
+              />
             </div>
 
             {/* Benefits */}
@@ -453,9 +465,10 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                 </div>
                 Beneficios y Condiciones
               </h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {campaign?.conditions}
-              </p>
+              <div
+                className="text-gray-700 leading-relaxed prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: unescapeHtml(campaign?.conditions || '') }}
+              />
             </div>
           </div>
 
@@ -474,17 +487,15 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                   <div className="flex items-center justify-between mb-6">
                     {[1, 2, 3].map((step) => (
                       <div key={step} className="flex items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                          currentStep >= step
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-gray-200 text-gray-500'
-                        }`}>
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentStep >= step
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-gray-200 text-gray-500'
+                          }`}>
                           {step}
                         </div>
                         {step < 3 && (
-                          <div className={`w-12 h-1 mx-2 ${
-                            currentStep > step ? 'bg-indigo-600' : 'bg-gray-200'
-                          }`}></div>
+                          <div className={`w-12 h-1 mx-2 ${currentStep > step ? 'bg-indigo-600' : 'bg-gray-200'
+                            }`}></div>
                         )}
                       </div>
                     ))}
@@ -509,9 +520,8 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                           name="name"
                           value={candidateInfo.name}
                           onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                            errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                          }`}
+                          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                            }`}
                           placeholder="Juan Pérez"
                         />
                         {errors.name && (
@@ -530,9 +540,8 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                             name="email"
                             value={candidateInfo.email}
                             onChange={handleInputChange}
-                            className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                              errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                            }`}
+                            className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
                             placeholder="juan@email.com"
                           />
                         </div>
@@ -552,9 +561,8 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                             name="phone"
                             value={candidateInfo.phone}
                             onChange={handleInputChange}
-                            className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                              errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                            }`}
+                            className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                              }`}
                             placeholder="+56 9 1234 5678"
                           />
                         </div>
@@ -602,13 +610,12 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                           onDragOver={handleDrag}
                           onDrop={handleDrop}
                           onClick={() => document.getElementById('fileInput')?.click()}
-                          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
-                            dragActive
-                              ? 'border-indigo-500 bg-indigo-50'
-                              : errors.file
+                          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${dragActive
+                            ? 'border-indigo-500 bg-indigo-50'
+                            : errors.file
                               ? 'border-red-300 bg-red-50'
                               : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'
-                          }`}
+                            }`}
                         >
                           <input
                             id="fileInput"

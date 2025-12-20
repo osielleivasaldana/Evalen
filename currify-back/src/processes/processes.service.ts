@@ -11,7 +11,7 @@ export class ProcessesService {
     private prisma: PrismaService,
     private auditService: AuditService,
     private notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   async startProcess(userId: string, dto: StartProcessDto) {
     const { campaignId, candidateId, responsibleId, startDate, notifyCandidate } = dto;
@@ -365,7 +365,16 @@ export class ProcessesService {
 
     if (campaign.userId !== userId) {
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
-      if (user && user.role !== 'ADMIN') {
+
+      // Check if user is responsible for any stage in this campaign
+      const isResponsible = await this.prisma.stageTemplate.findFirst({
+        where: {
+          campaignId: campaignId,
+          responsibleId: userId
+        }
+      });
+
+      if (user && user.role !== 'ADMIN' && !isResponsible) {
         throw new ForbiddenException('Access denied');
       }
     }

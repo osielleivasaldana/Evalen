@@ -379,7 +379,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                           {getStatusLabel(campaign.status)}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{campaign.description}</p>
+                      <div
+                        className="text-sm text-gray-600 mb-3 line-clamp-2 prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: campaign.description }}
+                      />
                       <div className="flex items-center gap-4 text-sm text-gray-500">
                         <span className="flex items-center gap-1.5">
                           <UserGroupIcon className="w-4 h-4" />

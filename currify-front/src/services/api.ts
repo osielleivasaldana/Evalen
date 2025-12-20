@@ -1,7 +1,25 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-const CV_PROCESSING_URL = process.env.REACT_APP_SCORING_SERVICE_URL || 'http://localhost:8000';
+const getBaseUrl = (port: number) => {
+  const hostname = window.location.hostname;
+  return `http://${hostname}:${port}`;
+};
+
+const getApiUrl = (envUrl: string | undefined, port: number) => {
+  const currentHostname = window.location.hostname;
+  const isLocalhost = currentHostname === 'localhost' || currentHostname === '127.0.0.1';
+
+  // If we are NOT on localhost (e.g. mobile), force dynamic IP to avoid connecting to localhost on the phone
+  if (!isLocalhost) {
+    return getBaseUrl(port);
+  }
+
+  // Otherwise (we are on localhost), use env var if present, or fallback to dynamic
+  return envUrl || getBaseUrl(port);
+};
+
+const API_BASE_URL = getApiUrl(process.env.REACT_APP_API_URL, 3001);
+const CV_PROCESSING_URL = getApiUrl(process.env.REACT_APP_SCORING_SERVICE_URL, 8000);
 
 // Auth interfaces
 interface RegisterRequest {

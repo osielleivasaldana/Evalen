@@ -286,10 +286,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
                     Descargar PDF
                   </button>
                 )}
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-500/90 rounded-lg font-semibold backdrop-blur-sm">
-                  <CheckCircleIcon className="h-5 w-5" />
-                  {confidencePercentage}%
-                </div>
+
               </div>
             </div>
           </div>
@@ -315,19 +312,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
                     {/* Overall Score - Large Display */}
                     <div className="text-center">
                       <div className="inline-flex items-center justify-center w-32 h-32 rounded-full mb-4" style={{
-                        background: `conic-gradient(${
-                          candidate.scoring.overallScore >= 90 ? '#10b981' :
-                          candidate.scoring.overallScore >= 70 ? '#f59e0b' :
-                          '#ef4444'
-                        } ${candidate.scoring.overallScore * 3.6}deg, #e5e7eb 0deg)`
+                        background: `conic-gradient(${candidate.scoring.overallScore >= 90 ? '#10b981' :
+                            candidate.scoring.overallScore >= 70 ? '#f59e0b' :
+                              '#ef4444'
+                          } ${candidate.scoring.overallScore * 3.6}deg, #e5e7eb 0deg)`
                       }}>
                         <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center">
                           <div className="text-center">
-                            <div className={`text-4xl font-bold ${
-                              candidate.scoring.overallScore >= 90 ? 'text-green-700' :
-                              candidate.scoring.overallScore >= 70 ? 'text-orange-700' :
-                              'text-red-700'
-                            }`}>
+                            <div className={`text-4xl font-bold ${candidate.scoring.overallScore >= 90 ? 'text-green-700' :
+                                candidate.scoring.overallScore >= 70 ? 'text-orange-700' :
+                                  'text-red-700'
+                              }`}>
                               {Math.round(candidate.scoring.overallScore)}
                             </div>
                             <div className="text-xs text-gray-500 font-medium">de 100</div>
@@ -335,10 +330,22 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
                         </div>
                       </div>
                       <p className="text-lg font-bold text-gray-900 mb-2">
-                        {candidate.scoring.recommendation}
+                        {(() => {
+                          const rec = candidate.scoring.recommendation?.toLowerCase() || '';
+                          const translations: Record<string, string> = {
+                            'high_fit': 'Alta Compatibilidad',
+                            'moderate_fit': 'Compatibilidad Moderada',
+                            'low_fit': 'Baja Compatibilidad',
+                            'no_fit': 'Sin Compatibilidad',
+                            'perfect_fit': 'Compatibilidad Perfecta'
+                          };
+                          return translations[rec] || rec.replace(/_/g, ' ');
+                        })()}
                       </p>
                       {candidate.scoring.summary && (
-                        <p className="text-sm text-gray-600 leading-relaxed">{candidate.scoring.summary}</p>
+                        <p className="text-sm text-gray-600 leading-relaxed text-left mt-4">
+                          {candidate.scoring.summary}
+                        </p>
                       )}
                     </div>
 
@@ -346,29 +353,41 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
                     {candidate.scoring.breakdown && (
                       <div className="space-y-3">
                         <h3 className="text-sm font-bold text-gray-900 mb-3">Desglose de Evaluación</h3>
-                        {Object.entries(candidate.scoring.breakdown as Record<string, any>).map(([key, value]) => (
-                          <div key={key} className="space-y-1">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs font-medium text-gray-700 capitalize">
-                                {key.replace(/_/g, ' ')}
-                              </span>
-                              <span className="text-xs font-bold text-gray-900">{value.score}/100</span>
+                        {Object.entries(candidate.scoring.breakdown as Record<string, any>).map(([key, value]) => {
+                          const translations: Record<string, string> = {
+                            'education': 'Educación',
+                            'experience': 'Experiencia',
+                            'skills': 'Habilidades Técnicas',
+                            'soft_skills': 'Habilidades Blandas',
+                            'languages': 'Idiomas',
+                            'projects': 'Proyectos',
+                            'certifications': 'Certificaciones'
+                          };
+                          const translatedKey = translations[key.toLowerCase()] || key.replace(/_/g, ' ');
+
+                          return (
+                            <div key={key} className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-xs font-medium text-gray-700 capitalize">
+                                  {translatedKey}
+                                </span>
+                                <span className="text-xs font-bold text-gray-900">{value.score}/100</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className={`h-2 rounded-full ${value.score >= 90 ? 'bg-green-500' :
+                                      value.score >= 70 ? 'bg-orange-500' :
+                                        'bg-red-500'
+                                    }`}
+                                  style={{ width: `${value.score}%` }}
+                                />
+                              </div>
+                              {value.reasoning && (
+                                <p className="text-xs text-gray-600 mt-1">{value.reasoning}</p>
+                              )}
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div
-                                className={`h-2 rounded-full ${
-                                  value.score >= 90 ? 'bg-green-500' :
-                                  value.score >= 70 ? 'bg-orange-500' :
-                                  'bg-red-500'
-                                }`}
-                                style={{ width: `${value.score}%` }}
-                              />
-                            </div>
-                            {value.reasoning && (
-                              <p className="text-xs text-gray-600 mt-1">{value.reasoning}</p>
-                            )}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
 

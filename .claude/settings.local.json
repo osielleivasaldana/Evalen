@@ -11,7 +11,9 @@
       "Bash(npm install)",
       "Bash(docker-compose restart:*)",
       "Bash(docker logs:*)",
-      "Bash(docker-compose:*)"
+      "Bash(docker-compose:*)",
+      "Bash(docker ps:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

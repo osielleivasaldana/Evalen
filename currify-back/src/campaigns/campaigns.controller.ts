@@ -18,7 +18,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('campaigns')
 export class CampaignsController {
-  constructor(private readonly campaignsService: CampaignsService) {}
+  constructor(private readonly campaignsService: CampaignsService) { }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN', 'RECRUITER')
@@ -30,13 +30,13 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard)
   @Get()
   findAll(@Request() req: any) {
-    return this.campaignsService.findAll(req.user.id);
+    return this.campaignsService.findAll(req.user.id, req.user.company);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('stats')
   getStats(@Request() req: any) {
-    return this.campaignsService.getStats(req.user.id);
+    return this.campaignsService.getStats(req.user.id, req.user.company);
   }
 
   @Get('public/:publicId')

@@ -24,6 +24,8 @@ import { Card, CardHeader } from '../ui/card';
 import { Badge } from '../ui/badge';
 import Layout from '../layout/Layout';
 import { apiService, Campaign, Candidate, CandidateFilters, CandidateStats, CVData } from '../../services/api';
+import DOMPurify from 'dompurify';
+import { unescapeHtml } from '../../utils/htmlUtils';
 
 interface CandidatesManagerProps {
   campaignId: string;
@@ -295,7 +297,12 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                     Creada el {campaign && formatDate(campaign.createdAt)}
                   </span>
                 </div>
-                <p className="text-sm opacity-90 max-w-2xl">{campaign?.description}</p>
+                <div
+                  className="text-sm opacity-90 max-w-2xl prose prose-invert prose-sm"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(unescapeHtml(campaign?.description || ''))
+                  }}
+                />
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -395,14 +402,14 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => {/* TODO: Implement bulk approve */}}
+                onClick={() => {/* TODO: Implement bulk approve */ }}
                 className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium text-sm"
               >
                 <CheckIconSolid className="w-4 h-4" />
                 Aprobar todos
               </button>
               <button
-                onClick={() => {/* TODO: Implement bulk reject */}}
+                onClick={() => {/* TODO: Implement bulk reject */ }}
                 className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium text-sm"
               >
                 <XMarkIcon className="w-4 h-4" />
@@ -510,10 +517,9 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                       return (
                         <tr
                           key={candidate.id}
-                          className={`transition-colors ${
-                            selectedCandidate?.id === candidate.id ? 'bg-indigo-50' :
+                          className={`transition-colors ${selectedCandidate?.id === candidate.id ? 'bg-indigo-50' :
                             isSelected ? 'bg-gray-50' : 'hover:bg-gray-50'
-                          }`}
+                            }`}
                         >
                           <td className="px-4 py-4">
                             <input
@@ -558,11 +564,10 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                             onClick={() => handleCandidateSelect(candidate)}
                           >
                             <div className="flex items-center gap-2">
-                              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${
-                                score >= 90 ? 'bg-green-100 text-green-700' :
+                              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${score >= 90 ? 'bg-green-100 text-green-700' :
                                 score >= 70 ? 'bg-orange-100 text-orange-700' :
-                                'bg-red-100 text-red-700'
-                              }`}>
+                                  'bg-red-100 text-red-700'
+                                }`}>
                                 {score}
                               </div>
                             </div>
@@ -574,15 +579,15 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                             <Badge
                               variant={
                                 candidate.processingStatus === 'COMPLETED' ? 'success' :
-                                candidate.processingStatus === 'PROCESSING' ? 'default' :
-                                candidate.processingStatus === 'FAILED' ? 'destructive' :
-                                'info'
+                                  candidate.processingStatus === 'PROCESSING' ? 'default' :
+                                    candidate.processingStatus === 'FAILED' ? 'destructive' :
+                                      'info'
                               }
                             >
                               {candidate.processingStatus === 'COMPLETED' ? 'Procesado' :
-                               candidate.processingStatus === 'PROCESSING' ? 'En Revisión' :
-                               candidate.processingStatus === 'FAILED' ? 'Error' :
-                               'Nuevo'}
+                                candidate.processingStatus === 'PROCESSING' ? 'En Revisión' :
+                                  candidate.processingStatus === 'FAILED' ? 'Error' :
+                                    'Nuevo'}
                             </Badge>
                           </td>
                           <td
@@ -685,21 +690,19 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                 <div className="flex">
                   <button
                     onClick={() => setActiveTab('resumen')}
-                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                      activeTab === 'resumen'
-                        ? 'text-indigo-600 border-b-2 border-indigo-600'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
+                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'resumen'
+                      ? 'text-indigo-600 border-b-2 border-indigo-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
                   >
                     Resumen
                   </button>
                   <button
                     onClick={() => setActiveTab('habilidades')}
-                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                      activeTab === 'habilidades'
-                        ? 'text-indigo-600 border-b-2 border-indigo-600'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
+                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'habilidades'
+                      ? 'text-indigo-600 border-b-2 border-indigo-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                      }`}
                   >
                     Skills
                   </button>

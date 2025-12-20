@@ -10,7 +10,7 @@ export class CampaignsService {
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
   async create(userId: string, createCampaignDto: CreateCampaignDto) {
     const { stageTemplates, ...campaignData } = createCampaignDto;
@@ -100,14 +100,25 @@ export class CampaignsService {
     return campaign;
   }
 
-  async findAll(userId: string) {
+  async findAll(userId: string, userCompany?: string) {
+    const whereClause: any = {
+      OR: [
+        { userId }, // Campaigns created by the user
+        { stageTemplates: { some: { responsibleId: userId } } } // Campaigns where user is assigned as responsible
+      ]
+    };
+
+    // If user belongs to a company, allow seeing all campaigns from that company
+    if (userCompany) {
+      whereClause.OR.push({
+        user: {
+          company: userCompany
+        }
+      });
+    }
+
     return this.prisma.campaign.findMany({
-      where: {
-        OR: [
-          { userId }, // Campaigns created by the user
-          { stageTemplates: { some: { responsibleId: userId } } } // Campaigns where user is assigned as responsible
-        ]
-      },
+      where: whereClause,
       include: {
         _count: {
           select: { candidates: true }
@@ -273,14 +284,22 @@ export class CampaignsService {
     return isCreator || isResponsible;
   }
 
-  async getStats(userId: string) {
-    // Get campaigns where user is creator OR assigned as responsible
-    const campaignsWhereClause = {
+  async getStats(userId: string, userCompany?: string) {
+    // Get campaigns where user is creator OR assigned as responsible OR belongs to same company
+    const campaignsWhereClause: any = {
       OR: [
         { userId }, // Campaigns created by user
         { stageTemplates: { some: { responsibleId: userId } } } // Campaigns where user is assigned
       ]
     };
+
+    if (userCompany) {
+      campaignsWhereClause.OR.push({
+        user: {
+          company: userCompany
+        }
+      });
+    }
 
     const [totalCampaigns, activeCampaigns, totalCandidates] = await Promise.all([
       this.prisma.campaign.count({ where: campaignsWhereClause }),

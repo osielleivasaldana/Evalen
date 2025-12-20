@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     const { email, password, name, company } = registerDto;
@@ -25,11 +25,10 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Check if this is the first user (will be ADMIN)
-    const userCount = await this.prisma.user.count();
-    const isFirstUser = userCount === 0;
+    // Default role is always ADMIN as requested
+    const role = 'ADMIN';
 
-    console.log(`[AUTH] Registering user. Total users: ${userCount}, isFirstUser: ${isFirstUser}`);
+    console.log(`[AUTH] Registering user ${email} with role: ${role}`);
 
     const user = await this.prisma.user.create({
       data: {
@@ -37,7 +36,7 @@ export class AuthService {
         password: hashedPassword,
         name,
         company,
-        role: isFirstUser ? 'ADMIN' : 'RECRUITER', // First user is ADMIN
+        role: 'ADMIN', // Always ADMIN
       },
       select: {
         id: true,
@@ -51,7 +50,7 @@ export class AuthService {
 
     console.log(`[AUTH] User created with role: ${user.role}`);
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, role: user.role, company: user.company };
     const token = this.jwtService.sign(payload);
 
     return {
@@ -81,7 +80,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, role: user.role, company: user.company };
     const token = this.jwtService.sign(payload);
 
     return {
@@ -148,7 +147,7 @@ export class AuthService {
       },
     });
 
-    const payload = { sub: updatedUser.id, email: updatedUser.email, role: updatedUser.role };
+    const payload = { sub: updatedUser.id, email: updatedUser.email, role: updatedUser.role, company: updatedUser.company };
     const jwtToken = this.jwtService.sign(payload);
 
     return {

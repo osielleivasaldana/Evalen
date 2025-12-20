@@ -149,8 +149,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
     }
 
     const newValue = type === 'checkbox' ? checked :
-                     type === 'number' ? (value ? Number(value) : undefined) :
-                     value === '' ? undefined : value;
+      type === 'number' ? (value ? Number(value) : undefined) :
+        value === '' ? undefined : value;
 
     setFormData(prev => ({
       ...prev,
@@ -306,13 +306,12 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                   <React.Fragment key={step.number}>
                     <div className="flex flex-col items-center flex-1">
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                          isCompleted
-                            ? 'bg-green-500 text-white'
-                            : isActive
+                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${isCompleted
+                          ? 'bg-green-500 text-white'
+                          : isActive
                             ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-110'
                             : 'bg-gray-200 text-gray-400'
-                        }`}
+                          }`}
                       >
                         {isCompleted ? (
                           <CheckIcon className="w-6 h-6" />
@@ -321,9 +320,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                         )}
                       </div>
                       <span
-                        className={`text-xs font-medium text-center ${
-                          isActive ? 'text-purple-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
-                        }`}
+                        className={`text-xs font-medium text-center ${isActive ? 'text-purple-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                          }`}
                       >
                         {step.title}
                       </span>
@@ -331,9 +329,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                     {index < STEPS.length - 1 && (
                       <div className="flex-1 h-1 mx-2 mb-8">
                         <div
-                          className={`h-full rounded transition-all duration-300 ${
-                            currentStep > step.number ? 'bg-green-500' : 'bg-gray-200'
-                          }`}
+                          className={`h-full rounded transition-all duration-300 ${currentStep > step.number ? 'bg-green-500' : 'bg-gray-200'
+                            }`}
                         />
                       </div>
                     )}
@@ -364,9 +361,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                     value={formData.title || ''}
                     onChange={handleInputChange}
                     placeholder="Ej: Desarrollador Full Stack Senior"
-                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all ${
-                      errors.title ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all ${errors.title ? 'border-red-500' : 'border-gray-300'
+                      }`}
                   />
                   {errors.title && (
                     <p className="mt-1 text-sm text-red-600">{errors.title}</p>
@@ -400,9 +396,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                       name="workType"
                       value={formData.workType || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${
-                        errors.workType ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${errors.workType ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     >
                       <option value="">Seleccionar...</option>
                       <option value="FULL_TIME">Full Time</option>
@@ -424,9 +419,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                       name="modality"
                       value={formData.modality || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${
-                        errors.modality ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${errors.modality ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     >
                       <option value="">Seleccionar...</option>
                       <option value="REMOTE">Remoto</option>
@@ -448,9 +442,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                       name="duration"
                       value={formData.duration || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${
-                        errors.duration ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${errors.duration ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     >
                       <option value="">Seleccionar...</option>
                       <option value="INDEFINITE">Indefinido</option>
@@ -751,9 +744,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                                 });
                               }}
                               placeholder="ej: Entrevista técnica, Prueba coding..."
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                                errors[`stage_${index}_name`] ? 'border-red-500' : 'border-gray-300'
-                              }`}
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${errors[`stage_${index}_name`] ? 'border-red-500' : 'border-gray-300'
+                                }`}
                             />
                             {errors[`stage_${index}_name`] && (
                               <p className="text-sm text-red-600 mt-1">{errors[`stage_${index}_name`]}</p>
@@ -794,9 +786,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                                   stageTemplates: newStages
                                 });
                               }}
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
-                                errors[`stage_${index}_responsible`] ? 'border-red-500' : 'border-gray-300'
-                              }`}
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${errors[`stage_${index}_responsible`] ? 'border-red-500' : 'border-gray-300'
+                                }`}
                             >
                               <option value="">Selecciona un responsable...</option>
                               {availableUsers.map(user => (
@@ -940,11 +931,10 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
               <button
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-                  currentStep === 1
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg'
-                }`}
+                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${currentStep === 1
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg'
+                  }`}
               >
                 <ArrowLeftIcon className="w-5 h-5" />
                 Anterior
@@ -966,11 +956,10 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                 <button
                   onClick={handleSubmit}
                   disabled={loading}
-                  className={`flex items-center gap-2 px-8 py-3 rounded-lg font-semibold transition-all duration-200 ${
-                    loading
-                      ? 'bg-gray-400 text-white cursor-not-allowed'
-                      : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-lg'
-                  }`}
+                  className={`flex items-center gap-2 px-8 py-3 rounded-lg font-semibold transition-all duration-200 ${loading
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-lg'
+                    }`}
                 >
                   {loading ? (
                     <>
