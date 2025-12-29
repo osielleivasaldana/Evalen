@@ -17,7 +17,9 @@ import {
   ExclamationTriangleIcon,
   XCircleIcon,
   ArrowPathIcon,
-  PlayIcon
+  PlayIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckIconSolid } from '@heroicons/react/24/solid';
 import { Card, CardHeader } from '../ui/card';
@@ -56,6 +58,7 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
   const [showStartProcessModal, setShowStartProcessModal] = useState(false);
   const [startingProcess, setStartingProcess] = useState(false);
   const [notifyCandidate, setNotifyCandidate] = useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -210,10 +213,14 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
+    return new Date(dateString).toLocaleString('es-ES', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
     });
   };
 
@@ -243,7 +250,13 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
   };
 
   const isErrorCandidate = (candidate: Candidate): boolean => {
-    return candidate.processingStatus === 'FAILED' || candidate.name === 'Processing Error';
+    // Es error si falló explícitamente, si se llama "Processing Error",
+    // o si dice que terminó (COMPLETED) pero no tiene datos estructurados válidos
+    return (
+      candidate.processingStatus === 'FAILED' ||
+      candidate.name === 'Processing Error' ||
+      (candidate.processingStatus === 'COMPLETED' && (!candidate.structuredData || !candidate.structuredData.datos_cv))
+    );
   };
 
   if (loading) {
@@ -297,12 +310,33 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                     Creada el {campaign && formatDate(campaign.createdAt)}
                   </span>
                 </div>
-                <div
-                  className="text-sm opacity-90 max-w-2xl prose prose-invert prose-sm"
-                  dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(unescapeHtml(campaign?.description || ''))
-                  }}
-                />
+                <div className="relative max-w-2xl">
+                  <div
+                    className={`text-sm opacity-90 prose prose-invert prose-sm transition-[max-height] duration-300 ease-in-out overflow-hidden ${isDescriptionExpanded ? 'max-h-[1000px]' : 'max-h-20'}`}
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(unescapeHtml(campaign?.description || ''))
+                    }}
+                  />
+                  {!isDescriptionExpanded && (
+                    <div className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-indigo-500/90 to-transparent z-10"></div>
+                  )}
+                  <button
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                    className="mt-1 flex items-center gap-1 text-xs font-bold text-white hover:text-indigo-100 transition-colors uppercase tracking-wide relative z-20"
+                  >
+                    {isDescriptionExpanded ? (
+                      <>
+                        <ChevronUpIcon className="w-3 h-3" />
+                        Menos
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDownIcon className="w-3 h-3" />
+                        Más
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">

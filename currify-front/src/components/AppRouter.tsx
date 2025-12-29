@@ -151,6 +151,11 @@ const AppRouter: React.FC = () => {
               path="/"
               element={<Navigate to="/dashboard" replace />}
             />
+            {/* Redirect /login to /dashboard if already authenticated */}
+            <Route
+              path="/login"
+              element={<Navigate to="/dashboard" replace />}
+            />
           </>
         ) : (
           <>

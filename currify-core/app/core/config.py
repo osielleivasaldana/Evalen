@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # LLM Provider Configuration
-    llm_provider: str = "anthropic"  # anthropic, openai, google, groq
+    llm_provider: str = "google"  # anthropic, openai, google, groq
 
     # API Keys (only the needed one needs to be set)
     anthropic_api_key: str = ""
@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     # Model Configuration per provider
     claude_model: str = "claude-3-haiku-20240307"
     openai_model: str = "gpt-4"
-    google_model: str = "gemini-1.5-pro"
+    google_model: str = "gemini-2.0-flash"
     groq_model: str = "llama-3.1-70b-versatile"
 
     # General LLM settings

@@ -35,36 +35,128 @@ class LLMService:
 
     def _initialize_client(self):
         """Initialize the appropriate client based on provider"""
+        import instructor
+        
         if self.provider == "anthropic":
             if not anthropic:
                 raise ImportError("anthropic package not installed. Run: pip install anthropic")
-            self.client = anthropic.Anthropic(api_key=self.api_key)
+                
+            # Initialize standard client then patch with instructor
+            raw_client = anthropic.Anthropic(api_key=self.api_key)
+            self.client = instructor.from_anthropic(raw_client)
 
         elif self.provider == "openai":
             if not openai:
                 raise ImportError("openai package not installed. Run: pip install openai")
-            self.client = openai.OpenAI(api_key=self.api_key)
+            
+            # Initialize standard client then patch with instructor
+            raw_client = openai.OpenAI(api_key=self.api_key)
+            self.client = instructor.from_openai(raw_client)
 
         elif self.provider == "google":
             if not genai:
                 raise ImportError("google-generativeai package not installed. Run: pip install google-generativeai")
             genai.configure(api_key=self.api_key)
+            # Google GenerativeAI not yet fully supported by instructor in this pattern, keeping legacy
             self.client = genai.GenerativeModel(settings.current_model)
 
         elif self.provider == "groq":
             if not openai:
                 raise ImportError("openai package not installed. Run: pip install openai")
-            # Groq uses OpenAI-compatible API with different base URL
-            self.client = openai.OpenAI(
+            # Groq uses OpenAI-compatible API
+            raw_client = openai.OpenAI(
                 api_key=self.api_key,
                 base_url="https://api.groq.com/openai/v1"
             )
+            self.client = instructor.from_openai(raw_client)
 
         else:
             raise ValueError(f"Unsupported LLM provider: {self.provider}")
     
-    async def call_agent(self, prompt: str, input_data: str, stage_name: str, temperature: float = 0.0) -> Optional[Dict[Any, Any]]:
-        """Call LLM API with improved JSON extraction and retry logic"""
+    async def call_agent_structured(
+        self, 
+        prompt: str, 
+        input_data: str, 
+        response_model: Any,
+        stage_name: str = "structured_extraction"
+    ) -> Optional[Any]:
+        """
+        Call LLM with native Structured Output validation via Instructor.
+        Returns an instance of response_model (Pydantic model).
+        """
+        try:
+            logger.info(f"[{stage_name}] Calling {self.provider.upper()} with Structured Output...")
+            
+            # Prepare messages
+            messages = [
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": f"Here is the data to process:\n\n{input_data}"}
+            ]
+            
+            # Execute with instructor
+            # Note: Instructor handles retries/validation internally
+            if self.provider == "google":
+                # Fallback for Google (not fully instructor-compatible yet in this setup)
+                # For now we use the text-based extraction for Google
+                logger.warning(f"[{stage_name}] Google provider does not support native instructor yet. Falling back to text.")
+                result_dict = await self.call_agent(prompt, input_data, stage_name)
+                
+                # FIX: Handle List results from call_agent
+                if result_dict:
+                    final_data = result_dict
+                    if isinstance(result_dict, list):
+                        logger.info(f"[{stage_name}] Received List instead of Dict. Attempting to unwrap/wrap...")
+                        if len(result_dict) == 0:
+                            # Empty list, valid but empty
+                            final_data = {}
+                        elif len(result_dict) == 1 and isinstance(result_dict[0], dict):
+                             # Case 1: Single item list -> Unwrap
+                             final_data = result_dict[0]
+                             logger.info(f"[{stage_name}] Unwrapped single-item list.")
+                        elif len(result_dict) > 0 and isinstance(result_dict[0], dict):
+                             # Case 2: Complex List -> Heuristic Wrapping
+                             # Check for specific keys to identify the type of list
+                             first_keys = result_dict[0].keys()
+                             if any(k in first_keys for k in ['cargo', 'empresa', 'responsabilidades', 'start_date', 'fecha_inicio']):
+                                 logger.info(f"[{stage_name}] List identified as Work Experience. Wrapping...")
+                                 final_data = {"experiencia_laboral": result_dict}
+                             elif any(k in first_keys for k in ['titulo', 'institucion', 'grado', 'university']):
+                                  logger.info(f"[{stage_name}] List identified as Education. Wrapping...")
+                                  final_data = {"formacion_academica": result_dict}
+                             elif any(k in first_keys for k in ['skill', 'level', 'habilidad']):
+                                  logger.info(f"[{stage_name}] List identified as Technical Skills. Wrapping...")
+                                  final_data = {"habilidades": {"habilidades_tecnicas": result_dict}}
+                             else:
+                                  logger.warning(f"[{stage_name}] Received complex List with unknown structure. Keys: {list(first_keys)}. Returning None.")
+                                  return None
+                    
+                    try:
+                        return response_model(**final_data)
+                    except Exception as e:
+                        logger.error(f"[{stage_name}] Failed to instantiate Pydantic model from data: {e}")
+                        # Last ditch effort: Try to return it if it's a dict, maybe caller can handle partial? 
+                        # No, caller expects RESPONSE_MODEL instance.
+                        return None
+                return None
+            
+            response = self.client.chat.completions.create(
+                model=settings.current_model,
+                response_model=response_model,
+                messages=messages,
+                max_retries=3,
+                temperature=0.0,
+                max_tokens=2000 # Increased for chunks
+            )
+            
+            logger.info(f"[{stage_name}] Successfully received structured response.")
+            return response
+            
+        except Exception as e:
+            logger.error(f"[{stage_name}] Structured extraction failed: {e}")
+            return None
+
+    async def call_agent(self, prompt: str, input_data: str, stage_name: str, temperature: float = 0.0) -> Optional[Any]:
+        """Call LLM API with improved JSON extraction and retry logic (Legacy/Fallback)"""
         max_retries = 2
 
         for attempt in range(max_retries):
@@ -81,7 +173,7 @@ class LLMService:
 </datos_de_entrada>
 
 CRITICAL: Response must be ONLY valid JSON. No explanations, no markdown, no code blocks.
-Start directly with {{ and end with }}. JSON only."""
+Start directly with {{ or [. End with }} or ]. JSON only."""
                 else:
                     enhanced_prompt = f"""{prompt}
 
@@ -91,8 +183,14 @@ Start directly with {{ and end with }}. JSON only."""
 
 IMPORTANTE: Tu salida debe contener SOLO un bloque de código en formato JSON válido.
 No expliques nada fuera del bloque. No agregues texto extra."""
-
-                response_text = await self._call_provider_api(enhanced_prompt, temperature)
+                
+                # Handling raw calls when client is wrapped by instructor
+                if hasattr(self.client, 'chat'): # Instructor wrapped client
+                     response_text = await self._call_provider_api_raw(enhanced_prompt, temperature)
+                elif self.provider == "google":
+                     response_text = await self._call_provider_api(enhanced_prompt, temperature)
+                else:
+                     response_text = await self._call_provider_api(enhanced_prompt, temperature)
 
                 elapsed = time.time() - start_time
                 logger.info(f"[{stage_name}] {self.provider.upper()} response received in {elapsed:.2f}s")
@@ -103,7 +201,7 @@ No expliques nada fuera del bloque. No agregues texto extra."""
 
                 parsed_json = self._extract_json_from_response(response_text, stage_name)
 
-                if parsed_json:
+                if parsed_json is not None:
                     logger.info(f"[{stage_name}] Successfully parsed JSON response on attempt {attempt + 1}")
                     return parsed_json
                 else:
@@ -120,6 +218,53 @@ No expliques nada fuera del bloque. No agregues texto extra."""
         logger.error(f"[{stage_name}] All attempts failed")
         return None
 
+    async def _call_provider_api_raw(self, prompt: str, temperature: float) -> Optional[str]:
+        """
+        Bypass instructor to make a raw text completion call.
+        MANDATORY: Uses a fresh, unpatched client instance to avoid Instructor validation errors.
+        """
+        try:
+             messages = [{"role": "user", "content": prompt}]
+             
+             if self.provider == "anthropic":
+                 # Create a FRESH, UNPATCHED client instance
+                 import anthropic
+                 raw_client = anthropic.Anthropic(api_key=self.api_key)
+                 
+                 response = raw_client.messages.create(
+                     model=settings.current_model,
+                     max_tokens=settings.max_tokens,
+                     temperature=temperature,
+                     messages=messages,
+                     timeout=settings.timeout_seconds
+                 )
+                 return response.content[0].text.strip()
+
+             elif self.provider in ["openai", "groq"]:
+                 # Create a FRESH, UNPATCHED client instance
+                 import openai
+                 
+                 client_kwargs = {"api_key": self.api_key}
+                 if self.provider == "groq":
+                     client_kwargs["base_url"] = "https://api.groq.com/openai/v1"
+                     
+                 raw_client = openai.OpenAI(**client_kwargs)
+                 
+                 response = raw_client.chat.completions.create(
+                     model=settings.current_model,
+                     messages=messages,
+                     temperature=temperature,
+                     max_tokens=settings.max_tokens,
+                     timeout=settings.timeout_seconds
+                 )
+                 return response.choices[0].message.content.strip()
+
+             return None
+             
+        except Exception as e:
+             logger.error(f"Raw API call failed: {e}")
+             return None
+
     async def _call_provider_api(self, prompt: str, temperature: float) -> Optional[str]:
         """Call the specific provider API"""
         if self.provider == "anthropic":
@@ -134,6 +279,8 @@ No expliques nada fuera del bloque. No agregues texto extra."""
 
     async def _call_anthropic_api(self, prompt: str, temperature: float) -> Optional[str]:
         """Call Anthropic Claude API"""
+        # Since we patched with instructor, we use standard create but without response_model for raw text
+        # Instructor's create wrapper handles standard calls if response_model is missing
         response = self.client.messages.create(
             model=settings.current_model,
             max_tokens=settings.max_tokens,
@@ -171,6 +318,7 @@ No expliques nada fuera del bloque. No agregues texto extra."""
         generation_config = genai.types.GenerationConfig(
             max_output_tokens=settings.max_tokens,
             temperature=temperature,
+            response_mime_type="application/json"
         )
 
         response = self.client.generate_content(
@@ -199,7 +347,7 @@ No expliques nada fuera del bloque. No agregues texto extra."""
             return None
         return response.choices[0].message.content.strip()
     
-    def _extract_json_from_response(self, response_text: str, stage: str = "unknown") -> Optional[Dict[Any, Any]]:
+    def _extract_json_from_response(self, response_text: str, stage: str = "unknown") -> Optional[Any]:
         """DEFINITIVE JSON extraction - handles all LLM response formats"""
         if not isinstance(response_text, str):
             logger.error(f"STAGE {stage}: Expected string, received {type(response_text)}")
@@ -210,10 +358,11 @@ No expliques nada fuera del bloque. No agregues texto extra."""
         logger.info(f"STAGE {stage}: Response preview: {clean_text[:500]}...")
 
         # STRATEGY 1: Direct JSON parsing (for pure JSON responses)
-        if clean_text.startswith('{') and clean_text.endswith('}'):
+        if (clean_text.startswith('{') and clean_text.endswith('}')) or \
+           (clean_text.startswith('[') and clean_text.endswith(']')):
             try:
                 parsed = json.loads(clean_text)
-                if isinstance(parsed, dict):
+                if isinstance(parsed, (dict, list)):
                     logger.info(f"STAGE {stage}: Direct JSON parsing successful")
                     return parsed
             except json.JSONDecodeError as e:
@@ -234,15 +383,40 @@ No expliques nada fuera del bloque. No agregues texto extra."""
             for match in matches:
                 candidate = match.strip()
                 logger.info(f"STAGE {stage}: Trying code block candidate: {candidate[:100]}...")
-                if candidate.startswith('{') and candidate.endswith('}'):
+                if (candidate.startswith('{') and candidate.endswith('}')) or \
+                   (candidate.startswith('[') and candidate.endswith(']')):
                     try:
                         parsed = json.loads(candidate)
-                        if isinstance(parsed, dict):
+                        if isinstance(parsed, (dict, list)):
                             logger.info(f"STAGE {stage}: Code block extraction successful")
                             return parsed
                     except json.JSONDecodeError as e:
                         logger.warning(f"STAGE {stage}: Code block parsing failed: {e}")
                         continue
+
+        # If it's a list request (Semantic Service), searching for {} blocks won't work well
+        # Let's try to find [] blocks specifically
+        if '[' in clean_text:
+             bracket_matches = []
+             start_positions = [i for i, char in enumerate(clean_text) if char == '[']
+             
+             for start_pos in start_positions:
+                bracket_count = 0
+                for i in range(start_pos, len(clean_text)):
+                    if clean_text[i] == '[':
+                        bracket_count += 1
+                    elif clean_text[i] == ']':
+                        bracket_count -= 1
+                        if bracket_count == 0:
+                            candidate = clean_text[start_pos:i+1]
+                            if len(candidate) > 10:
+                                try:
+                                    parsed = json.loads(candidate)
+                                    if isinstance(parsed, list):
+                                        logger.info(f"STAGE {stage}: List [] block extraction successful")
+                                        return parsed
+                                except: pass
+                            break
 
         # STRATEGY 2.5: Look for JSON in text with explanations (Groq/GPT style)
         # First try to extract inicial data from truncated response
@@ -291,6 +465,10 @@ No expliques nada fuera del bloque. No agregues texto extra."""
             for i in range(start_pos, len(clean_text)):
                 if clean_text[i] == '{':
                     brace_count += 1
+                elif clean_text[i] == ']': # Wait, this logic is for {} matching. 
+                    # If we find ']', it shouldn't affect brace_count for '{}', unless nesting is weird.
+                    # But original code had only brace counting for objects.
+                    pass 
                 elif clean_text[i] == '}':
                     brace_count -= 1
                     if brace_count == 0:
@@ -319,9 +497,7 @@ No expliques nada fuera del bloque. No agregues texto extra."""
                 parsed = json.loads(json_candidate.strip())
                 if isinstance(parsed, dict) and len(parsed) > 1:  # Must have some meaningful content
                     logger.info(f"STAGE {stage}: JSON-in-text extraction successful")
-                    logger.info(f"STAGE {stage}: Parsed JSON keys: {list(parsed.keys())}")
-                    logger.info(f"STAGE {stage}: Parsed JSON preview: {str(parsed)[:300]}...")
-
+                    
                     # PRIORITY: Prefer JSON with expected structure
                     expected_keys = ['datos_contacto', 'experiencia_laboral', 'formacion_academica']
                     has_expected_structure = any(key in parsed for key in expected_keys)
@@ -359,17 +535,9 @@ No expliques nada fuera del bloque. No agregues texto extra."""
 
         # If we reach here and have stored JSON, use the best available
         if hasattr(self, '_large_json'):
-            logger.info(f"STAGE {stage}: Using stored large JSON candidate")
-            large_json = self._large_json
-            delattr(self, '_large_json')
-            if hasattr(self, '_large_json_text'):
-                delattr(self, '_large_json_text')
-            return large_json
+            return self._large_json
         elif hasattr(self, '_backup_json'):
-            logger.info(f"STAGE {stage}: Using backup JSON candidate")
-            backup = self._backup_json
-            delattr(self, '_backup_json')
-            return backup
+            return self._backup_json
 
         # STRATEGY 3: Smart brace matching with content cleaning
         first_brace = clean_text.find('{')
@@ -394,14 +562,9 @@ No expliques nada fuera del bloque. No agregues texto extra."""
                     candidate_json = clean_text[first_brace:]
 
                     # Intentar reparación agresiva para respuestas truncadas
-                    logger.info(f"STAGE {stage}: About to attempt JSON repair on truncated content")
-                    logger.debug(f"STAGE {stage}: Original content preview: {candidate_json[:300]}...")
-
                     repaired_json = self._repair_truncated_json(candidate_json, stage)
 
                     if repaired_json:
-                        logger.info(f"STAGE {stage}: Repair function returned content, attempting to parse")
-                        logger.debug(f"STAGE {stage}: Repaired content preview: {repaired_json[:300]}...")
                         try:
                             parsed = json.loads(repaired_json)
                             if isinstance(parsed, dict):
@@ -409,9 +572,6 @@ No expliques nada fuera del bloque. No agregues texto extra."""
                                 return parsed
                         except json.JSONDecodeError as e:
                             logger.error(f"STAGE {stage}: Truncated JSON repair failed: {e}")
-                            logger.debug(f"STAGE {stage}: Failed JSON content: {repaired_json[:500]}...")
-                    else:
-                        logger.error(f"STAGE {stage}: Repair function returned None/empty")
                 else:
                     candidate_json = clean_text[first_brace:end_pos]
 
@@ -424,19 +584,15 @@ No expliques nada fuera del bloque. No agregues texto extra."""
                         if isinstance(parsed, dict):
                             logger.info(f"STAGE {stage}: Smart brace matching successful")
                             return parsed
-                    except json.JSONDecodeError as e:
-                        logger.debug(f"STAGE {stage}: Clean JSON still invalid: {e}")
-
-                        # STRATEGY 4: Attempt JSON repair
+                    except json.JSONDecodeError:
+                        # Attempt JSON repair
                         fixed_json = self._attempt_json_repair(candidate_json)
                         if fixed_json:
                             try:
                                 parsed = json.loads(fixed_json)
                                 if isinstance(parsed, dict):
-                                    logger.info(f"STAGE {stage}: JSON repair successful")
                                     return parsed
-                            except json.JSONDecodeError:
-                                pass
+                            except: pass
                 
             except Exception as e:
                 logger.debug(f"STAGE {stage}: Brace matching failed: {e}")

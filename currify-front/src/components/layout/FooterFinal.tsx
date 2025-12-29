@@ -1,5 +1,5 @@
 import React from 'react';
-import { BriefcaseIcon } from '@heroicons/react/24/outline';
+
 
 const FooterFinal: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -10,10 +10,20 @@ const FooterFinal: React.FC = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           {/* Logo and Copyright */}
           <div className="flex items-center gap-2">
-            <BriefcaseIcon className="w-6 h-6 text-blue-600" />
-            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Evalen
-            </span>
+            <svg width="120" height="32" viewBox="0 0 180 48" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="evalen-gradient-footer" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#4F6BF6' }} />
+                  <stop offset="100%" style={{ stopColor: '#8B5CF6' }} />
+                </linearGradient>
+              </defs>
+              {/* E con gradiente */}
+              <path d="M0 8 L0 40 L24 40 L24 35 L6 35 L6 26 L20 26 L20 21 L6 21 L6 13 L24 13 L24 8 Z" fill="url(#evalen-gradient-footer)" />
+              {/* Corte diagonal (transparente para fondo claro) */}
+              <path d="M18 8 L24 8 L6 40 L0 40 Z" fill="#ffffff" />
+              {/* Wordmark */}
+              <text x="30" y="34" fontFamily="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fontSize="28" fontWeight="700" fill="#18181b" letterSpacing="-1">valen</text>
+            </svg>
           </div>
 
           <p className="text-sm text-gray-600">

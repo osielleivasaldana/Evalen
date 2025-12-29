@@ -54,39 +54,64 @@ class FileParserService:
             }
 
     def _parse_pdf(self, file_content: bytes, filename: str) -> Dict[str, any]:
-        """Extrae texto de archivos PDF"""
+        """Extrae texto de archivos PDF usando pdfplumber (Más robusto con tildes)"""
         try:
-            import PyPDF2
+            import pdfplumber
             from io import BytesIO
 
-            pdf_reader = PyPDF2.PdfReader(BytesIO(file_content))
             text_parts = []
-
-            for page_num, page in enumerate(pdf_reader.pages):
-                try:
-                    page_text = page.extract_text()
-                    if page_text.strip():
-                        text_parts.append(page_text)
-                except Exception as e:
-                    logger.warning(f"Error extracting text from page {page_num + 1}: {e}")
-                    continue
+            pages_count = 0
+            
+            with pdfplumber.open(BytesIO(file_content)) as pdf:
+                pages_count = len(pdf.pages)
+                for i, page in enumerate(pdf.pages):
+                    try:
+                        # Extract text preserving layout somewhat, but prioritizing clarity
+                        page_text = page.extract_text(x_tolerance=2, y_tolerance=3)
+                        if page_text and page_text.strip():
+                            text_parts.append(page_text)
+                    except Exception as e:
+                        logger.warning(f"Error extracting text from page {i + 1}: {e}")
+                        continue
 
             extracted_text = "\n\n".join(text_parts)
 
-            # Fallback: si PyPDF2 no extrae bien, intentar con pdfplumber
+            # Fallback: OCR strategy if text is insufficient
             if not extracted_text.strip() or len(extracted_text) < 100:
-                try:
-                    import pdfplumber
-                    with pdfplumber.open(BytesIO(file_content)) as pdf:
-                        text_parts = []
-                        for page in pdf.pages:
-                            page_text = page.extract_text()
-                            if page_text:
-                                text_parts.append(page_text)
-                        extracted_text = "\n\n".join(text_parts)
-                except ImportError:
-                    logger.warning("pdfplumber not available for fallback PDF parsing")
+                logger.warning(f"Insufficient text extracted ({len(extracted_text)} chars). Attempting OCR fallback.")
+                ocr_text = self._perform_ocr(file_content)
+                if ocr_text and len(ocr_text) > len(extracted_text):
+                    extracted_text = ocr_text
+                    logger.info(f"OCR successful. Extracted {len(extracted_text)} chars.")
+                else:
+                    logger.warning("OCR failed to produce better results.")
 
+            # Post-processing to fix diacritics artifacts (e.g. "´ a" -> "á", "n˜" -> "ñ")
+            def fix_encoding_artifacts(text):
+                # 1. Fix Tildes (n˜)
+                text = text.replace("n˜", "ñ").replace("N˜", "Ñ")
+                text = text.replace("˜n", "ñ").replace("˜N", "Ñ")
+                
+                # 2. Fix Acute Accents (´ a -> á)
+                replacements = {
+                    "´ a": "á", "´ e": "é", "´ i": "í", "´ o": "ó", "´ u": "ú",
+                    "´ A": "Á", "´ E": "É", "´ I": "Í", "´ O": "Ó", "´ U": "Ú",
+                    "´ n": "ñ", "´ N": "Ñ",
+                    "´a": "á", "´e": "é", "´i": "í", "´o": "ó", "´u": "ú",
+                    "´n": "ñ",
+                    # Dotless i cases sometimes appear as 'ı'
+                    "´ı": "í", "´ ı": "í"
+                }
+                for bad, good in replacements.items():
+                    text = text.replace(bad, good)
+                    
+                # 3. Fix simple floating accents/tildes if they remain
+                text = text.replace("´", "") # Remove orphan accents if they didn't match above? Maybe too aggressive.
+                # Actually, let's keep it safe. Only specific replacements.
+                
+                return text
+
+            extracted_text = fix_encoding_artifacts(extracted_text)
             cleaned_text = self._clean_extracted_text(extracted_text)
 
             return {
@@ -95,18 +120,49 @@ class FileParserService:
                 "metadata": {
                     "filename": filename,
                     "file_type": "pdf",
-                    "pages_count": len(pdf_reader.pages),
-                    "parsing_method": "PyPDF2",
+                    "pages_count": pages_count,
+                    "parsing_method": "pdfplumber",
                     "text_length": len(cleaned_text),
                     "has_text": len(cleaned_text.strip()) > 0
                 }
             }
 
         except ImportError:
-            return self._handle_missing_dependency("PyPDF2", filename, "pdf")
+            return self._handle_missing_dependency("pdfplumber", filename, "pdf")
         except Exception as e:
             logger.error(f"Error parsing PDF {filename}: {e}")
             return self._create_error_response(filename, "pdf", str(e))
+
+    def _perform_ocr(self, file_content: bytes) -> str:
+        """
+        Realiza OCR en un archivo PDF convirtiéndolo a imágenes
+        Requires: poppler-utils and tesseract-ocr installed on the system
+        """
+        try:
+            import pytesseract
+            from pdf2image import convert_from_bytes
+            
+            logger.info("Attempting OCR extraction...")
+            
+            # Convert PDF to images
+            images = convert_from_bytes(file_content)
+            
+            ocr_text_parts = []
+            for i, image in enumerate(images):
+                # Extract text from image
+                text = pytesseract.image_to_string(image, lang='eng+spa')
+                if text.strip():
+                    ocr_text_parts.append(text)
+                logger.info(f"OCR processed page {i+1}/{len(images)}")
+                
+            return "\n\n".join(ocr_text_parts)
+            
+        except ImportError:
+            logger.error("Missing OCR dependencies (pytesseract or pdf2image)")
+            return ""
+        except Exception as e:
+            logger.error(f"OCR failed: {e}")
+            return ""
 
     def _parse_word(self, file_content: bytes, filename: str) -> Dict[str, any]:
         """Extrae texto de archivos Word (.docx, .doc)"""

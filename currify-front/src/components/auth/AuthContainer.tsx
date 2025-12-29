@@ -19,6 +19,16 @@ const AuthContainer: React.FC<AuthContainerProps> = ({ onAuthSuccess }) => {
     setMode('login');
   };
 
+  if (mode === 'login') {
+    return (
+      <Login
+        onLoginSuccess={onAuthSuccess}
+        onSwitchToRegister={handleSwitchToRegister}
+      />
+    );
+  }
+
+  // Register Mode - Keep legacy centered layout
   return (
     <div style={{
       minHeight: '100vh',
@@ -32,17 +42,10 @@ const AuthContainer: React.FC<AuthContainerProps> = ({ onAuthSuccess }) => {
         width: '100%',
         maxWidth: '500px'
       }}>
-        {mode === 'login' ? (
-          <Login
-            onLoginSuccess={onAuthSuccess}
-            onSwitchToRegister={handleSwitchToRegister}
-          />
-        ) : (
-          <Register
-            onRegisterSuccess={onAuthSuccess}
-            onSwitchToLogin={handleSwitchToLogin}
-          />
-        )}
+        <Register
+          onRegisterSuccess={onAuthSuccess}
+          onSwitchToLogin={handleSwitchToLogin}
+        />
       </div>
     </div>
   );

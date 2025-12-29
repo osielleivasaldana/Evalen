@@ -132,11 +132,13 @@ export class DocumentsService {
       // Calculate scoring after successful extraction
       try {
         if (document.candidate) {
+          console.log(`[SCORING_START] Triggering scoring for candidate ${document.candidate.id}`);
           await this.scoringService.evaluateCandidate(document.candidate.id);
+          console.log(`[SCORING_SUCCESS] Scoring completed for candidate ${document.candidate.id}`);
         }
       } catch (scoringError) {
-        console.error('Error calculating candidate score:', scoringError);
-        // Don't fail the entire process if scoring fails
+        console.error('[SCORING_ERROR] Error calculating candidate score:', scoringError);
+        // We log it but don't fail the extraction process
       }
 
     } catch (error) {
@@ -195,7 +197,7 @@ export class DocumentsService {
           ...formData.getHeaders(),
           'Authorization': `Bearer ${token}`
         },
-        timeout: 60000, // 60 seconds timeout
+        timeout: 120000, // 120 seconds timeout
       });
 
       return {

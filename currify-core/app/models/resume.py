@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, ConfigDict
 from typing import List, Optional, Dict, Any, Union
 from enum import Enum
 from datetime import datetime
@@ -22,9 +22,29 @@ class SkillLevel(str, Enum):
     INTERMEDIO_AVANZADO = "Intermedio - Avanzado"
 
 class ExtractionMetadata(BaseModel):
-    confidence_level: ConfidenceLevel = Field(..., description="Nivel de confianza en la extracción")
-    extraction_method: ExtractionMethod = Field(..., description="Método usado para extraer el dato")
+    confidence_level: str = Field(..., description="Nivel de confianza: high, medium, low")
+    extraction_method: str = Field(..., description="Método: direct, inferred, parsed")
     source_text: Optional[str] = Field(None, description="Texto original del cual se extrajo")
+
+    model_config = ConfigDict(use_enum_values=True)
+    
+    @validator('confidence_level', pre=True)
+    def validate_confidence(cls, v):
+        if isinstance(v, str):
+            v_lower = v.lower()
+            if v_lower in ['high', 'alto', 'alta']: return ConfidenceLevel.HIGH.value
+            if v_lower in ['medium', 'medio', 'media']: return ConfidenceLevel.MEDIUM.value
+            if v_lower in ['low', 'bajo', 'baja']: return ConfidenceLevel.LOW.value
+        return v
+
+    @validator('extraction_method', pre=True)
+    def validate_method(cls, v):
+        if isinstance(v, str):
+            v_lower = v.lower()
+            if v_lower in ['direct', 'directo']: return ExtractionMethod.DIRECT.value
+            if v_lower in ['inferred', 'inferido']: return ExtractionMethod.INFERRED.value
+            if v_lower in ['parsed', 'parseado']: return ExtractionMethod.PARSED.value
+        return v
 
 class Period(BaseModel):
     fecha_inicio: Optional[str] = Field(None, description="Fecha de inicio en formato YYYY-MM o YYYY")
@@ -40,17 +60,31 @@ class Period(BaseModel):
 
 class Skill(BaseModel):
     skill: str = Field(..., description="Nombre de la habilidad")
-    level: Optional[SkillLevel] = Field(None, description="Nivel de competencia")
+    level: Optional[str] = Field(None, description="Nivel: Básico, Intermedio, Avanzado, Experto")
     years_experience: Optional[int] = Field(None, description="Años de experiencia")
     metadata: Optional[ExtractionMetadata] = None
 
+    model_config = ConfigDict(use_enum_values=True)
+
+    @validator('level', pre=True)
+    def validate_level(cls, v):
+        if isinstance(v, str):
+            # Normalize common variations to Enum VALUES
+            v_lower = v.lower()
+            if 'básico' in v_lower or 'basico' in v_lower or 'basic' in v_lower: return SkillLevel.BASICO.value
+            if 'intermedio - avanzado' in v_lower: return SkillLevel.INTERMEDIO_AVANZADO.value
+            if 'intermedio' in v_lower or 'intermediate' in v_lower: return SkillLevel.INTERMEDIO.value
+            if 'avanzado' in v_lower or 'advanced' in v_lower: return SkillLevel.AVANZADO.value
+            if 'experto' in v_lower or 'expert' in v_lower: return SkillLevel.EXPERTO.value
+        return v
+
 class Language(BaseModel):
     idioma: str = Field(..., description="Nombre del idioma")
-    nivel: str = Field(..., description="Nivel de competencia (ej: 'C1 Avanzado', 'Nativo')")
+    nivel: Optional[str] = Field(None, description="Nivel de competencia (ej: 'C1 Avanzado', 'Nativo')")
     certificacion: Optional[str] = Field(None, description="Certificación si existe")
     metadata: Optional[ExtractionMetadata] = None
 
-# Secciones Obligatorias
+# ... (ContactInfo, ProfessionalTitle, ProfessionalSummary remain same)
 class ContactInfo(BaseModel):
     nombre_completo: str = Field(..., description="Nombre y apellidos completos del candidato")
     telefono: Optional[str] = Field(None, description="Número de contacto principal")
@@ -60,28 +94,19 @@ class ContactInfo(BaseModel):
 
     @validator('email')
     def validate_email_format(cls, v):
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(email_pattern, v):
-            raise ValueError('Formato de email inválido')
+        # Relaxed email validation
+        if not v or '@' not in v:
+            return "no-extraido@example.com"
         return v
 
     @validator('telefono')
     def validate_phone(cls, v):
-        if v:
-            # Limpiar el teléfono de caracteres no numéricos excepto + y espacios
-            cleaned = re.sub(r'[^\d+\s\-\(\)]', '', v)
-            if len(cleaned.replace(' ', '').replace('-', '').replace('(', '').replace(')', '')) < 7:
-                raise ValueError('Número de teléfono muy corto')
         return v
 
     @validator('nombre_completo')
     def validate_nombre_completo(cls, v):
-        if len(v.strip()) < 2:
-            raise ValueError('Nombre completo muy corto')
-        # Validar que contenga al menos 2 palabras
-        palabras = v.strip().split()
-        if len(palabras) < 2:
-            raise ValueError('Debe incluir nombre y apellido')
+        if not v or len(v.strip()) < 2:
+            return "No extraído"
         return v.strip()
 
 class ProfessionalTitle(BaseModel):
@@ -89,24 +114,40 @@ class ProfessionalTitle(BaseModel):
     metadata: Optional[ExtractionMetadata] = None
 
 class ProfessionalSummary(BaseModel):
-    resumen: str = Field(..., description="Párrafo de 3 a 5 líneas resumiendo experiencia y competencias")
+    resumen: Optional[str] = Field(None, description="Párrafo de 3 a 5 líneas resumiendo experiencia y competencias")
     metadata: Optional[ExtractionMetadata] = None
 
+    @validator('resumen', pre=True, always=True)
+    def validate_resumen_content(cls, v):
+        if v is None:
+            return ""
+        return str(v)
+
 class WorkExperience(BaseModel):
-    cargo: str = Field(..., description="Título del puesto ocupado")
-    empresa: str = Field(..., description="Nombre de la compañía empleadora")
+    cargo: Optional[str] = Field(None, description="Título del puesto ocupado")
+    empresa: Optional[str] = Field(None, description="Nombre de la compañía empleadora")
     periodo: Period = Field(..., description="Período de trabajo")
     responsabilidades: List[str] = Field(default=[], description="Lista de responsabilidades y logros del puesto")
     ubicacion: Optional[str] = Field(None, description="Ciudad/País donde se realizó el trabajo")
     metadata: Optional[Dict[str, ExtractionMetadata]] = None
 
+    @validator('cargo', 'empresa', pre=True, always=True)
+    def validate_strings(cls, v):
+        if v is None: return "No especificado"
+        return str(v)
+
 class Education(BaseModel):
-    titulo: str = Field(..., description="Nombre del grado académico o título obtenido")
-    institucion: str = Field(..., description="Nombre de la universidad o centro de estudios")
+    titulo: Optional[str] = Field(None, description="Nombre del grado académico o título obtenido")
+    institucion: Optional[str] = Field(None, description="Nombre de la universidad o centro de estudios")
     periodo: Period = Field(..., description="Período de estudios")
     gpa: Optional[str] = Field(None, description="Promedio académico si está disponible")
     ubicacion: Optional[str] = Field(None, description="Ciudad/País de la institución")
     metadata: Optional[Dict[str, ExtractionMetadata]] = None
+
+    @validator('titulo', 'institucion', pre=True, always=True)
+    def validate_strings(cls, v):
+        if v is None: return "No especificado"
+        return str(v)
 
 class Skills(BaseModel):
     habilidades_tecnicas: List[Skill] = Field(default=[], description="Lista de software, herramientas o conocimientos técnicos")
@@ -114,7 +155,23 @@ class Skills(BaseModel):
     habilidades_blandas: List[str] = Field(default=[], description="Lista de competencias interpersonales")
     metadata: Optional[Dict[str, ExtractionMetadata]] = None
 
-# Secciones Opcionales
+    model_config = ConfigDict(use_enum_values=True)
+
+    @validator('habilidades_tecnicas', pre=True)
+    def validate_tech_skills(cls, v):
+        if not v:
+            return []
+        cleaned = []
+        for item in v:
+            if isinstance(item, str):
+                cleaned.append({'skill': item, 'level': None})
+            elif isinstance(item, dict):
+                cleaned.append(item)
+            else:
+                cleaned.append(item)
+        return cleaned
+
+# ... (OnlineProfiles, AdditionalTraining, etc remain same)
 class OnlineProfiles(BaseModel):
     linkedin: Optional[str] = Field(None, description="URL del perfil de LinkedIn")
     portfolio: Optional[str] = Field(None, description="URL del portafolio o sitio web")
@@ -124,23 +181,14 @@ class OnlineProfiles(BaseModel):
 
     @validator('linkedin')
     def validate_linkedin(cls, v):
-        if v and 'linkedin.com' not in v.lower():
-            raise ValueError('URL de LinkedIn inválida')
         return v
 
     @validator('github')
     def validate_github(cls, v):
-        if v and 'github.com' not in v.lower():
-            raise ValueError('URL de GitHub inválida')
         return v
 
     @validator('portfolio')
     def validate_portfolio(cls, v):
-        if v:
-            url_pattern = r'^https?://'
-            if not re.match(url_pattern, v, re.IGNORECASE):
-                # Agregar https:// si no está presente
-                v = 'https://' + v
         return v
 
 class AdditionalTraining(BaseModel):
@@ -159,35 +207,54 @@ class Interests(BaseModel):
     hobbies_intereses: List[str] = Field(default=[], description="Lista de intereses personales")
     metadata: Optional[ExtractionMetadata] = None
 
-# Modelo principal del CV
 class ResumeData(BaseModel):
-    # Secciones obligatorias
     datos_contacto: ContactInfo = Field(..., description="Información de contacto del candidato")
     titular_profesional: ProfessionalTitle = Field(..., description="Titular o headline profesional")
     resumen_profesional: ProfessionalSummary = Field(..., description="Resumen ejecutivo del perfil")
     experiencia_laboral: List[WorkExperience] = Field(..., description="Historial de experiencia laboral")
     formacion_academica: List[Education] = Field(..., description="Educación formal del candidato")
-    habilidades: Skills = Field(default_factory=lambda: Skills(), description="Conjunto de habilidades técnicas y blandas")
+    
+    # Relaxed type for habilidades to handle string inputs
+    habilidades: Union[Skills, Dict[str, Any], str] = Field(default_factory=lambda: Skills(), description="Conjunto de habilidades técnicas y blandas")
 
-    # Secciones opcionales
     perfiles_online: Optional[OnlineProfiles] = Field(None, description="Perfiles en redes profesionales")
     formacion_complementaria: Optional[AdditionalTraining] = Field(None, description="Certificaciones y cursos adicionales")
     reconocimientos: Optional[Recognition] = Field(None, description="Premios y logros destacados")
     actividades_extracurriculares: Optional[ExtracurricularActivities] = Field(None, description="Voluntariado y actividades")
     intereses: Optional[Interests] = Field(None, description="Hobbies e intereses personales")
 
-    # Metadatos de procesamiento
     metadata_procesamiento: Optional[Dict[str, Any]] = Field(None, description="Información sobre el procesamiento del CV")
 
-    @validator('experiencia_laboral')
+    model_config = ConfigDict(use_enum_values=True)
+
+    @validator('habilidades', pre=True)
+    def parse_habilidades(cls, v):
+        if isinstance(v, str):
+            try:
+                import json
+                # Try parsing if it's a JSON string
+                if v.strip().startswith('{'):
+                    v = json.loads(v)
+            except:
+                pass
+        
+        if isinstance(v, dict):
+             # Ensure lists exist
+             if 'habilidades_tecnicas' not in v: v['habilidades_tecnicas'] = []
+             if 'idiomas' not in v: v['idiomas'] = []
+             if 'habilidades_blandas' not in v: v['habilidades_blandas'] = []
+             return Skills(**v)
+             
+        return v
+
+    @validator('experiencia_laboral', pre=True)
     def validate_experiencia_laboral(cls, v):
-        # Permitir arrays vacíos - será reportado como advertencia en lugar de error
         return v if v else []
 
-    @validator('formacion_academica')
+    @validator('formacion_academica', pre=True)
     def validate_formacion_academica(cls, v):
-        # Permitir arrays vacíos - será reportado como advertencia en lugar de error
         return v if v else []
+
 
     def get_años_experiencia(self) -> int:
         """Calcula los años totales de experiencia laboral"""
@@ -227,6 +294,75 @@ class ResumeExtractionResponse(BaseModel):
     campos_faltantes: List[str] = Field(default=[], description="Campos obligatorios no encontrados")
     tiempo_procesamiento: float = Field(..., description="Tiempo de procesamiento en segundos")
     timestamp: datetime = Field(default_factory=datetime.now, description="Momento de procesamiento")
+
+# Partial models for chunked extraction
+class PartialContactInfo(BaseModel):
+    nombre_completo: Optional[str] = Field(None, description="Nombre y apellidos (o None)")
+    telefono: Optional[str] = Field(None, description="Teléfono (o None)")
+    email: Optional[str] = Field(None, description="Email (o None)")
+    ubicacion: Optional[str] = Field(None, description="Ubicación (o None)")
+    metadata: Optional[Dict[str, ExtractionMetadata]] = None
+
+    @validator('nombre_completo', pre=True)
+    def validate_nc(cls, v): return v
+
+    @validator('email', pre=True)
+    def validate_email(cls, v): return v
+
+class PartialProfessionalTitle(BaseModel):
+    titular: Optional[str] = Field(None, description="Titular (o None)")
+    metadata: Optional[ExtractionMetadata] = None
+    
+    @validator('titular', pre=True)
+    def validate_titular(cls, v): return v
+
+class PartialProfessionalSummary(BaseModel):
+    resumen: Optional[str] = Field(None, description="Resumen (o None)")
+    metadata: Optional[ExtractionMetadata] = None
+    
+    @validator('resumen', pre=True)
+    def validate_resumen(cls, v): return v
+
+class PartialResumeData(BaseModel):
+    datos_contacto: Optional[PartialContactInfo] = Field(None, description="Información de contacto parcial")
+    titular_profesional: Optional[PartialProfessionalTitle] = Field(None, description="Titular parcial")
+    resumen_profesional: Optional[PartialProfessionalSummary] = Field(None, description="Resumen parcial")
+    experiencia_laboral: Optional[List[WorkExperience]] = Field(default=[], description="Experiencia laboral parcial")
+    formacion_academica: Optional[List[Education]] = Field(default=[], description="Formación académica parcial")
+    habilidades: Optional[Union[Skills, Dict[str, Any], str]] = Field(default_factory=lambda: Skills(), description="Habilidades parciales")
+    perfiles_online: Optional[OnlineProfiles] = Field(None, description="Perfiles online parciales")
+    formacion_complementaria: Optional[AdditionalTraining] = Field(None, description="Formación comp. parcial")
+    reconocimientos: Optional[Recognition] = Field(None, description="Reconocimientos parciales")
+    actividades_extracurriculares: Optional[ExtracurricularActivities] = Field(None, description="Actividades parciales")
+    intereses: Optional[Interests] = Field(None, description="Intereses parciales")
+    metadata_procesamiento: Optional[Dict[str, Any]] = None
+
+    model_config = ConfigDict(use_enum_values=True)
+
+    @validator('habilidades', pre=True)
+    def parse_habilidades(cls, v):
+        if isinstance(v, str):
+            try:
+                import json
+                if v.strip().startswith('{'):
+                    v = json.loads(v)
+            except:
+                pass
+        
+        if isinstance(v, dict):
+             if 'habilidades_tecnicas' not in v: v['habilidades_tecnicas'] = []
+             if 'idiomas' not in v: v['idiomas'] = []
+             if 'habilidades_blandas' not in v: v['habilidades_blandas'] = []
+             return Skills(**v)
+        return v
+    
+    @validator('experiencia_laboral', pre=True)
+    def validate_experiencia_laboral(cls, v):
+        return v if v else []
+
+    @validator('formacion_academica', pre=True)
+    def validate_formacion_academica(cls, v):
+        return v if v else []
 
 class ErrorResponse(BaseModel):
     error: str = Field(..., description="Descripción del error")

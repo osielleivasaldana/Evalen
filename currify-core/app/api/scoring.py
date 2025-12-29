@@ -63,9 +63,15 @@ async def evaluate_candidate_job_fit(request: ScoringRequest):
         # Initialize scoring service
         scoring_service = ScoringService()
 
+        # Unwrap candidate data if nested in ResumeExtractionResponse structure
+        candidate_data = request.candidate
+        if 'datos_cv' in candidate_data:
+            logger.info("📦 Unwrapping 'datos_cv' from candidate data")
+            candidate_data = candidate_data['datos_cv']
+
         # Perform evaluation
         result = await scoring_service.evaluate_candidate(
-            candidate_data=request.candidate,
+            candidate_data=candidate_data,
             job_data=request.job
         )
 

@@ -169,662 +169,214 @@ class RobustExtractionService:
 
     async def _execute_robust_extraction(self, cv_text: str, profile_info: Dict) -> Dict[str, Any]:
         """
-        Extracción robusta multi-etapa con validación continua
+        Extracción robusta usando Structured Outputs nativos con fallback a JSON
         """
-        logger.info("🔄 Ejecutando extracción robusta multi-etapa")
+        logger.info("🔄 Ejecutando extracción estructurada nativa")
 
-        # Prompt principal robusto
-        main_prompt = self._create_robust_extraction_prompt()
+        # Prompt principal limpio y directo
+        prompt = self._create_robust_extraction_prompt()
 
-        best_result = None
-        best_score = 0.0
-
-        # Múltiples intentos con diferentes enfoques
-        for attempt in range(self.max_retries):
-            try:
-                logger.info(f"📋 Intento de extracción {attempt + 1}/{self.max_retries}")
-
-                # Prompt específico para este intento
-                attempt_prompt = self._customize_prompt_for_attempt(main_prompt, attempt, profile_info)
-
-                # Llamada al LLM
-                result = await self.llm_service.call_agent(
-                    prompt=attempt_prompt,
-                    input_data=cv_text,
-                    stage_name=f"robust_extraction_attempt_{attempt + 1}",
-                    temperature=0.0 if attempt == 0 else 0.1  # Primer intento determinístico
-                )
-
-                if not result or not isinstance(result, dict):
-                    logger.warning(f"⚠️ Intento {attempt + 1}: Resultado inválido")
-                    continue
-
-                # Validar calidad del resultado
-                score = self._validate_extraction_quality(result)
-                logger.info(f"📊 Intento {attempt + 1} - Score: {score:.2f}")
-
-                if score > best_score:
-                    best_result = result
-                    best_score = score
-                    logger.info(f"✅ Nuevo mejor resultado con score {score:.2f}")
-
-                # Si el resultado es lo suficientemente bueno, terminar
-                if score >= self.validation_threshold:
-                    logger.info(f"🎯 Score {score:.2f} alcanza threshold {self.validation_threshold}")
-                    break
-
-            except Exception as e:
-                logger.warning(f"⚠️ Intento {attempt + 1} falló: {e}")
-                continue
-
-        if not best_result:
-            logger.error("❌ Todos los intentos de extracción fallaron")
-            return self._create_empty_extraction()
-
-        logger.info(f"🏆 Mejor extracción seleccionada con score: {best_score:.2f}")
-        return best_result
-
-    async def _execute_chunked_extraction(self, cv_text: str, profile_info: Dict) -> Dict[str, Any]:
-        """
-        Extracción por chunks para textos largos que exceden el límite del LLM
-        """
-        logger.info(f"🔄 INICIANDO EXTRACCIÓN CHUNKED")
-
-        # 1. Dividir el texto en chunks inteligentes
-        chunks = self._create_intelligent_chunks(cv_text)
-        logger.info(f"📝 Texto dividido en {len(chunks)} chunks")
-
-        # 2. Extraer información de cada chunk
-        chunk_results = []
-        for i, chunk in enumerate(chunks):
-            logger.info(f"🔍 Procesando chunk {i+1}/{len(chunks)} ({len(chunk)} chars)")
-
-            try:
-                chunk_result = await self._execute_robust_extraction(chunk, profile_info)
-                if chunk_result:
-                    chunk_results.append(chunk_result)
-                    logger.info(f"✅ Chunk {i+1} procesado exitosamente")
-                else:
-                    logger.warning(f"⚠️ Chunk {i+1} no produjo resultados")
-            except Exception as e:
-                logger.warning(f"❌ Error procesando chunk {i+1}: {e}")
-
-        if not chunk_results:
-            logger.error("❌ Ningún chunk produjo resultados válidos")
-            return self._create_empty_extraction()
-
-        # 3. Merge inteligente de resultados
-        merged_result = self._merge_chunk_results(chunk_results)
-        logger.info(f"🔗 Merged {len(chunk_results)} chunk results")
-
-        return merged_result
-
-    def _create_intelligent_chunks(self, text: str) -> List[str]:
-        """
-        Divide el texto en chunks preservando la estructura semántica
-        """
-        lines = text.splitlines()
-        chunks = []
-        current_chunk = []
-        current_length = 0
-
-        # Palabras clave que indican inicio de sección importante
-        section_markers = [
-            'EXPERIENCIA LABORAL', 'FORMACION', 'TITULOS', 'EDUCACION',
-            'HABILIDADES', 'CURSOS', 'CERTIFICACIONES', 'REFERENCIAS',
-            'OTROS ANTECEDENTES', 'INFORMACION PERSONAL'
-        ]
-
-        for line in lines:
-            line_length = len(line) + 1  # +1 para el \n
-
-            # Si agregar esta línea excede el límite
-            if current_length + line_length > self.max_text_length:
-                # Verificar si la línea actual es inicio de sección
-                is_section_start = any(marker in line.upper() for marker in section_markers)
-
-                # Si es inicio de sección o el chunk actual ya tiene contenido sustancial
-                if is_section_start or current_length > self.max_text_length * 0.5:
-                    # Finalizar chunk actual
-                    if current_chunk:
-                        chunks.append('\n'.join(current_chunk))
-                        current_chunk = []
-                        current_length = 0
-
-            # Agregar línea al chunk actual
-            current_chunk.append(line)
-            current_length += line_length
-
-        # Agregar último chunk si tiene contenido
-        if current_chunk:
-            chunks.append('\n'.join(current_chunk))
-
-        # Asegurar que no hay chunks vacíos
-        chunks = [chunk.strip() for chunk in chunks if chunk.strip()]
-
-        return chunks
-
-    def _merge_chunk_results(self, chunk_results: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Combina resultados de múltiples chunks de manera inteligente
-        """
-        merged = {
-            'datos_contacto': {},
-            'titular_profesional': {},
-            'resumen_profesional': {},
-            'experiencia_laboral': [],
-            'formacion_academica': [],
-            'habilidades': {
-                'habilidades_tecnicas': [],
-                'idiomas': [],
-                'habilidades_blandas': []
-            },
-            'formacion_complementaria': {'certificaciones_cursos': []},
-            'reconocimientos': {'logros_premios': []}
-        }
-
-        # 1. Datos de contacto - usar el más completo
-        best_contact = {}
-        for result in chunk_results:
-            if 'datos_contacto' in result:
-                contact = result['datos_contacto']
-                if isinstance(contact, dict):
-                    # Elegir campos no vacíos con validación específica por campo
-                    for field in ['nombre_completo', 'telefono', 'email', 'ubicacion']:
-                        if field in contact and contact[field]:
-                            value = str(contact[field]).strip()
-
-                            # Validación específica para email
-                            if field == 'email':
-                                if value and '@' in value and 'no-extraido' not in value.lower():
-                                    # Solo sobrescribir si no tenemos email válido ya
-                                    if field not in best_contact or not best_contact[field] or '@' not in str(best_contact[field]):
-                                        best_contact[field] = contact[field]
-                                        logger.info(f"🔗 Merge: Email actualizado con '{contact[field]}'")
-                            # Validación para otros campos
-                            elif value and value not in ["null", "None", "No extraído", "no extraído"]:
-                                # Solo sobrescribir si no tenemos valor válido ya
-                                if field not in best_contact or not best_contact[field] or str(best_contact[field]).strip() in ["null", "None", "No extraído", "no extraído"]:
-                                    best_contact[field] = contact[field]
-                                    logger.info(f"🔗 Merge: {field} actualizado con '{contact[field]}'")
-
-        merged['datos_contacto'] = best_contact
-
-        # 2. Titular y resumen - usar el más completo
-        for section in ['titular_profesional', 'resumen_profesional']:
-            best_section = {}
-            logger.info(f"🔍 Procesando sección: {section}")
-
-            for i, result in enumerate(chunk_results):
-                if section in result and result[section]:
-                    candidate = result[section]
-                    logger.info(f"  📝 Chunk {i+1} - {section}: {candidate}")
-
-                    if isinstance(candidate, dict):
-                        # Verificar si el candidato tiene valores válidos (no nulos/vacíos)
-                        candidate_value = self._get_main_value(candidate, section)
-                        current_value = self._get_main_value(best_section, section)
-
-                        logger.info(f"  🔍 Valores: candidato='{candidate_value}', actual='{current_value}'")
-
-                        # Solo usar candidato si tiene valor válido Y (no tenemos nada O actual es inválido)
-                        if (candidate_value and candidate_value not in ['null', 'None', 'No extraído', ''] and
-                            (not current_value or current_value in ['null', 'None', 'No extraído', ''])):
-                            logger.info(f"  ✅ Nuevo mejor candidato para {section}: {candidate}")
-                            best_section = candidate
-                        elif candidate_value and current_value and len(str(candidate)) > len(str(best_section)):
-                            # Si ambos son válidos, usar el más largo
-                            logger.info(f"  ✅ Candidato más completo para {section}: {candidate}")
-                            best_section = candidate
-                        else:
-                            logger.info(f"  ❌ Candidato rechazado para {section}: valor inválido o peor que actual")
-                    else:
-                        logger.info(f"  ❌ Candidato no es dict para {section}")
-                else:
-                    logger.info(f"  ⚠️ Chunk {i+1} - {section}: NO ENCONTRADO o VACÍO")
-
-            merged[section] = best_section
-            logger.info(f"🎯 {section} final: {best_section}")
-
-        # 3. Listas - combinar sin duplicados
-        for section in ['experiencia_laboral', 'formacion_academica']:
-            combined_items = []
-            seen_items = set()
-
-            for result in chunk_results:
-                if section in result and isinstance(result[section], list):
-                    for item in result[section]:
-                        if isinstance(item, dict):
-                            # Crear clave única para deduplicación
-                            key_fields = []
-                            if section == 'experiencia_laboral':
-                                key_fields = [item.get('cargo', ''), item.get('empresa', '')]
-                            elif section == 'formacion_academica':
-                                key_fields = [item.get('titulo', ''), item.get('institucion', '')]
-
-                            item_key = '|'.join(str(f).lower() for f in key_fields)
-
-                            if item_key not in seen_items:
-                                combined_items.append(item)
-                                seen_items.add(item_key)
-
-            merged[section] = combined_items
-
-        # 4. Habilidades - combinar listas
-        all_tech_skills = []
-        all_languages = []
-        all_soft_skills = []
-
-        for result in chunk_results:
-            if 'habilidades' in result and isinstance(result['habilidades'], dict):
-                skills = result['habilidades']
-
-                if 'habilidades_tecnicas' in skills and isinstance(skills['habilidades_tecnicas'], list):
-                    all_tech_skills.extend(skills['habilidades_tecnicas'])
-
-                if 'idiomas' in skills and isinstance(skills['idiomas'], list):
-                    all_languages.extend(skills['idiomas'])
-
-                if 'habilidades_blandas' in skills and isinstance(skills['habilidades_blandas'], list):
-                    all_soft_skills.extend(skills['habilidades_blandas'])
-
-        merged['habilidades'] = {
-            'habilidades_tecnicas': all_tech_skills,
-            'idiomas': all_languages,
-            'habilidades_blandas': all_soft_skills
-        }
-
-        # 5. Formación complementaria - combinar cursos
-        logger.info("🔍 Procesando formacion_complementaria")
-        all_courses = []
-
-        for i, result in enumerate(chunk_results):
-            if 'formacion_complementaria' in result:
-                comp = result['formacion_complementaria']
-                logger.info(f"  📝 Chunk {i+1} - formacion_complementaria: {comp}")
-
-                if isinstance(comp, dict) and 'certificaciones_cursos' in comp:
-                    if isinstance(comp['certificaciones_cursos'], list):
-                        courses_count = len(comp['certificaciones_cursos'])
-                        logger.info(f"  ✅ Chunk {i+1} - Agregando {courses_count} cursos: {comp['certificaciones_cursos']}")
-                        all_courses.extend(comp['certificaciones_cursos'])
-                    else:
-                        logger.info(f"  ❌ Chunk {i+1} - certificaciones_cursos no es lista: {type(comp['certificaciones_cursos'])}")
-                else:
-                    logger.info(f"  ❌ Chunk {i+1} - Formato inválido: {comp}")
-            else:
-                logger.info(f"  ⚠️ Chunk {i+1} - formacion_complementaria: NO ENCONTRADO")
-
-        unique_courses = list(set(all_courses))
-        merged['formacion_complementaria'] = {'certificaciones_cursos': unique_courses}
-        logger.info(f"🎯 formacion_complementaria final: {len(unique_courses)} cursos únicos: {unique_courses}")
-
-        logger.info(f"🔗 Merge completado: {len(merged['experiencia_laboral'])} exp, {len(merged['formacion_academica'])} edu")
-        return merged
-
-    def _get_main_value(self, section_dict: dict, section_name: str) -> str:
-        """
-        Extraer el valor principal de una sección para comparación
-        """
-        if not section_dict or not isinstance(section_dict, dict):
-            return ""
-
-        if section_name == 'titular_profesional':
-            return str(section_dict.get('titular', '')).strip()
-        elif section_name == 'resumen_profesional':
-            return str(section_dict.get('resumen', '')).strip()
-        else:
-            # Para otras secciones, usar primer valor disponible
-            for key, value in section_dict.items():
-                if value:
-                    return str(value).strip()
-            return ""
-
-    def _create_emergency_response(self, original_data: Dict[str, Any], cv_text: str = None) -> Optional['ResumeData']:
-        """
-        Crear respuesta de emergencia cuando se detecta pérdida de datos
-        """
         try:
-            logger.info("🚨 Creating emergency response from original data...")
+            # 1. Intentar con Instructor (Extracción Estricta)
+            result = await self.llm_service.call_agent_structured(
+                prompt=prompt,
+                input_data=cv_text,
+                response_model=ResumeData,
+                stage_name="structured_extraction_main"
+            )
 
-            # Ensure all required fields exist
-            emergency_data = {
-                'datos_contacto': original_data.get('datos_contacto', {}),
-                'titular_profesional': original_data.get('titular_profesional', {}),
-                'resumen_profesional': original_data.get('resumen_profesional', {}),
-                'experiencia_laboral': original_data.get('experiencia_laboral', []),
-                'formacion_academica': original_data.get('formacion_academica', []),
-                'habilidades': original_data.get('habilidades', {}),
-                'formacion_complementaria': original_data.get('formacion_complementaria', {}),
-                'reconocimientos': original_data.get('reconocimientos', {})
-            }
-
-            # Apply our repair logic to emergency data
-            fixed_emergency_data = self._fix_missing_required_fields(emergency_data, cv_text)
-
-            logger.info(f"🚨 Emergency data prepared - titular: {fixed_emergency_data.get('titular_profesional')}")
-
-            # Try to create ResumeData
-            from app.models.resume import ResumeData
-            return ResumeData(**fixed_emergency_data)
+            if result:
+                logger.info("✅ Extracción estructurada exitosa")
+                return result.model_dump()
+            
+            logger.warning("⚠️ Falló la extracción estructurada, intentando fallback JSON...")
+            
+            # 2. Intentar fallback JSON (Extracción Flexible)
+            return await self._execute_fallback_extraction(cv_text, prompt)
 
         except Exception as e:
-            logger.error(f"🚨 Emergency response creation failed: {e}")
-            return None
+            logger.error(f"❌ Error en extracción estructurada: {e}")
+            logger.info("⚠️ Intentando fallback JSON tras error...")
+            try:
+                return await self._execute_fallback_extraction(cv_text, prompt)
+            except Exception as e2:
+                logger.error(f"❌ Falló también el fallback JSON: {e2}")
+                return self._create_empty_extraction()
+
+    async def _execute_fallback_extraction(self, cv_text: str, prompt: str) -> Dict[str, Any]:
+        """
+        Estrategia de respaldo usando modo JSON estándar y mapeo manual
+        """
+        logger.info("🔄 Ejecutando extracción fallback (JSON laxo)")
+        
+        # Usar el modo JSON estándar del servicio LLM
+        json_result = await self.llm_service.call_agent(
+            prompt=prompt + "\n\nIMPORTANTE: Devuelve JSON válido. Si no estás seguro de un campo, usa null.",
+            input_data=cv_text,
+            stage_name="fallback_json_extraction",
+            temperature=0.1
+        )
+        
+        if json_result:
+             data_to_map = None
+             
+             if isinstance(json_result, dict):
+                 data_to_map = json_result
+             elif isinstance(json_result, list):
+                 if len(json_result) == 1 and isinstance(json_result[0], dict):
+                     logger.info("⚠️ Fallback devolvió lista unitem, desempaquetando...")
+                     data_to_map = json_result[0]
+                 elif len(json_result) > 0 and isinstance(json_result[0], dict):
+                     # Heuristic: If detailed list, assume it's main content but missing wrapper.
+                     # However, mapping arbitrary lists to ResumeData is risky without context.
+                     # Let's try to detect if it's a list of experiences or education?
+                     logger.warning(f"⚠️ Fallback devolvió lista de {len(json_result)} items. Intentando heurística simple...")
+                     first_keys = json_result[0].keys()
+                     if any(k in first_keys for k in ['cargo', 'empresa', 'responsabilidades']):
+                         logger.info("⚠️ Lista parece ser Experiencia Laboral")
+                         data_to_map = {"experiencia_laboral": json_result}
+                     elif any(k in first_keys for k in ['titulo', 'institucion', 'grado']):
+                         logger.info("⚠️ Lista parece ser Formación Académica")
+                         data_to_map = {"formacion_academica": json_result}
+                     else:
+                         logger.warning("❌ No se pudo determinar el tipo de contenido de la lista.")
+
+             if data_to_map:
+                 logger.info("✅ Extracción JSON fallback exitosa, mapeando a modelo...")
+                 return self._map_loose_data_to_model(data_to_map)
+             
+        logger.error("❌ Falló la extracción fallback JSON (formato inválido)")
+        return self._create_empty_extraction()
+
+    def _map_loose_data_to_model(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Sanitiza y adapta datos crudos (lax JSON) para cumplir con el modelo Pydantic
+        """
+        sanitized = data.copy()
+        
+        # 1. Sanitizar Habilidades (punto crítico de fallo)
+        if 'habilidades' in sanitized:
+            skills = sanitized['habilidades']
+            if isinstance(skills, str):
+                # Si viene como string JSON, dejarlo así para que el validator lo arregle
+                pass
+            elif isinstance(skills, list):
+                # Si viene como lista (error común), convertir a estructura esperada
+                sanitized['habilidades'] = {
+                    "habilidades_tecnicas": [{"skill": str(s), "level": "Intermedio"} for s in skills],
+                    "idiomas": [],
+                    "habilidades_blandas": []
+                }
+            elif isinstance(skills, dict):
+                # Asegurar listas dentro del dict
+                for key in ['habilidades_tecnicas', 'idiomas', 'habilidades_blandas']:
+                     if key not in skills:
+                         skills[key] = []
+                     elif skills[key] is None:
+                         skills[key] = []
+                sanitized['habilidades'] = skills
+        
+        # 2. Sanitizar Fechas/Periodos en Experiencia
+        if 'experiencia_laboral' in sanitized and isinstance(sanitized['experiencia_laboral'], list):
+            for i, exp in enumerate(sanitized['experiencia_laboral']):
+                if not isinstance(exp, dict): continue
+                
+                # Arreglar periodo si falta o es inválido
+                if 'periodo' not in exp or not isinstance(exp['periodo'], (dict, str)):
+                    exp['periodo'] = {"texto_original": "No especificado"}
+                elif isinstance(exp['periodo'], str):
+                    exp['periodo'] = {"texto_original": exp['periodo']}
+                    
+        # 3. Sanitizar Formación
+        if 'formacion_academica' in sanitized and isinstance(sanitized['formacion_academica'], list):
+            for i, edu in enumerate(sanitized['formacion_academica']):
+                if not isinstance(edu, dict): continue
+                if 'periodo' not in edu or not isinstance(edu['periodo'], (dict, str)):
+                    edu['periodo'] = {"texto_original": "No especificado"}
+
+        # 4. Sanitizar Metadatos (evitar errores de Enum)
+        # Recorrer recursivamente para limpiar metadatos? 
+        # Por ahora confiamos en que los validators 'pre=True' manejarán los strings
+        
+        return sanitized
+
 
     def _create_robust_extraction_prompt(self) -> str:
         """
-        Prompt robusto optimizado para extracción completa y precisa
+        Prompt optimizado para Structured Outputs
         """
         return """
-Eres un experto en análisis de currículums con 10+ años de experiencia en RRHH.
-Tu tarea es extraer TODA la información de este CV de manera exhaustiva y precisa.
+Eres un experto en análisis de currículums con 10+ años de experiencia.
+Tu tarea es extraer TODA la información del CV en el formato estructurado solicitado.
 
-INSTRUCCIONES CRÍTICAS:
-1. Lee COMPLETAMENTE el CV antes de extraer
-2. NO omitas ninguna experiencia laboral o formación
-3. Clasifica correctamente: Licenciaturas/Títulos → formacion_academica, Cursos/Diplomados → formacion_complementaria
-4. Extrae TODAS las responsabilidades y logros de cada trabajo
-5. Parsea fechas en formato estructurado (YYYY-MM)
-6. Preserva información detallada y específica
+INSTRUCCIONES CLAVE:
+1. Extrae TODO el historial laboral, no omitas ningún empleo.
+2. Extrae TODAS las responsabilidades detalladas.
+3. Distingue claramente entre "Titular Profesional" (tu profesión general) y "Cargos" (puestos específicos).
+4. Si falta información, usa null o listas vacías, no inventes datos.
+5. Normaliza fechas al formato YYYY-MM.
+6. INFERENCIA DE FECHAS: Si no hay fechas explícitas, busca años/meses en el texto cercano.
+7. INFERENCIA DE UBICACIÓN: Si no se menciona ciudad, infiere la ubicación por el nombre de la empresa/institución (ej. 'Hospital de Parral' -> 'Parral').
+8. PROHIBIDO USAR '<UNKNOWN>': Si no tienes información, usa null. NUNCA devuelvas el string '<UNKNOWN>'.
+9. PERIODOS: Siempre intenta extraer fecha_inicio y fecha_fin. Si es trabajo actual, fecha_fin es 'Presente'.
 
-⚠️ REGLA CRÍTICA - TITULAR PROFESIONAL vs CARGOS DE EXPERIENCIA:
+ESTRUCTURA DE HABILIDADES (CRÍTICO):
+El campo 'habilidades' es un OBJETO con tres listas:
+- 'habilidades_tecnicas': Lista de objetos {skill, level} o strings.
+- 'idiomas': Lista de objetos {idioma, nivel}.
+- 'habilidades_blandas': Lista de strings.
+NO DEVOLVER UN STRING JSON PARA ESTE CAMPO, DEBE SER UN OBJETO ANIDADO.
 
-TITULAR PROFESIONAL:
-- Es el título/profesión general que aparece AL INICIO del CV, generalmente después del nombre
-- Ejemplo: "Osiel Leiva Saldaña\nIngeniero Informático" → titular: "Ingeniero Informático"
-- Ejemplo: "María González\nTecnóloga Médica" → titular: "Tecnóloga Médica"
-- NO uses cargos específicos de trabajos como titular profesional
-
-CARGOS DE EXPERIENCIA:
-- Son los títulos específicos en cada trabajo dentro de la sección EXPERIENCIA LABORAL
-- Ejemplo: "QA Test Lead Automation Engineer" es un CARGO, no el titular profesional
-- Ejemplo: "Encargada de la sección de Bacteriología" es un CARGO, no el titular profesional
-
-DIFERENCIA CLAVE:
-- Titular profesional = Profesión general al inicio del CV
-- Cargo = Título específico de un trabajo particular
-
-EXTRACCIÓN DE EXPERIENCIA LABORAL - REGLAS ESPECÍFICAS:
-
-⚠️ REGLA CRÍTICA - EXTRACCIÓN COMPLETA:
-- Extrae TODAS las líneas de responsabilidades que aparecen entre el nombre de la empresa y la siguiente empresa
-- NO omitas líneas de responsabilidades
-- Si una experiencia tiene 5 líneas de responsabilidades, debes extraer las 5
-- Lee SECUENCIALMENTE cada línea después del cargo hasta encontrar la siguiente empresa
-
-REGLAS DE CARGO:
-- Si hay múltiples líneas de cargo (ej: "Tecnóloga médica" + "Encargada de..."), usar el CARGO PRINCIPAL ("Tecnóloga médica")
-- Si solo hay un cargo específico (ej: "Gestión de proyecto"), usar ese
-
-REGLAS DE RESPONSABILIDADES:
-- TODAS las líneas de tareas/responsabilidades van en "responsabilidades" como items separados
-- Cada responsabilidad específica debe ser un item separado en la lista
-- Incluye responsabilidades que empiecen con "Encargada de...", "Responsable de...", "Gestión de...", etc.
-
-EJEMPLO CRÍTICO - HOSPITAL SAN JOSÉ (5 RESPONSABILIDADES):
-
-Input:
-```
-Hospital San José de Parral.
-Tecnóloga médica.                                    <- CARGO PRINCIPAL
-Encargada de la sección de Bacteriología.           <- RESPONSABILIDAD 1
-Microbiología, uroanálisis, parasitología y TBC.    <- RESPONSABILIDAD 2
-Encargada de la sección Hematología y UMT.          <- RESPONSABILIDAD 3
-Hematología, coagulación, serología, inmunohematología
-y transfusión de hemocomponentes.                   <- RESPONSABILIDAD 4
-Tutora de práctica de alumnos de Tecnología Médica
-en la sección de bacteriología.                     <- RESPONSABILIDAD 5
-```
-
-Output CORRECTO (TODAS las 5 responsabilidades):
-```json
-{
-  "cargo": "Tecnóloga médica",
-  "empresa": "Hospital San José de Parral",
-  "responsabilidades": [
-    "Encargada de la sección de Bacteriología",
-    "Microbiología, uroanálisis, parasitología y TBC",
-    "Encargada de la sección Hematología y UMT",
-    "Hematología, coagulación, serología, inmunohematología y transfusión de hemocomponentes",
-    "Tutora de práctica de alumnos de Tecnología Médica en la sección de bacteriología"
-  ]
-}
-```
-
-❌ INCORRECTO - NO omitas responsabilidades:
-```json
-{
-  "cargo": "Tecnóloga médica",
-  "responsabilidades": [
-    "Encargada de la sección de Bacteriología",
-    "Microbiología, uroanálisis, parasitología y TBC",
-    "Tutora de práctica de alumnos de Tecnología Médica en la sección de bacteriología"
-  ]
-}
-```
-
-CLASIFICACIÓN ACADÉMICA CRÍTICA:
-- formacion_academica: Títulos universitarios, Licenciaturas, Ingenierías, Masters, MBA, Doctorados
-- formacion_complementaria: Cursos, Diplomados, Certificaciones, Capacitaciones, Seminarios
-
-FORMATO DE FECHAS:
-- "Enero 2018" → "2018-01"
-- "2016-2019" → inicio: "2016", fin: "2019"
-- "Actualidad/Presente" → "Presente"
-
-ESTRUCTURA JSON REQUERIDA:
-
-```json
+EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
 {
   "datos_contacto": {
-    "nombre_completo": "string - OBLIGATORIO",
-    "telefono": "string o null",
-    "email": "string - OBLIGATORIO",
-    "ubicacion": "string o null"
+    "nombre_completo": "Juan Pérez",
+    "email": "juan@email.com",
+    "telefono": "+56912345678",
+    "ubicacion": "Santiago, Chile"
   },
   "titular_profesional": {
-    "titular": "string - Título profesional principal que aparece al inicio del CV después del nombre, NO un cargo específico de experiencia laboral"
+    "titular": "Ingeniero de Software Senior"
   },
   "resumen_profesional": {
-    "resumen": "string - Extracto del perfil profesional"
+    "resumen": "Profesional con 10 años de experiencia..."
   },
   "experiencia_laboral": [
     {
-      "cargo": "string - OBLIGATORIO",
-      "empresa": "string - OBLIGATORIO",
+      "cargo": "Desarrollador Backend",
+      "empresa": "Tech Corp",
       "periodo": {
-        "fecha_inicio": "string - YYYY-MM o YYYY",
-        "fecha_fin": "string - YYYY-MM, YYYY o 'Presente'",
-        "texto_original": "string - Texto original del período"
+        "fecha_inicio": "2020-01",
+        "fecha_fin": "Presente",
+        "texto_original": "Enero 2020 - Actualidad"
       },
-      "responsabilidades": [
-        "string - CADA responsabilidad por separado"
-      ],
-      "ubicacion": "string o null"
+      "responsabilidades": ["Diseño de APIs", "Optimización de DB"],
+      "ubicacion": "Remoto"
     }
   ],
   "formacion_academica": [
     {
-      "titulo": "string - OBLIGATORIO - Solo títulos universitarios",
-      "institucion": "string - OBLIGATORIO",
+      "titulo": "Ingeniería Informática",
+      "institucion": "Universidad X",
       "periodo": {
-        "fecha_inicio": "string o null",
-        "fecha_fin": "string o null",
-        "texto_original": "string"
-      },
-      "gpa": "string o null",
-      "ubicacion": "string o null"
+        "fecha_inicio": "2010-03",
+        "fecha_fin": "2015-12"
+      }
     }
   ],
-  "formacion_complementaria": {
-    "certificaciones_cursos": [
-      "string - Cursos, diplomados, certificaciones"
-    ]
-  },
   "habilidades": {
     "habilidades_tecnicas": [
-      {
-        "skill": "string",
-        "level": "string - Básico|Intermedio|Avanzado|Experto",
-        "years_experience": "number o null"
-      }
+      {"skill": "Python", "level": "Avanzado"},
+      {"skill": "Docker", "level": "Intermedio"}
     ],
     "idiomas": [
-      {
-        "idioma": "string",
-        "nivel": "string",
-        "certificacion": "string o null"
-      }
+      {"idioma": "Inglés", "nivel": "C1 Avanzado"}
     ],
-    "habilidades_blandas": ["string"]
-  },
-  "reconocimientos": {
-    "logros_premios": ["string"]
+    "habilidades_blandas": ["Liderazgo", "Comunicación"]
   }
 }
-```
+"""
 
-REGLAS ESPECÍFICAS PARA EXTRACCIÓN DE EXPERIENCIA LABORAL:
-
-1. PRIORIDAD DE CARGO:
-   - Si aparece "Tecnóloga médica" o "Tecnólogo médico" en cualquier parte del texto, SIEMPRE úsalo como cargo principal
-   - Si hay múltiples títulos (ej: "Encargada de..." + "Tecnóloga médica"), PRIORIZAR el título profesional ("Tecnóloga médica")
-   - Los roles específicos van en "responsabilidades", NO en "cargo"
-
-2. EXTRACCIÓN DE RESPONSABILIDADES:
-   - CADA línea de responsabilidad/tarea debe ser un elemento separado en "responsabilidades"
-   - Incluir SOLO las responsabilidades que aparecen DIRECTAMENTE bajo cada empresa
-   - NUNCA muevas texto de Hospital San José a Hospital Temuco o viceversa
-   - Si una responsabilidad aparece en la sección de Hospital San José, NO puede aparecer en otra empresa
-   - Separar responsabilidades que estén en una misma línea si representan tareas diferentes
-
-EJEMPLOS DE EXTRACCIÓN CORRECTA:
-
-Input: "Enero 2018 - Julio 2019 Hospital San José. Tecnóloga médica. Encargada de bacteriología. Responsable de hematología y coagulación."
-
-Output:
-```json
-{
-  "experiencia_laboral": [
-    {
-      "cargo": "Tecnóloga médica",
-      "empresa": "Hospital San José",
-      "periodo": {
-        "fecha_inicio": "2018-01",
-        "fecha_fin": "2019-07",
-        "texto_original": "Enero 2018 - Julio 2019"
-      },
-      "responsabilidades": [
-        "Encargada de bacteriología",
-        "Responsable de hematología",
-        "Responsable de coagulación"
-      ]
-    }
-  ]
-}
-```
-
-Input: "Febrero 2016 - 2018 CESFAM Curarrehue. Encargada de Laboratorio de atención primaria. Tecnóloga médica. Toma de muestra, bioquímica, hematología."
-
-Output:
-```json
-{
-  "experiencia_laboral": [
-    {
-      "cargo": "Tecnóloga médica",
-      "empresa": "CESFAM Curarrehue",
-      "periodo": {
-        "fecha_inicio": "2016-02",
-        "fecha_fin": "2018",
-        "texto_original": "Febrero 2016 - 2018"
-      },
-      "responsabilidades": [
-        "Encargada de Laboratorio de atención primaria",
-        "Toma de muestra",
-        "Bioquímica",
-        "Hematología"
-      ]
-    }
-  ]
-}
-```
-
-EJEMPLO CRÍTICO - CV MARTA GEORGE (Hospital San José vs Hospital Temuco):
-
-Input:
-"Enero 2018 - Julio 2019 Hospital San José de Parral. Tecnóloga médica. Encargada de la sección de Bacteriología. Encargada de la sección Hematología y UMT.
-
-Enero 2016 - Abril 2016 Hospital Doctor Hernán Henríquez Aravena de Temuco. Tecnóloga médica. Áreas de uroanálisis y coagulación. Laboratorio clínico, hematología y banco de sangre."
-
-Output CORRECTO:
-```json
-{
-  "experiencia_laboral": [
-    {
-      "cargo": "Tecnóloga médica",
-      "empresa": "Hospital San José de Parral",
-      "responsabilidades": [
-        "Encargada de la sección de Bacteriología",
-        "Encargada de la sección Hematología y UMT"
-      ]
-    },
-    {
-      "cargo": "Tecnóloga médica",
-      "empresa": "Hospital Doctor Hernán Henríquez Aravena de Temuco",
-      "responsabilidades": [
-        "Áreas de uroanálisis y coagulación",
-        "Laboratorio clínico, hematología y banco de sangre"
-      ]
-    }
-  ]
-}
-```
-
-❌ INCORRECTO - NUNCA hagas esto:
-```json
-{
-  "experiencia_laboral": [
-    {
-      "cargo": "Tecnóloga médica",
-      "empresa": "Hospital San José de Parral",
-      "responsabilidades": [
-        "Encargada de la sección de Bacteriología"
-      ]
-    },
-    {
-      "cargo": "Tecnóloga médica",
-      "empresa": "Hospital Doctor Hernán Henríquez Aravena de Temuco",
-      "responsabilidades": [
-        "Áreas de uroanálisis y coagulación",
-        "Laboratorio clínico, hematología y banco de sangre",
-        "Encargada de la sección Hematología y UMT"  ← ERROR: Pertenece a Hospital San José
-      ]
-    }
-  ]
-}
-```
-
-🚨 INSTRUCCIONES CRÍTICAS DE FORMATO:
-1. RESPONDE ÚNICAMENTE CON UN SOLO BLOQUE JSON COMPLETO
-2. EL JSON DEBE COMENZAR CON { y TERMINAR CON }
-3. NO dividas el JSON en múltiples objetos
-4. NO agregues texto explicativo antes o después del JSON
-5. INCLUYE TODAS LAS SECCIONES: datos_contacto, experiencia_laboral, formacion_academica, etc.
-
-EJEMPLO DEL FORMATO REQUERIDO:
-{
-  "datos_contacto": { ... },
-  "experiencia_laboral": [ ... ],
-  "formacion_academica": [ ... ],
-  "habilidades": { ... }
-}
-
-⚠️ CRÍTICO: Tu respuesta debe ser EXACTAMENTE un JSON con esta estructura.
-NO uses múltiples objetos JSON separados.
-Extrae TODA la información disponible sin omitir detalles.
-MANTÉN LA FIDELIDAD ABSOLUTA AL TEXTO ORIGINAL.
-        """
 
     def _customize_prompt_for_attempt(self, base_prompt: str, attempt: int, profile_info: Dict) -> str:
         """
@@ -1028,6 +580,9 @@ MANTÉN LA FIDELIDAD ABSOLUTA AL TEXTO ORIGINAL.
 
         # Post-procesamiento de fechas
         extraction = self._post_process_dates(extraction)
+        
+        # Deduplicación de experiencias (Fix: "No especificado" duplicate entries)
+        extraction = self._deduplicate_experiences(extraction)
 
         # Validación de clasificación académica
         extraction = self._validate_academic_classification(extraction)
@@ -1036,6 +591,94 @@ MANTÉN LA FIDELIDAD ABSOLUTA AL TEXTO ORIGINAL.
         extraction = self._clean_and_normalize(extraction)
 
         return extraction
+
+    def _deduplicate_experiences(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Elimina experiencias duplicadas o fantasmas (ej: header vs detalle)
+        """
+        if not data.get("experiencia_laboral"):
+            return data
+            
+        exps = data["experiencia_laboral"]
+        if not isinstance(exps, list): return data
+        
+        unique_exps = []
+        seen_keys = set()
+        
+        for exp in exps:
+            if not isinstance(exp, dict): continue
+            
+            # Normalizar claves para detección de duplicados
+            empresa = str(exp.get("empresa", "")).lower().strip()
+            # Usar fecha inicio para distinguir roles distintos en misma empresa
+            fecha_inicio = str(exp.get("periodo", {}).get("fecha_inicio", "")).lower().strip()
+            
+            # Clave única
+            key = f"{empresa}|{fecha_inicio}"
+            
+            # Verificar si ya existe una mejor versión
+            if key in seen_keys:
+                # Encontrar la existente
+                existing_idx = -1
+                for i, e in enumerate(unique_exps):
+                    e_emp = str(e.get("empresa", "")).lower().strip()
+                    e_fec = str(e.get("periodo", {}).get("fecha_inicio", "")).lower().strip()
+                    if f"{e_emp}|{e_fec}" == key:
+                        existing_idx = i
+                        break
+                
+                if existing_idx != -1:
+                    existing = unique_exps[existing_idx]
+                    
+                    # Criterio de fusión: Quedarse con la que tiene Cargo
+                    curr_cargo = str(exp.get("cargo", "")).lower()
+                    prev_cargo = str(existing.get("cargo", "")).lower()
+                    
+                    is_curr_better = (curr_cargo and curr_cargo != "no especificado" and curr_cargo != "none") and \
+                                     (not prev_cargo or prev_cargo == "no especificado" or prev_cargo == "none")
+                                     
+                    if is_curr_better:
+                        # Reemplazar la existente con la actual (que tiene cargo real)
+                        unique_exps[existing_idx] = exp
+                    
+                    # Si ambas tienen cargo, puede ser una promoción legítima.
+                    # Pero si el cargo es IDÉNTICO, es duplicado.
+                    elif curr_cargo == prev_cargo:
+                        # Fusionar responsabilidades
+                        curr_resps = exp.get("responsabilidades", [])
+                        prev_resps = unique_exps[existing_idx].get("responsabilidades", [])
+                        if isinstance(curr_resps, list) and isinstance(prev_resps, list):
+                             # Add unique new ones
+                             for r in curr_resps:
+                                 if r not in prev_resps:
+                                     prev_resps.append(r)
+                        unique_exps[existing_idx]["responsabilidades"] = prev_resps
+                        # No agregar 'exp' como nueva entrada
+                    else:
+                        # Mismo inicio, misma empresa, distinto cargo -> Posiblemente promoción concurrente?
+                        # O error. Asumiremos distinto cargo = válida si no es 'No especificado'.
+                        if curr_cargo and curr_cargo != "no especificado":
+                             unique_exps.append(exp)
+            else:
+                seen_keys.add(key)
+                unique_exps.append(exp)
+        
+        # FINAL PASS: Clean duplicated responsibilities (substrings)
+        # e.g. ["Hello world", "Hello"] -> ["Hello world"]
+        for exp in unique_exps:
+            if "responsabilidades" in exp and isinstance(exp["responsabilidades"], list):
+                raw_resps = sorted(list(set(exp["responsabilidades"])), key=len, reverse=True)
+                clean_resps = []
+                for r in raw_resps:
+                    # Check if 'r' is a substring/prefix of any already accepted larger string
+                    # Use a threshold to avoid deleting "Design API" just because "Design API and Database" exists if they are distinct.
+                    # But for the specific case "text..." vs "text... continued", the check is:
+                    if not any(r in outcome for outcome in clean_resps):
+                        clean_resps.append(r)
+                exp["responsabilidades"] = clean_resps
+
+        data["experiencia_laboral"] = unique_exps
+        return data
 
     def _post_process_dates(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -1059,32 +702,89 @@ MANTÉN LA FIDELIDAD ABSOLUTA AL TEXTO ORIGINAL.
         """
         Normalización robusta de períodos
         """
+        p = {}
         if isinstance(period, dict):
-            return {
+            p = {
                 "fecha_inicio": period.get("fecha_inicio"),
                 "fecha_fin": period.get("fecha_fin"),
                 "texto_original": period.get("texto_original", "No especificado")
             }
         elif isinstance(period, str):
             # Parsing inteligente de fechas
-            return self._parse_period_string(period)
+            p = self._parse_period_string(period)
         else:
-            return {
+            p = {
                 "fecha_inicio": None,
                 "fecha_fin": None,
                 "texto_original": str(period) if period else "No especificado"
             }
+            
+        # Clean NaN/Null strings from initial extraction
+        # Normalize to lower case for comparison but keep original strict check
+        bad_values = ["nan", "none", "null", "nat", "no especificado", "", "unknown", "n/a", "no extraído"]
+        
+        for k in ["fecha_inicio", "fecha_fin"]:
+            val = str(p.get(k, "")).lower().strip()
+            if val in bad_values:
+                p[k] = None
+        
+        # DEFINITIVE 'ACTUALIDAD' LIST
+        current_synonyms = [
+            "presente", "actualidad", "actual", "current", "now", "hoy", 
+            "vigente", "curso", "continuo", "ongoing", "present", "date"
+        ]
+
+        # AGGRESSIVE RECOVERY:
+        # If we have texto_original but missing dates, try to parse from text (LLM might have failed)
+        if p["texto_original"] and str(p["texto_original"]).lower() not in bad_values:
+            raw_text = str(p["texto_original"]).lower()
+            
+            # Check for "Actualidad" markers in raw text
+            is_current = any(syn in raw_text for syn in current_synonyms)
+            
+            # If explicit "Actualidad" likely found in text, force fecha_fin to Presente FIRST
+            # This overrides any hallucinated date if the text says "Presente"
+            if is_current:
+                p["fecha_fin"] = "Presente"
+
+            # Only try parsing if we are missing at least one date
+            if not p["fecha_inicio"] or not p["fecha_fin"]:
+                 parsed = self._parse_period_string(p["texto_original"])
+                 
+                 # Fill in gaps
+                 if not p["fecha_inicio"] and parsed["fecha_inicio"]:
+                     p["fecha_inicio"] = parsed["fecha_inicio"]
+                 
+                 if not p["fecha_fin"] and parsed["fecha_fin"]:
+                     p["fecha_fin"] = parsed["fecha_fin"]
+                     
+        # Specific Fix: If fecha_fin is still None but text implies current (redundant check but safe)
+        if not p["fecha_fin"]:
+             raw_text = str(p.get("texto_original", "")).lower()
+             if any(k in raw_text for k in current_synonyms):
+                p["fecha_fin"] = "Presente"
+        
+        # Clean up 'Presente' variations
+        if p["fecha_fin"] and str(p["fecha_fin"]).lower() in current_synonyms:
+             p["fecha_fin"] = "Presente"
+             
+        return p
 
     def _parse_period_string(self, period_str: str) -> Dict[str, Any]:
         """
         Parsing inteligente de strings de período
         """
+        if not period_str or str(period_str).lower() in ['nan', 'none', 'null']:
+            return {"fecha_inicio": None, "fecha_fin": None, "texto_original": "No especificado"}
+            
         import re
 
         months = {
             "enero": "01", "febrero": "02", "marzo": "03", "abril": "04",
             "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
-            "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12"
+            "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12",
+            "jan": "01", "feb": "02", "mar": "03", "apr": "04", "may": "05", "jun": "06",
+            "jul": "07", "aug": "08", "sep": "09", "oct": "10", "nov": "11", "dec": "12"
         }
 
         fecha_inicio = None
@@ -1100,7 +800,7 @@ MANTÉN LA FIDELIDAD ABSOLUTA AL TEXTO ORIGINAL.
 
         # Patrón: "Enero 2018 - Presente"
         if not fecha_inicio:
-            match = re.search(r'(\w+)\s+(\d{4})\s*[-–]\s*(Presente|Actualidad|Actual)', period_str, re.IGNORECASE)
+            match = re.search(r'(\w+)\s+(\d{4})\s*[-–]\s*(Presente|Actualidad|Actual|Current|Now)', period_str, re.IGNORECASE)
             if match:
                 start_month, start_year = match.groups()[:2]
                 if start_month.lower() in months:
@@ -1137,7 +837,8 @@ MANTÉN LA FIDELIDAD ABSOLUTA AL TEXTO ORIGINAL.
         ]
 
         # Revisar si hay items mal clasificados en formacion_complementaria
-        if data.get("formacion_complementaria", {}).get("certificaciones_cursos"):
+        # Revisar si hay items mal clasificados en formacion_complementaria
+        if (data.get("formacion_complementaria") or {}).get("certificaciones_cursos"):
             cursos = data["formacion_complementaria"]["certificaciones_cursos"]
             academic_items = []
             complementary_items = []
@@ -1410,6 +1111,227 @@ MANTÉN LA FIDELIDAD ABSOLUTA AL TEXTO ORIGINAL.
         return self._create_empty_structure()
 
     def _create_empty_structure(self) -> Dict[str, Any]:
+        """
+        Crear estructura vacía inicial
+        """
+        return {
+            "datos_contacto": {
+                "nombre_completo": "No extraído",
+                "telefono": None,
+                "email": "no-extraido@example.com",
+                "ubicacion": None
+            },
+            "titular_profesional": {"titular": "No extraído"},
+            "resumen_profesional": {"resumen": "No extraído"},
+            "experiencia_laboral": [],
+            "formacion_academica": [],
+            "habilidades": {
+                "habilidades_tecnicas": [],
+                "idiomas": [],
+                "habilidades_blandas": []
+            }
+        }
+
+    def _create_error_response(self, error_msg: str, processing_time: float) -> ResumeExtractionResponse:
+        """
+        Crear respuesta de error
+        """
+        return ResumeExtractionResponse(
+            datos_cv=self._create_minimal_valid_response(),
+            confianza_general=0.0,
+            advertencias=[f"Error crítico durante extracción: {error_msg}"],
+            campos_faltantes=["ALL"],
+            tiempo_procesamiento=processing_time,
+            timestamp=datetime.now().isoformat()
+        )
+        
+    def _extract_titular_from_text(self, text: str) -> str:
+        """Helper para extraer titular simple del texto"""
+        lines = text.split('\n')
+        for line in lines[:20]: # Buscar en las primeras líneas
+            line = line.strip()
+            if len(line) > 5 and len(line) < 100:
+                # Heurística simple: líneas cortas al principio suelen ser el nombre o el titular
+                return line
+        return "No extraído"
+
+    def _create_emergency_response(self, partial_data: Dict, cv_text: str) -> Optional[ResumeData]:
+        """Intentar recuperar datos en caso de emergencia"""
+        # Implementación simple de recuperación
+        return self._create_validated_response(partial_data, cv_text)
+
+    # -------------------------------------------------------------------------
+    # ESTRATEGIA CHUNKED (Para textos largos)
+    # -------------------------------------------------------------------------
+
+    async def _execute_chunked_extraction(self, cv_text: str, profile_info: Dict) -> Dict[str, Any]:
+        """
+        Estrategia para CVs muy largos que exceden el contexto
+        """
+        logger.info("🔪 Ejecutando extracción por chunks")
+        
+        chunks = self._create_intelligent_chunks(cv_text)
+        logger.info(f"🔪 Texto dividido en {len(chunks)} chunks")
+        
+        chunk_results = []
+        
+        for i, chunk in enumerate(chunks):
+            logger.info(f"🔪 Procesando chunk {i+1}/{len(chunks)}")
+            
+            prompt = f"""
+            ESTE ES EL CHUNK {i+1} DE {len(chunks)} DE UN CURRÍCULUM.
+            TU OBJETIVO: Extraer TODA la información relevante encontrada EXCLUSIVAMENTE en este fragmento.
+            
+            {self._create_robust_extraction_prompt()}
+            """
+            
+            try:
+                # 1. Intentar Instructor
+                from app.models.resume import PartialResumeData
+                result = await self.llm_service.call_agent_structured(
+                    prompt=prompt,
+                    input_data=chunk,
+                    response_model=PartialResumeData,
+                    stage_name=f"chunk_{i+1}"
+                )
+                if result:
+                    chunk_results.append(result.model_dump())
+                    continue
+                
+                # 2. Fallback JSON local para el chunk
+                logger.warning(f"⚠️ Chunk {i+1}: Falló estructurado, intentando fallback JSON...")
+                json_result = await self._execute_fallback_extraction(chunk, prompt)
+                if json_result:
+                    chunk_results.append(json_result)
+                    
+            except Exception as e:
+                logger.error(f"❌ Error procesando chunk {i+1}: {e}")
+                # Último intento con fallback
+                try:
+                    json_result = await self._execute_fallback_extraction(chunk, prompt)
+                    if json_result:
+                        chunk_results.append(json_result)
+                except:
+                    pass
+                
+        if not chunk_results:
+            return self._create_empty_extraction()
+            
+        # Fusionar resultados
+        return self._merge_chunk_results(chunk_results)
+
+    def _create_intelligent_chunks(self, text: str) -> List[str]:
+        """
+        Dividir texto en chunks respetando saltos de línea y contexto
+        """
+        chunks = []
+        lines = text.split('\n')
+        current_chunk = []
+        current_len = 0
+        
+        for line in lines:
+            line_len = len(line) + 1 # +1 por newline
+            
+            if current_len + line_len > self.max_text_length:
+                # Chunk lleno, guardar y empezar nuevo con overlap
+                chunks.append('\n'.join(current_chunk))
+                # Mantener últimas lineas para overlap context
+                overlap_size = 0
+                overlap_lines = []
+                for prev_line in reversed(current_chunk):
+                    if overlap_size + len(prev_line) < self.chunk_overlap:
+                        overlap_lines.insert(0, prev_line)
+                        overlap_size += len(prev_line)
+                    else:
+                        break
+                
+                current_chunk = overlap_lines
+                current_len = overlap_size
+            
+            current_chunk.append(line)
+            current_len += line_len
+            
+        if current_chunk:
+            chunks.append('\n'.join(current_chunk))
+            
+        return chunks
+
+    def _merge_chunk_results(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Fusionar inteligentemente los resultados de múltiples chunks
+        """
+        logger.info("🔄 Fusionando resultados de chunks...")
+        merged = results[0].copy()
+        
+        for i in range(1, len(results)):
+            current = results[i]
+            
+            # Fusionar experiencia laboral (concatenar y dedalespués)
+            if current.get("experiencia_laboral"):
+                merged["experiencia_laboral"].extend(current["experiencia_laboral"])
+                
+            # Fusionar formación (concatenar)
+            if current.get("formacion_academica"):
+                merged["formacion_academica"].extend(current["formacion_academica"])
+                
+            # Fusionar habilidades (unir sets)
+            if current.get("habilidades"):
+                # Técnicas - Deduplicación manual por nombre
+                curr_tech = current["habilidades"].get("habilidades_tecnicas", [])
+                merged_tech = merged["habilidades"].get("habilidades_tecnicas", [])
+                
+                # Crear set de nombres existentes para búsqueda rápida
+                existing_names = set()
+                for skill in merged_tech:
+                    if isinstance(skill, dict):
+                        existing_names.add(str(skill.get("skill", "")).lower())
+                    elif isinstance(skill, str):
+                        existing_names.add(skill.lower())
+                
+                # Agregar skills nuevas si no existen
+                for skill in curr_tech:
+                    skill_name = ""
+                    if isinstance(skill, dict):
+                        skill_name = str(skill.get("skill", "")).lower()
+                    elif isinstance(skill, str):
+                        skill_name = skill.lower()
+                        
+                    if skill_name and skill_name not in existing_names:
+                        merged_tech.append(skill)
+                        existing_names.add(skill_name)
+                        
+                merged["habilidades"]["habilidades_tecnicas"] = merged_tech
+                
+                # Idiomas - Deduplicación manual por nombre
+                curr_lang = current["habilidades"].get("idiomas", [])
+                merged_lang = merged["habilidades"].get("idiomas", [])
+                
+                existing_langs = set()
+                for lang in merged_lang:
+                    if isinstance(lang, dict):
+                        existing_langs.add(str(lang.get("idioma", "")).lower())
+                    elif isinstance(lang, str):
+                        existing_langs.add(lang.lower())
+                        
+                for lang in curr_lang:
+                    lang_name = ""
+                    if isinstance(lang, dict):
+                        lang_name = str(lang.get("idioma", "")).lower()
+                    elif isinstance(lang, str):
+                        lang_name = lang.lower()
+                        
+                    if lang_name and lang_name not in existing_langs:
+                        merged_lang.append(lang)
+                        existing_langs.add(lang_name)
+                        
+                merged["habilidades"]["idiomas"] = merged_lang
+            
+            # Actualizar contacto si el chunk actual tiene más info
+            if self._calculate_confidence(current) > self._calculate_confidence(merged):
+                if current.get("datos_contacto", {}).get("email") != "no-extraido@example.com":
+                    merged["datos_contacto"] = current["datos_contacto"]
+                    
+        return merged
         """
         Crear estructura vacía válida
         """

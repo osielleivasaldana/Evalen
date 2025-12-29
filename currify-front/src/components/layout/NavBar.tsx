@@ -7,7 +7,7 @@ import {
   ArrowRightOnRectangleIcon,
   Squares2X2Icon,
   PlusCircleIcon,
-  BriefcaseIcon,
+
   UsersIcon,
 } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/api';
@@ -58,10 +58,20 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
             className="flex items-center gap-2 cursor-pointer"
             onClick={() => window.location.href = '/dashboard'}
           >
-            <BriefcaseIcon className="w-8 h-8 text-blue-600" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Evalen
-            </span>
+            <svg width="140" height="36" viewBox="0 0 180 48" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="evalen-gradient-nav" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style={{ stopColor: '#4F6BF6' }} />
+                  <stop offset="100%" style={{ stopColor: '#8B5CF6' }} />
+                </linearGradient>
+              </defs>
+              {/* E con gradiente */}
+              <path d="M0 8 L0 40 L24 40 L24 35 L6 35 L6 26 L20 26 L20 21 L6 21 L6 13 L24 13 L24 8 Z" fill="url(#evalen-gradient-nav)" />
+              {/* Corte diagonal (transparente para fondo claro) */}
+              <path d="M18 8 L24 8 L6 40 L0 40 Z" fill="#ffffff" />
+              {/* Wordmark */}
+              <text x="30" y="34" fontFamily="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" fontSize="28" fontWeight="700" fill="#18181b" letterSpacing="-1">valen</text>
+            </svg>
           </div>
 
           {/* Desktop Navigation */}
@@ -101,9 +111,8 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
                     <Menu.Item>
                       {({ active }) => (
                         <button
-                          className={`${
-                            active ? 'bg-gray-100' : ''
-                          } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
+                          className={`${active ? 'bg-gray-100' : ''
+                            } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
                         >
                           <UserCircleIcon className="w-5 h-5 text-blue-600" />
                           Mi Perfil
@@ -115,9 +124,8 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
                       {({ active }) => (
                         <button
                           onClick={handleLogout}
-                          className={`${
-                            active ? 'bg-red-50' : ''
-                          } flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600`}
+                          className={`${active ? 'bg-red-50' : ''
+                            } flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600`}
                         >
                           <ArrowRightOnRectangleIcon className="w-5 h-5" />
                           Cerrar Sesión
