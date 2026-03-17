@@ -15,8 +15,8 @@ variable "db_url" {
   sensitive   = true
 }
 
-variable "anthropic_api_key" {
-  description = "Anthropic API Key para modelo Claude"
+variable "google_api_key" {
+  description = "Google API Key para modelo Gemini"
   type        = string
   sensitive   = true
 }

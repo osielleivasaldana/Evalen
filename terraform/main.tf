@@ -34,7 +34,7 @@ module "secrets" {
   source     = "./modules/secrets"
   project_id = var.project_id
   db_url     = var.db_url
-  anthropic_api_key = var.anthropic_api_key
+  anthropic_api_key = var.google_api_key
   depends_on = [module.project_services]
 }
 
@@ -46,7 +46,7 @@ module "compute" {
   
   # Secretos referenciados
   db_url_secret_id         = module.secrets.db_url_secret_id
-  anthropic_api_secret_id  = module.secrets.anthropic_api_secret_id
+  anthropic_api_secret_id  = module.secrets.google_api_secret_id
   
   # Dependemos de que el repositorio exista
   depends_on = [google_artifact_registry_repository.currify_repo, module.secrets]

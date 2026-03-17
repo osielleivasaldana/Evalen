@@ -1,7 +1,7 @@
 variable "project_id" {}
 variable "region" {}
 variable "db_url_secret_id" {}
-variable "anthropic_api_secret_id" {}
+variable "google_api_secret_id" {}
 
 # ===============================================
 # Service Account para Cloud Run
@@ -38,10 +38,10 @@ resource "google_cloud_run_v2_service" "core" {
       }
       
       env {
-        name = "ANTHROPIC_API_KEY"
+        name = "GOOGLE_API_KEY"
         value_source {
           secret_key_ref {
-            secret  = var.anthropic_api_secret_id
+            secret  = var.google_api_secret_id
             version = "latest"
           }
         }
