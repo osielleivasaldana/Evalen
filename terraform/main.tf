@@ -34,7 +34,7 @@ module "secrets" {
   source     = "./modules/secrets"
   project_id = var.project_id
   db_url     = var.db_url
-  anthropic_api_key = var.google_api_key
+  google_api_key = var.google_api_key
   depends_on = [module.project_services]
 }
 
