@@ -19,15 +19,16 @@ RUN npm run build
 
 FROM nginx:alpine AS runtime
 
-# Copy custom nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy custom nginx configuration as a template
+COPY nginx.conf /etc/nginx/nginx.conf.template
 
 # Copy built React app
 COPY --from=builder /app/build /usr/share/nginx/html
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+# Remove strict healthcheck as Cloud Run does its own TCP/HTTP health checks
+# and the port is dynamic. 
 
-CMD ["nginx", "-g", "daemon off;"]
+# Replace $PORT in nginx.conf using envsubst, keeping other variables untouched, then start nginx
+CMD /bin/sh -c "envsubst '\\$PORT' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"

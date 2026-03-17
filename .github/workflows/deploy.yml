@@ -1,0 +1,104 @@
+name: Deploy to Google Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+  REPO_NAME: currify-repo
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          # Recomendamos usar Workload Identity Federation en lugar de Service Account Keys
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Docker Auth
+        run: |-
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      # ==========================================
+      # 1. BUILD & PUSH: CURRIFY-CORE
+      # ==========================================
+      - name: Build Core
+        run: docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-core:${{ github.sha }} ./currify-core
+      - name: Push Core
+        run: docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-core:${{ github.sha }}
+
+      # ==========================================
+      # 2. BUILD & PUSH: CURRIFY-BACK
+      # ==========================================
+      - name: Build Backend
+        run: docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} ./currify-back
+      - name: Push Backend
+        run: docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }}
+
+      # ==========================================
+      # 3. BUILD & PUSH: CURRIFY-FRONT
+      # ==========================================
+      - name: Build Frontend
+        run: |
+          docker build \
+            --build-arg REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }} \
+            --build-arg REACT_APP_SCORING_SERVICE_URL=${{ secrets.REACT_APP_SCORING_SERVICE_URL }} \
+            --build-arg REACT_APP_MAPBOX_TOKEN=${{ secrets.REACT_APP_MAPBOX_TOKEN }} \
+            -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-frontend:${{ github.sha }} ./currify-front
+      - name: Push Frontend
+        run: docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-frontend:${{ github.sha }}
+
+      # ==========================================
+      # 4. DEPLOY TO CLOUD RUN
+      # ==========================================
+      - name: Deploy Core
+        run: |
+          gcloud run deploy currify-core \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-core:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --quiet
+
+      - name: Deploy Backend
+        run: |
+          gcloud run deploy currify-backend \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --quiet
+
+      - name: Deploy Frontend
+        run: |
+          gcloud run deploy currify-frontend \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-frontend:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --quiet
+
+      # ==========================================
+      # 5. RUN PRISMA MIGRATIONS VIA CLOUD RUN JOB
+      # ==========================================
+      - name: Update and Execute Prisma Migrate Job
+        run: |
+          gcloud run jobs update currify-prisma-migrate \
+            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
+            --region ${{ env.REGION }} \
+            --quiet
+          
+          gcloud run jobs execute currify-prisma-migrate \
+            --region ${{ env.REGION }} \
+            --wait
