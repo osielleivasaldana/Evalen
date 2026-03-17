@@ -84,9 +84,9 @@ class ScoringRubric:
 
     # Recommendation thresholds
     RECOMMENDATION_THRESHOLDS = {
-        "strong_fit": 75,      # >= 75
-        "moderate_fit": 50,    # >= 50 and < 75
-        "weak_fit": 0          # < 50
+        "strong_fit": 80,      # >= 80
+        "moderate_fit": 60,    # >= 60 and < 80
+        "weak_fit": 0          # < 60
     }
 
     @classmethod

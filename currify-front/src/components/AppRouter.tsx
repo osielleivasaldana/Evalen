@@ -5,6 +5,11 @@ import { apiService } from '../services/api';
 // Auth Components
 import AuthContainer from './auth/AuthContainer';
 import ActivateAccount from './auth/ActivateAccount';
+import AuthCallback from './auth/AuthCallback';
+import Login from './auth/Login';
+import Register from './auth/Register';
+import OnboardingWizard from './onboarding/OnboardingWizard';
+import PricingPage from './pricing/PricingPage';
 
 // Dashboard Components
 import Dashboard from './dashboard/Dashboard';
@@ -114,6 +119,7 @@ const AppRouter: React.FC = () => {
                 />
               }
             />
+            <Route path="/onboarding" element={<OnboardingWizard />} />
             <Route
               path="/create-campaign"
               element={
@@ -147,6 +153,7 @@ const AppRouter: React.FC = () => {
               path="/admin/users"
               element={<UserManagement />}
             />
+            <Route path="/pricing" element={<PricingPage />} />
             <Route
               path="/"
               element={<Navigate to="/dashboard" replace />}
@@ -159,10 +166,18 @@ const AppRouter: React.FC = () => {
           </>
         ) : (
           <>
-            <Route
-              path="/login"
-              element={<AuthContainer onAuthSuccess={handleAuthSuccess} />}
-            />
+            {/* Auth Routes */}
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/onboarding" element={<OnboardingWizard />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/login" element={
+              <Login onLoginSuccess={handleAuthSuccess} onSwitchToRegister={() => window.location.href = '/register'} />
+            } />
+            <Route path="/register" element={
+              <AuthContainer>
+                <Register onRegisterSuccess={handleAuthSuccess} onSwitchToLogin={() => window.location.href = '/login'} />
+              </AuthContainer>
+            } />
             <Route
               path="/"
               element={<Navigate to="/login" replace />}

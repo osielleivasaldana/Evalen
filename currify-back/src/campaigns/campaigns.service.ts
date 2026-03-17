@@ -42,6 +42,32 @@ export class CampaignsService {
       }));
     }
 
+    // Check user's campaign limit
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        campaignLimit: true,
+        plan: true
+      }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const activeCampaigns = await this.prisma.campaign.count({
+      where: {
+        userId,
+        status: CampaignStatus.ACTIVE
+      }
+    });
+
+    if (activeCampaigns >= user.campaignLimit) {
+      throw new ForbiddenException(
+        `Has alcanzado el límite de campañas activas para tu plan ${user.plan}. Mejora a PRO para crear campañas ilimitadas.`
+      );
+    }
+
     const campaign = await this.prisma.campaign.create({
       data: {
         ...campaignData,
@@ -193,6 +219,12 @@ export class CampaignsService {
         showSalary: true,
         status: true,
         createdAt: true,
+        user: {
+          select: {
+            plan: true,
+            cvCredits: true,
+          }
+        }
       }
     });
 
@@ -204,7 +236,13 @@ export class CampaignsService {
       throw new ForbiddenException('Campaign is not active');
     }
 
-    return campaign;
+    // Check if limit is reached (Only for non-PRO users with 0 credits)
+    const isLimitReached = campaign.user.plan !== 'PRO' && campaign.user.cvCredits <= 0;
+
+    return {
+      ...campaign,
+      isLimitReached
+    };
   }
 
   async update(id: string, userId: string, updateCampaignDto: UpdateCampaignDto) {
@@ -232,10 +270,92 @@ export class CampaignsService {
       );
     }
 
+    const { stageTemplates, ...campaignData } = updateCampaignDto;
+
+    // Si se intentan actualizar las etapas
+    if (stageTemplates) {
+      // 1. Verificar que no haya candidatos (validación crítica)
+      if (campaign._count.candidates > 0) {
+        throw new ForbiddenException(
+          'Cannot edit campaign stages because it already has candidates. This would invalidate existing scores.'
+        );
+      }
+
+      // 2. Validar que haya al menos una etapa
+      if (stageTemplates.length === 0) {
+        throw new BadRequestException('At least one stage template is required');
+      }
+
+      // 3. Validar/Agregar etapa Contactar (misisma lógica que create)
+      const hasContactStage = stageTemplates.some(
+        stage => stage.name.toLowerCase() === 'contactar'
+      );
+
+      let finalStages = [...stageTemplates];
+      if (!hasContactStage) {
+        finalStages.unshift({
+          name: 'Contactar',
+          description: 'Contacto inicial con candidato para coordinar y validar interés',
+          responsibleId: userId,
+          order: 1
+        });
+
+        // Reordenar
+        finalStages = finalStages.map((stage, index) => ({
+          ...stage,
+          order: index + 1
+        }));
+      }
+
+      // 4. Ejecutar transacción: Borrar etapas viejas -> Crear nuevas -> Actualizar campaña
+      return this.prisma.$transaction(async (tx) => {
+        // Borrar etapas existentes
+        await tx.stageTemplate.deleteMany({
+          where: { campaignId: id }
+        });
+
+        // Actualizar campaña y crear nuevas etapas
+        return tx.campaign.update({
+          where: { id },
+          data: {
+            ...campaignData,
+            stageTemplates: {
+              create: finalStages.map(({ responsibleId, ...stageData }) => ({
+                ...stageData,
+                responsibleId
+              }))
+            }
+          },
+          include: {
+            stageTemplates: {
+              include: {
+                responsible: {
+                  select: { id: true, name: true, email: true }
+                }
+              },
+              orderBy: { order: 'asc' }
+            },
+            _count: {
+              select: { candidates: true }
+            }
+          }
+        });
+      });
+    }
+
+    // Si no hay cambios en etapas, actualización normal
     return this.prisma.campaign.update({
       where: { id },
-      data: updateCampaignDto,
+      data: campaignData,
       include: {
+        stageTemplates: {
+          include: {
+            responsible: {
+              select: { id: true, name: true, email: true }
+            }
+          },
+          orderBy: { order: 'asc' }
+        },
         _count: {
           select: { candidates: true }
         }

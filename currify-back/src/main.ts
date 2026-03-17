@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
@@ -9,6 +10,14 @@ async function bootstrap() {
     whitelist: true,
     transform: true,
   }));
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    transform: true,
+  }));
+
+  // Set global prefix to handle requests from Nginx /api proxy
+  app.setGlobalPrefix('api');
 
   app.enableCors();
 

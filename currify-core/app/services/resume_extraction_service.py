@@ -47,12 +47,28 @@ class ResumeExtractionService:
 
         try:
             # 1. Validar archivo
+            # Nota: validate_file sigue siendo síncrono porque es ligero, pero si crece debería ser async
             validation_result = self.file_parser.validate_file(file_content, filename)
+            logger.info(f"DEBUG_TYPE: validation_result type: {type(validation_result)}")
+            if asyncio.iscoroutine(validation_result):
+                logger.error("CRITICAL: validation_result IS A COROUTINE! Awaiting it now to fix temporarily.")
+                validation_result = await validation_result
+
             if not validation_result["is_valid"]:
                 raise ValueError(f"Archivo inválido: {', '.join(validation_result['issues'])}")
 
             # 2. Extraer texto del archivo
-            parse_result = self.file_parser.parse_file(file_content, filename)
+            parse_result = await self.file_parser.parse_file(file_content, filename)
+            logger.info(f"DEBUG_TYPE: parse_result type: {type(parse_result)}")
+            
+            if asyncio.iscoroutine(parse_result):
+                 logger.error("CRITICAL: parse_result IS A COROUTINE (double await needed)! Awaiting it now.")
+                 parse_result = await parse_result
+
+            if not isinstance(parse_result, dict):
+                 logger.error(f"CRITICAL: parse_result is {type(parse_result)}, expected dict")
+
+
             if not parse_result["success"]:
                 raise ValueError(f"Error al procesar archivo: {parse_result['error']}")
 

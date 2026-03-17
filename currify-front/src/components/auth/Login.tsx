@@ -141,7 +141,11 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onSwitchToRegister }) => 
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             {/* Social Login Placeholder (Optional, requested in image) */}
-            <button type="button" className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 hover:border-slate-300 transition-all">
+            <button
+              type="button"
+              onClick={() => apiService.initiateGoogleLogin()}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl text-slate-600 font-medium hover:bg-slate-50 hover:border-slate-300 transition-all"
+            >
               <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="w-5 h-5" alt="Google" />
               Login con Google
             </button>

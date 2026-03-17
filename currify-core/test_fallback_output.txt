@@ -1,0 +1,119 @@
+C:\Users\osiel\Desktop\Currify\currify-core\app\services\llm_service.py:19: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai
+INFO:app.services.scoring_service:Starting candidate-job scoring evaluation (v3: Latent Skills & Normalized Roles)
+INFO:app.services.semantic_service:\U0001f575\ufe0f Starting Latent Skill Extraction from text...
+INFO:app.services.llm_service:[LATENT_SKILL_EXTRACTION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[LATENT_SKILL_EXTRACTION] ANTHROPIC response received in 3.10s
+INFO:app.services.llm_service:STAGE LATENT_SKILL_EXTRACTION: Processing response of length 104
+INFO:app.services.llm_service:STAGE LATENT_SKILL_EXTRACTION: Response preview: ["analÝtica", "atenci¾n al detalle", "orientaci¾n a resultados", "proyectos complejos", "desarrollador"]...
+INFO:app.services.llm_service:STAGE LATENT_SKILL_EXTRACTION: Direct JSON parsing successful
+INFO:app.services.llm_service:[LATENT_SKILL_EXTRACTION] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f575\ufe0f Latent Skills Extracted: 5 items
+INFO:app.services.semantic_service:\U0001f9e0 Expanding 6 skills: ['Python', 'analÝtica', 'atenci¾n al detalle', 'desarrollador', 'orientaci¾n a resultados']...
+INFO:app.services.llm_service:[SEMANTIC_EXPANSION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[SEMANTIC_EXPANSION] ANTHROPIC response received in 3.25s
+INFO:app.services.llm_service:STAGE SEMANTIC_EXPANSION: Processing response of length 63
+INFO:app.services.llm_service:STAGE SEMANTIC_EXPANSION: Response preview: ["python", "analÝtica", "desarrollador", "proyectos complejos"]...
+INFO:app.services.llm_service:STAGE SEMANTIC_EXPANSION: Direct JSON parsing successful
+INFO:app.services.llm_service:[SEMANTIC_EXPANSION] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f9e0 Expansion result: 4 items (Original: 6)
+INFO:app.services.scoring_service:\U0001f680 FINAL Expanded Skills (Explicit + Latent): 4 items
+INFO:app.services.semantic_service:\U0001f454 Normalizing Job Titles: ['Desarrollador']
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] ANTHROPIC response received in 1.60s
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Processing response of length 17
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Response preview: ["desarrollador"]...
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Direct JSON parsing successful
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f454 Normalized Titles Result: ['desarrollador']
+INFO:app.services.scoring_service:\U0001f454 Normalized Candidate Roles: ['desarrollador'] (from ['Desarrollador'])
+INFO:app.services.semantic_service:\U0001f393 Normalizing degrees: ['Ingeniero Informatico']
+INFO:app.services.llm_service:[SEMANTIC_Normalization] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[SEMANTIC_Normalization] ANTHROPIC response received in 1.48s
+INFO:app.services.llm_service:STAGE SEMANTIC_Normalization: Processing response of length 25
+INFO:app.services.llm_service:STAGE SEMANTIC_Normalization: Response preview: ["ingeniero informatico"]...
+INFO:app.services.llm_service:STAGE SEMANTIC_Normalization: Direct JSON parsing successful
+INFO:app.services.llm_service:[SEMANTIC_Normalization] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f393 Normalized degrees result: ['ingeniero informatico']
+INFO:app.services.dynamic_rubric_service:\U0001f9e9 Generating Structured Rubric for job: Developer
+INFO:app.services.llm_service:[RUBRIC_EXTRACTION] Calling ANTHROPIC with Structured Output...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[RUBRIC_EXTRACTION] Successfully received structured response.
+INFO:app.services.dynamic_rubric_service:\U0001f9e9 Rubric Generated Successfully. Mandatory Skills: 5
+INFO:app.services.semantic_service:\U0001f454 Normalizing Job Titles: ['Programmer', 'Software Developer', 'Software Engineer']
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] ANTHROPIC response received in 1.70s
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Processing response of length 57
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Response preview: ["programmer", "software developer", "software engineer"]...
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Direct JSON parsing successful
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f454 Normalized Titles Result: ['programmer', 'software developer', 'software engineer']
+INFO:app.services.scoring_service:\U0001f454 Normalized Rubric Roles: ['programmer', 'software developer', 'software engineer'] (from ['Software Developer', 'Software Engineer', 'Programmer'])
+INFO:app.services.scoring_service:debug_edu: req_titles=['computer science', 'software engineering', 'informatics'], cand_degrees=['ingeniero informatico']
+INFO:app.services.scoring_service:\U0001f9ee Matrix Scores: {'education': 100, 'experience': 29.0, 'skills_match': 16.0, 'logistics': 100, 'cultural_fit': 100.0, 'career_trajectory': 30}
+INFO:app.services.llm_service:[SCORING_EVALUATION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[SCORING_EVALUATION] ANTHROPIC response received in 5.30s
+INFO:app.services.llm_service:STAGE SCORING_EVALUATION: Processing response of length 1625
+INFO:app.services.llm_service:STAGE SCORING_EVALUATION: Response preview: {
+  "breakdown": {
+    "skills_match": {
+      "score": 16,
+      "reasoning": "El candidato demuestra 1/5 habilidades tÚcnicas requeridas. Necesita mejorar en Django, Flask, SQL y Git."
+    },
+    "experience": {
+      "score": 29,
+      "reasoning": "El candidato tiene 1 a±o de experiencia como desarrollador, por debajo de los 3 a±os requeridos."
+    },
+    "education": {
+      "score": 100,
+      "reasoning": "El candidato tiene una Licenciatura en IngenierÝa Informßtica, que cumple con los r...
+INFO:app.services.llm_service:STAGE SCORING_EVALUATION: Direct JSON parsing successful
+INFO:app.services.llm_service:[SCORING_EVALUATION] Successfully parsed JSON response on attempt 1
+INFO:app.services.scoring_service:\U0001f50d DEBUG: LLM Result Keys: ['breakdown', 'strengths', 'gaps', 'summary']
+INFO:app.services.scoring_service:\U0001f512 Locking Score for skills_match: LLM said 16.0, Python enforces 16.0
+INFO:app.services.scoring_service:\U0001f512 Locking Score for experience: LLM said 29.0, Python enforces 29.0
+INFO:app.services.scoring_service:\U0001f512 Locking Score for education: LLM said 100.0, Python enforces 100
+INFO:app.services.scoring_service:Scoring completed: 50.5/100
+
+--- STARTING EVALUATION: Education Fallback & Cultural Fit ---
+Traceback (most recent call last):
+  File "C:\Users\osiel\Desktop\Currify\currify-core\test_fallback.py", line 68, in test_education_fallback_and_cultural
+    print(f"\n\u2705 Evaluation Completed!")
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2705' in position 2: character maps to <undefined>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\osiel\Desktop\Currify\currify-core\test_fallback.py", line 87, in <module>
+    asyncio.run(test_education_fallback_and_cultural())
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\osiel\Desktop\Currify\currify-core\test_fallback.py", line 82, in test_education_fallback_and_cultural
+    print(f"\n\u274c EXCEPTION: {e}")
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u274c' in position 2: character maps to <undefined>

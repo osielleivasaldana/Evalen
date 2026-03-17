@@ -1,0 +1,353 @@
+C:\Users\osiel\Desktop\Currify\currify-core\app\services\llm_service.py:19: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai
+[chunk_1] Google provider does not support native instructor yet. Falling back to text.
+[chunk_1] Failed to instantiate Pydantic model from data: 1 validation error for PartialResumeData
+titular_profesional
+  Input should be a valid dictionary or instance of PartialProfessionalTitle [type=model_type, input_value='Contador Auditor', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/model_type
+\u26a0\ufe0f Chunk 1: Fall¾ estructurado, intentando fallback JSON...
+[chunk_2] Google provider does not support native instructor yet. Falling back to text.
+[chunk_2] Failed to instantiate Pydantic model from data: 1 validation error for PartialResumeData
+titular_profesional
+  Input should be a valid dictionary or instance of PartialProfessionalTitle [type=model_type, input_value='Auditor', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/model_type
+\u26a0\ufe0f Chunk 2: Fall¾ estructurado, intentando fallback JSON...
+[chunk_3] Google provider does not support native instructor yet. Falling back to text.
+[chunk_4] Google provider does not support native instructor yet. Falling back to text.
+[chunk_4] Failed to instantiate Pydantic model from data: 1 validation error for PartialResumeData
+datos_contacto.telefono
+  Input should be a valid string [type=string_type, input_value=['56 9 99206531', '56 9 7276094', '56 9 98071474'], input_type=list]
+    For further information visit https://errors.pydantic.dev/2.11/v/string_type
+\u26a0\ufe0f Chunk 4: Fall¾ estructurado, intentando fallback JSON...
+[chunk_5] Google provider does not support native instructor yet. Falling back to text.
+Error validando con Pydantic: 1 validation error for ResumeData
+titular_profesional
+  Input should be a valid dictionary or instance of ProfessionalTitle [type=model_type, input_value='Contador Auditor', input_type=str]
+    For further information visit https://errors.pydantic.dev/2.11/v/model_type
+\U0001f527 Datos que causaron error: {'nombre': 'LOGAN HERNAN', 'apellido': 'HIGUERA MORA', 'titular_profesional': 'Contador Auditor', 'resumen_profesional': {'resumen': 'Contador Auditor, Master Business Administration (MBA), con una fuerte orientaci¾n al desarrollo de proyectos y nuevos negocios. Interesado en enfrentar nuevos desafÝos y trabajar en equipos multidisciplinarios. Con gran capacidad de liderazgo y comunicaci¾n, para dirigir equipos de trabajo. Me defino como una persona acogedora, que busca generar una energÝa positiva al relacionarse, que se concentra en lo positivo y en busca de soluciones a los problemas, conflictos y diferencias. Me defino como un lÝder positivo, de un trato deferente, amplio, motivador, que busca el compromiso del equipo y que valora la actitud de las personas.'}, 'contacto': {'telefono': '+56 9 34293844', 'email': 'logan.higuera@gmail.com', 'ubicacion': 'Andres Bello N║ 538; Dpto. 701; Temuco'}, 'experiencia_laboral': [{'empresa': 'Salfa Sur Limitada', 'cargo': 'Gerente de Sucursal Valdivia', 'fecha_inicio': '2019-01', 'fecha_fin': 'Presente', 'ubicacion': None, 'descripcion': '(Venta de VehÝculos, Repuestos, Accesorios, Neumßticos y Lubricantes)\nMe desempe±o como Gerente de Sucursal Valdivia de la compa±ia, responsable de la gesti¾n comercial y\nadministrativa de la sucursal, en las diferentes ßreas de negocio de la compa±Ýa. Involucra la aplicaci¾n de las\nestrategias comerciales y de ventas que buscan posicionar el negocio en el mercado altamente competitivo, trabajo en\nterreno con el equipo de ventas, visita de clientes, asÝ como de su planificaci¾n y control. Aplicaci¾n de estßndares de\natenci¾n a clientes y experiencia de servicio. Ademßs, de reportar peri¾dicamente a la gerencia general de la\ncompa±Ýa, la informaci¾n de los estados econ¾micos financieros de la sucursal y las diferentes unidades de negocio.', 'responsabilidades': ['Reporte peri¾dico a la gerencia general sobre los estados econ¾micos financieros de la sucursal y las diferentes unidades de negocio.', 'Aplicaci¾n de estrategias comerciales y de ventas para posicionar el negocio en el mercado competitivo.', 'Gesti¾n comercial y administrativa de la sucursal en las diferentes ßreas de negocio.', 'Aplicaci¾n de estßndares de atenci¾n a clientes y experiencia de servicio.', 'Trabajo en terreno con el equipo de ventas y visita de clientes.', 'Planificaci¾n y control de ventas.'], 'periodo': {'fecha_inicio': None, 'fecha_fin': None, 'texto_original': 'No especificado'}}, {'empresa': 'Euro Star Repuestos Limitada', 'ubicacion': None, 'cargo': 'Gerente', 'fecha_inicio': '2017-04', 'fecha_fin': '2018-12', 'descripcion': '(Venta de Repuestos, accesorios y Lubricantes)', 'responsabilidades': ['Generar instancias de negociaci¾n con proveedores, bajo convenios de abastecimiento y condiciones comerciales para el negocio.', 'Revisi¾n y anßlisis de los estados econ¾micos financieros, contables, flujos y de la elaboraci¾n del presupuesto anual.', 'B·squeda de instancias y estrategias para posicionar el negocio en el mercado.', 'Trabajo en terreno con el equipo de ventas, visita de clientes.', 'Direcci¾n, administraci¾n y gesti¾n financiera.', 'Implementaci¾n de un nuevo negocio.'], 'periodo': {'fecha_inicio': '2017-04', 'fecha_fin': '2018-12', 'texto_original': 'No especificado'}}, {'cargo': 'Gerente General', 'empresa': 'Cooperativa de Servicios Coopeserau Limitada', 'periodo': {'fecha_inicio': '2014-03', 'fecha_fin': '2017-03', 'texto_original': None}, 'responsabilidades': ['Responsable de la gesti¾n econ¾mica y financiera y de todas las funciones asociadas al manejo eficiente de los recursos financieros, proyecciones de los flujos, inversiones, anßlisis de proyectos, financiamiento y el resguardo de los fondos.', 'Reportar peri¾dicamente al directorio de administraci¾n, la informaci¾n de los estados econ¾micos financieros, contables, flujos y de la elaboraci¾n del presupuesto anual.', 'Definir y crear procedimientos, polÝticas, procesos de control y de restructuraci¾n de los distintos procesos de la operaci¾n.', 'Definir y cumplir los objetivos de la planificaci¾n estratÚgica de la empresa, asÝ como los objetivos a corto y largo plazo.', 'Reportar al ¾rgano fiscalizador, el Departamento de Cooperativas (Decoop), dependiente del Ministerio de EconomÝa.', 'Proponer y generar nuevas estrategias para crecimiento y desarrollo de la empresa.', 'Realizar negociaciones con clientes y proveedores.', 'Gesti¾n financiera y comercial del negocio.', 'Direcci¾n y administraci¾n general.', 'Crear nuevos negocios.'], 'ubicacion': 'Av. Caupolicßn N║ 1482 ; Temuco.', 'metadata': None}, {'cargo': 'Jefe Departamento de Contabilidad', 'empresa': 'Casino de Juegos Temuco S.A.', 'periodo': {'fecha_inicio': '2008-10', 'fecha_fin': '2009-07', 'texto_original': None}, 'responsabilidades': ['Participaci¾n en la parametrizaci¾n y estructura de los distintos sistemas, en especial el de contabilidad, que se utilizaran en las distintas empresas del grupo.', 'Reportar la informaci¾n contable, tributaria y de los estados financieros a la jefatura local y corporativa.', 'Participaci¾n en la estructuraci¾n de los distintos procesos de la operaci¾n y creaci¾n de procedimientos.', 'Responsable de la contabilidad del grupo de empresas que operan en la propiedad de Temuco.'], 'ubicacion': 'Av. Alemania N║ 0945 ; Ciudad de Temuco.', 'metadata': None}, {'cargo': 'Analista Contable', 'empresa': 'Aguas AraucanÝa S.A', 'periodo': {'fecha_inicio': '2007-08', 'fecha_fin': '2008-10', 'texto_original': None}, 'responsabilidades': ['Preparaci¾n de los Estados Financieros de la compa±Ýa.', 'Preparaci¾n de distintos informes.', 'Anßlisis contable y tributario.', 'Contabilidad de la filial.', 'Conciliaciones bancarias.', 'Anßlisis al activo fijo.', 'Presupuestos.', 'Inventarios.', 'Cierres.', 'Costos.'], 'ubicacion': 'Vicu±a Mackena N║ 0202 ; Ciudad de Temuco.', 'metadata': None}, {'cargo': 'Encargado de Administraci¾n y Finanzas', 'empresa': 'Fßbrica de Cecinas Don Amancio Ltda.', 'periodo': {'fecha_inicio': '2000-03', 'fecha_fin': '2007-07', 'texto_original': None}, 'responsabilidades': ['Cumpliendo funciones como el Contador de la Sociedad y de las demßs empresas asociadas.', 'Encargado de las ┴reas de Contabilidad, Personal y Remuneraciones.'], 'ubicacion': '21 de Mayo N║ 01132 ; Ciudad de Temuco.', 'metadata': None}, {'empresa': 'Octubre 2008 Casino de Juegos Temuco S.A.', 'cargo': 'Jefe Departamento de Contabilidad.', 'fecha_inicio': '2008-10', 'fecha_fin': '2009-07', 'ubicacion': 'Temuco, Chile', 'descripcion': 'Desempe±e el cargo de Jefe del Departamento de Contabilidad, responsable de la contabilidad del grupo de empresas que operan en la propiedad de Temuco. Participaci¾n en la estructuraci¾n de los distintos procesos de la operaci¾n y creaci¾n de procedimientos. Y de reportar la informaci¾n contable, tributaria y de los estados financieros a la jefatura local y corporativa. Participaci¾n en la parametrizaci¾n y estructura de los distintos sistemas, en especial el de contabilidad, que se utilizaran en las distintas empresas del grupo.', 'responsabilidades': ['Participaci¾n en la parametrizaci¾n y estructura de los distintos sistemas, en especial el de contabilidad, que se utilizaran en las distintas empresas del grupo.', 'Reportar la informaci¾n contable, tributaria y de los estados financieros a la jefatura local y corporativa.', 'Participaci¾n en la estructuraci¾n de los distintos procesos de la operaci¾n y creaci¾n de procedimientos.', 'Responsable de la contabilidad del grupo de empresas que operan en la propiedad de Temuco.'], 'periodo': {'fecha_inicio': None, 'fecha_fin': None, 'texto_original': 'No especificado'}}, {'empresa': 'Agosto 2007 Aguas AraucanÝa S.A', 'cargo': 'Analista Contable', 'fecha_inicio': '2007-08', 'fecha_fin': '2008-10', 'ubicacion': 'Temuco, Chile', 'descripcion': 'Desempe±e el cargo de Analista Contable de la compa±Ýa, teniendo bajo mi responsabilidad la contabilidad de la filial, anßlisis contable y tributario, anßlisis al activo fijo, conciliaciones bancarias, presupuestos, costos, cierres, inventarios, la preparaci¾n de distintos informes y de los Estados Financieros de la compa±Ýa.', 'responsabilidades': ['Preparaci¾n de los Estados Financieros de la compa±Ýa.', 'Preparaci¾n de distintos informes.', 'Anßlisis contable y tributario.', 'Contabilidad de la filial.', 'Conciliaciones bancarias.', 'Anßlisis al activo fijo.', 'Presupuestos.', 'Inventarios.', 'Cierres.', 'Costos.'], 'periodo': {'fecha_inicio': None, 'fecha_fin': None, 'texto_original': 'No especificado'}}, {'empresa': 'Marzo 2000 Fßbrica de Cecinas Don Amancio Ltda.', 'cargo': 'Encargado de Administraci¾n y Finanzas', 'fecha_inicio': '2000-03', 'fecha_fin': '2007-07', 'ubicacion': 'Temuco, Chile', 'descripcion': 'Desempe±e Labores de Encargado de Administraci¾n y Finanzas, encargado de las ┴reas de Contabilidad, Personal y Remuneraciones. Cumpliendo funciones como el Contador de la Sociedad y de las demßs empresas asociadas, en los rubros agrÝcola, panaderÝa y transportes. Lo que incluÝa, procesos administrativos, conciliaciones bancarias, control de clientes y proveedores, contratos de Trabajo, finiquitos, liquidaciones de sueldo, imposiciones previsionales, declaraciones de impuestos mensuales, declaraciones de renta, declaraciones juradas, elaboraci¾n de', 'responsabilidades': ['Contador de la Sociedad y de las demßs empresas asociadas, en los rubros agrÝcola, panaderÝa y transportes.', 'Encargado de las ┴reas de Contabilidad, Personal y Remuneraciones.', 'Encargado de Administraci¾n y Finanzas.', 'Declaraciones de impuestos mensuales.', 'Control de clientes y proveedores.', 'Imposiciones previsionales.', 'Conciliaciones bancarias.', 'Procesos administrativos.', 'Liquidaciones de sueldo.', 'Declaraciones de renta.', 'Declaraciones juradas.', 'Contratos de Trabajo.', 'Elaboraci¾n de', 'Finiquitos.'], 'periodo': {'fecha_inicio': None, 'fecha_fin': None, 'texto_original': 'No especificado'}}], 'educacion': [{'institucion': 'Universidad Mayor', 'titulo': 'GRADO DE MAGISTER EN DIRECCION Y GESTION DE EMPRESAS (MBA)', 'fecha_inicio': None, 'fecha_fin': None}, {'institucion': 'Universidad Diego Portales', 'titulo': 'TITULO DE CONTADOR PUBLICO - AUDITOR', 'fecha_inicio': None, 'fecha_fin': None}, {'institucion': 'Universidad Diego Portales', 'titulo': 'LICENCIADO EN CONTABILIDAD Y AUDITORIA', 'fecha_inicio': None, 'fecha_fin': None}, {'institucion': 'Centro Educacional ôJuan Schleyerö de Freire', 'titulo': 'TITULO DE CONTADOR GENERAL', 'fecha_inicio': None, 'fecha_fin': None}], 'habilidades': {'habilidades_tecnicas': [{'skill': 'Conocimientos de herramientas informßticas, nivel Intermedio - avanzado.', 'level': None, 'years_experience': None, 'metadata': None}, {'skill': 'Conocimiento de distintos sistemas administrativos y contables.', 'level': None, 'years_experience': None, 'metadata': None}, {'skill': 'ERP Softland, Nivel Avanzado', 'level': None, 'years_experience': None, 'metadata': None}, {'skill': 'ERP Fin700', 'level': None, 'years_experience': None, 'metadata': None}, {'skill': 'ERP Softland', 'level': None, 'years_experience': None, 'metadata': None}, {'skill': 'ERP Sun System', 'level': None, 'years_experience': None, 'metadata': None}, {'skill': 'ERP Transtecnia', 'level': None, 'years_experience': None, 'metadata': None}, {'skill': 'Material Control', 'level': None, 'years_experience': None, 'metadata': None}, {'skill': 'Micros 9700', 'level': None, 'years_experience': None, 'metadata': None}], 'idiomas': [{'idioma': 'Ingles nivel Intermedio', 'nivel': 'Hablado, escrito, comprensi¾n de lectura', 'certificacion': None, 'metadata': None}], 'habilidades_blandas': []}, 'datos_personales': {'rut': '14.035.099 - 0', 'fecha_nacimiento': '09 de Abril de 1981', 'estado_civil': 'Soltero', 'nacionalidad': 'Chileno'}, 'reconocimientos': [{'titulo': 'PREMIO EXCELENCIA ACADEMICA MEJOR EGRESADO', 'institucion': 'Universidad Diego Portales', 'fecha': None}], 'formacion_complementaria': {'certificaciones_cursos': [{'institucion': 'Centro de Programaci¾n Neuroling³Ýstica de Concepci¾n', 'titulo': 'Diplomado en Programaci¾n Neuroling³Ýstica (PNL)', 'fecha_inicio': '2017', 'fecha_fin': None}, {'institucion': 'Universidad de la Frontera, Ciudad de Temuco', 'titulo': 'Diplomado en Emprendimiento, Innovaci¾n y Transferencia Tecnol¾gica en SmartCities', 'fecha_inicio': '2016', 'fecha_fin': None}, {'institucion': 'Universidad de la Frontera, Ciudad de Temuco', 'titulo': 'Diplomado en Normas Contables IFRS', 'fecha_inicio': '2015', 'fecha_fin': None}, {'institucion': 'Universidad de Chile, Ciudad de Puerto Montt', 'titulo': 'Diplomado en Planificaci¾n Tributaria', 'fecha_inicio': '2014', 'fecha_fin': None}, {'institucion': 'Bond University, Gold Coast Australia', 'titulo': 'Curso de Ingles - Nivel Intermedio', 'fecha_inicio': '2013', 'fecha_fin': None}, {'institucion': 'Universidad De La Frontera, Ciudad de Temuco', 'titulo': 'Diplomado en Coaching para ejercer el Liderazgo', 'fecha_inicio': '2012', 'fecha_fin': '2013'}, {'institucion': 'Universidad MAYOR, Ciudad de Temuco', 'titulo': 'Magister en Administraci¾n de Empresas MBA Executive', 'fecha_inicio': '2010', 'fecha_fin': '2011'}, {'institucion': 'Universidad DIEGO PORTALES', 'titulo': 'Ense±anza Superior Carrera de Auditoria', 'fecha_inicio': '2002', 'fecha_fin': '2006'}]}, 'datos_contacto': {'nombre_completo': 'No extraÝdo', 'telefono': None, 'email': 'no-extraido@example.com', 'ubicacion': None}, 'formacion_academica': []}
+--- Extracting from C:\Users\osiel\Desktop\Currify\currify-core\tests\..\samples\cvs\CUR_Logan Higuera _1.pdf ---
+--- Running extraction ---
+
+--- RESULTS ---
+{
+  "datos_cv": {
+    "datos_contacto": {
+      "nombre_completo": "No extraÝdo",
+      "telefono": "9 34293844",
+      "email": "logan.higuera@gmail.com",
+      "ubicacion": null,
+      "metadata": null
+    },
+    "titular_profesional": {
+      "titular": "Contador Auditor",
+      "metadata": null
+    },
+    "resumen_profesional": {
+      "resumen": "Contador Auditor, Master Business Administration (MBA), con una fuerte orientaci¾n al desarrollo de proyectos y nuevos negocios. Interesado en enfrentar nuevos desafÝos y trabajar en equipos multidisciplinarios. Con gran capacidad de liderazgo y comunicaci¾n, para dirigir equipos de trabajo. Me defino como una persona acogedora, que busca generar una energÝa positiva al relacionarse, que se concentra en lo positivo y en busca de soluciones a los problemas, conflictos y diferencias. Me defino como un lÝder positivo, de un trato deferente, amplio, motivador, que busca el compromiso del equipo y que valora la actitud de las personas.",
+      "metadata": null
+    },
+    "experiencia_laboral": [
+      {
+        "cargo": "Gerente de Sucursal Valdivia",
+        "empresa": "Salfa Sur Limitada",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": "No especificado",
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Reporte peri¾dico a la gerencia general sobre los estados econ¾micos financieros de la sucursal y las diferentes unidades de negocio.",
+          "Aplicaci¾n de estrategias comerciales y de ventas para posicionar el negocio en el mercado competitivo.",
+          "Gesti¾n comercial y administrativa de la sucursal en las diferentes ßreas de negocio.",
+          "Aplicaci¾n de estßndares de atenci¾n a clientes y experiencia de servicio.",
+          "Trabajo en terreno con el equipo de ventas y visita de clientes.",
+          "Planificaci¾n y control de ventas."
+        ],
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "cargo": "Gerente",
+        "empresa": "Euro Star Repuestos Limitada",
+        "periodo": {
+          "fecha_inicio": "2017-04",
+          "fecha_fin": "2018-12",
+          "texto_original": "No especificado",
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Generar instancias de negociaci¾n con proveedores, bajo convenios de abastecimiento y condiciones comerciales para el negocio.",
+          "Revisi¾n y anßlisis de los estados econ¾micos financieros, contables, flujos y de la elaboraci¾n del presupuesto anual.",
+          "B·squeda de instancias y estrategias para posicionar el negocio en el mercado.",
+          "Trabajo en terreno con el equipo de ventas, visita de clientes.",
+          "Direcci¾n, administraci¾n y gesti¾n financiera.",
+          "Implementaci¾n de un nuevo negocio."
+        ],
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "cargo": "Gerente General",
+        "empresa": "Cooperativa de Servicios Coopeserau Limitada",
+        "periodo": {
+          "fecha_inicio": "2014-03",
+          "fecha_fin": "2017-03",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Responsable de la gesti¾n econ¾mica y financiera y de todas las funciones asociadas al manejo eficiente de los recursos financieros, proyecciones de los flujos, inversiones, anßlisis de proyectos, financiamiento y el resguardo de los fondos.",
+          "Reportar peri¾dicamente al directorio de administraci¾n, la informaci¾n de los estados econ¾micos financieros, contables, flujos y de la elaboraci¾n del presupuesto anual.",
+          "Definir y crear procedimientos, polÝticas, procesos de control y de restructuraci¾n de los distintos procesos de la operaci¾n.",
+          "Definir y cumplir los objetivos de la planificaci¾n estratÚgica de la empresa, asÝ como los objetivos a corto y largo plazo.",
+          "Reportar al ¾rgano fiscalizador, el Departamento de Cooperativas (Decoop), dependiente del Ministerio de EconomÝa.",
+          "Proponer y generar nuevas estrategias para crecimiento y desarrollo de la empresa.",
+          "Realizar negociaciones con clientes y proveedores.",
+          "Gesti¾n financiera y comercial del negocio.",
+          "Direcci¾n y administraci¾n general.",
+          "Crear nuevos negocios."
+        ],
+        "ubicacion": "Av. Caupolicßn N║ 1482 ; Temuco.",
+        "metadata": null
+      },
+      {
+        "cargo": "Jefe Departamento de Contabilidad",
+        "empresa": "Casino de Juegos Temuco S.A.",
+        "periodo": {
+          "fecha_inicio": "2008-10",
+          "fecha_fin": "2009-07",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Participaci¾n en la parametrizaci¾n y estructura de los distintos sistemas, en especial el de contabilidad, que se utilizaran en las distintas empresas del grupo.",
+          "Reportar la informaci¾n contable, tributaria y de los estados financieros a la jefatura local y corporativa.",
+          "Participaci¾n en la estructuraci¾n de los distintos procesos de la operaci¾n y creaci¾n de procedimientos.",
+          "Responsable de la contabilidad del grupo de empresas que operan en la propiedad de Temuco."
+        ],
+        "ubicacion": "Av. Alemania N║ 0945 ; Ciudad de Temuco.",
+        "metadata": null
+      },
+      {
+        "cargo": "Analista Contable",
+        "empresa": "Aguas AraucanÝa S.A",
+        "periodo": {
+          "fecha_inicio": "2007-08",
+          "fecha_fin": "2008-10",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Preparaci¾n de los Estados Financieros de la compa±Ýa.",
+          "Preparaci¾n de distintos informes.",
+          "Anßlisis contable y tributario.",
+          "Contabilidad de la filial.",
+          "Conciliaciones bancarias.",
+          "Anßlisis al activo fijo.",
+          "Presupuestos.",
+          "Inventarios.",
+          "Cierres.",
+          "Costos."
+        ],
+        "ubicacion": "Vicu±a Mackena N║ 0202 ; Ciudad de Temuco.",
+        "metadata": null
+      },
+      {
+        "cargo": "Encargado de Administraci¾n y Finanzas",
+        "empresa": "Fßbrica de Cecinas Don Amancio Ltda.",
+        "periodo": {
+          "fecha_inicio": "2000-03",
+          "fecha_fin": "2007-07",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Cumpliendo funciones como el Contador de la Sociedad y de las demßs empresas asociadas.",
+          "Encargado de las ┴reas de Contabilidad, Personal y Remuneraciones."
+        ],
+        "ubicacion": "21 de Mayo N║ 01132 ; Ciudad de Temuco.",
+        "metadata": null
+      },
+      {
+        "cargo": "Jefe Departamento de Contabilidad.",
+        "empresa": "Octubre 2008 Casino de Juegos Temuco S.A.",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": "No especificado",
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Participaci¾n en la parametrizaci¾n y estructura de los distintos sistemas, en especial el de contabilidad, que se utilizaran en las distintas empresas del grupo.",
+          "Reportar la informaci¾n contable, tributaria y de los estados financieros a la jefatura local y corporativa.",
+          "Participaci¾n en la estructuraci¾n de los distintos procesos de la operaci¾n y creaci¾n de procedimientos.",
+          "Responsable de la contabilidad del grupo de empresas que operan en la propiedad de Temuco."
+        ],
+        "ubicacion": "Temuco, Chile",
+        "metadata": null
+      },
+      {
+        "cargo": "Analista Contable",
+        "empresa": "Agosto 2007 Aguas AraucanÝa S.A",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": "No especificado",
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Preparaci¾n de los Estados Financieros de la compa±Ýa.",
+          "Preparaci¾n de distintos informes.",
+          "Anßlisis contable y tributario.",
+          "Contabilidad de la filial.",
+          "Conciliaciones bancarias.",
+          "Anßlisis al activo fijo.",
+          "Presupuestos.",
+          "Inventarios.",
+          "Cierres.",
+          "Costos."
+        ],
+        "ubicacion": "Temuco, Chile",
+        "metadata": null
+      },
+      {
+        "cargo": "Encargado de Administraci¾n y Finanzas",
+        "empresa": "Marzo 2000 Fßbrica de Cecinas Don Amancio Ltda.",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": "No especificado",
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Contador de la Sociedad y de las demßs empresas asociadas, en los rubros agrÝcola, panaderÝa y transportes.",
+          "Encargado de las ┴reas de Contabilidad, Personal y Remuneraciones.",
+          "Encargado de Administraci¾n y Finanzas.",
+          "Declaraciones de impuestos mensuales.",
+          "Control de clientes y proveedores.",
+          "Imposiciones previsionales.",
+          "Conciliaciones bancarias.",
+          "Procesos administrativos.",
+          "Liquidaciones de sueldo.",
+          "Declaraciones de renta.",
+          "Declaraciones juradas.",
+          "Contratos de Trabajo.",
+          "Elaboraci¾n de",
+          "Finiquitos."
+        ],
+        "ubicacion": "Temuco, Chile",
+        "metadata": null
+      }
+    ],
+    "formacion_academica": [],
+    "habilidades": {
+      "habilidades_tecnicas": [
+        {
+          "skill": "Conocimientos de herramientas informßticas, nivel Intermedio - avanzado.",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "Conocimiento de distintos sistemas administrativos y contables.",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Softland, Nivel Avanzado",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Fin700",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Softland",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Sun System",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Transtecnia",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "Material Control",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "Micros 9700",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        }
+      ],
+      "idiomas": [
+        {
+          "idioma": "Ingles nivel Intermedio",
+          "nivel": "Hablado, escrito, comprensi¾n de lectura",
+          "certificacion": null,
+          "metadata": null
+        }
+      ],
+      "habilidades_blandas": [],
+      "metadata": null
+    },
+    "perfiles_online": null,
+    "formacion_complementaria": {
+      "certificaciones_cursos": [
+        "Centro de Programaci¾n Neuroling³Ýstica de Concepci¾n - Diplomado en Programaci¾n Neuroling³Ýstica (PNL) - 2017",
+        "Universidad de la Frontera, Ciudad de Temuco - Diplomado en Emprendimiento, Innovaci¾n y Transferencia Tecnol¾gica en SmartCities - 2016",
+        "Universidad de la Frontera, Ciudad de Temuco - Diplomado en Normas Contables IFRS - 2015",
+        "Universidad de Chile, Ciudad de Puerto Montt - Diplomado en Planificaci¾n Tributaria - 2014",
+        "Bond University, Gold Coast Australia - Curso de Ingles - Nivel Intermedio - 2013",
+        "Universidad De La Frontera, Ciudad de Temuco - Diplomado en Coaching para ejercer el Liderazgo - 2012 - 2013",
+        "Universidad MAYOR, Ciudad de Temuco - Magister en Administraci¾n de Empresas MBA Executive - 2010 - 2011",
+        "Universidad DIEGO PORTALES - Ense±anza Superior Carrera de Auditoria - 2002 - 2006"
+      ],
+      "metadata": null
+    },
+    "reconocimientos": {
+      "logros_premios": [
+        "PREMIO EXCELENCIA ACADEMICA MEJOR EGRESADO - Universidad Diego Portales"
+      ],
+      "metadata": null
+    },
+    "actividades_extracurriculares": null,
+    "intereses": null,
+    "metadata_procesamiento": null
+  },
+  "confianza_general": 0.8,
+  "advertencias": [
+    "No se encontr¾ formaci¾n acadÚmica"
+  ],
+  "campos_faltantes": [
+    "formacion_academica",
+    "nombre_completo"
+  ],
+  "tiempo_procesamiento": 61.05519938468933,
+  "timestamp": "2026-02-20T17:03:05.310791"
+}

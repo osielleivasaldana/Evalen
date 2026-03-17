@@ -159,8 +159,26 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
   const formatPeriod = (period: any) => {
     if (!period) return 'No especificado';
 
-    const start = period.fecha_inicio ? new Date(period.fecha_inicio).getFullYear() : 'N/A';
-    const end = period.fecha_fin ? new Date(period.fecha_fin).getFullYear() : 'Presente';
+    const formatDateString = (dateStr: string) => {
+      if (!dateStr) return 'N/A';
+      if (dateStr.toLowerCase() === 'presente' || dateStr.toLowerCase() === 'actualidad') return 'Presente';
+
+      // Handle YYYY-MM format manually to avoid Timezone issues (e.g. 2024-01 becomes Dec 31 in UTC-3)
+      const yearMonthRegex = /^(\d{4})-(\d{2})$/;
+      if (yearMonthRegex.test(dateStr)) {
+        const [_, year, month] = dateStr.match(yearMonthRegex) || [];
+        const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        return `${monthNames[parseInt(month, 10) - 1]} ${year}`;
+      }
+
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr; // Return raw if invalid date (e.g. already formatted text)
+
+      return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short' });
+    };
+
+    const start = formatDateString(period.fecha_inicio);
+    const end = formatDateString(period.fecha_fin || 'Presente');
 
     return `${start} - ${end}`;
   };
@@ -313,15 +331,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
                     <div className="text-center">
                       <div className="inline-flex items-center justify-center w-32 h-32 rounded-full mb-4" style={{
                         background: `conic-gradient(${candidate.scoring.overallScore >= 90 ? '#10b981' :
-                            candidate.scoring.overallScore >= 70 ? '#f59e0b' :
-                              '#ef4444'
+                          candidate.scoring.overallScore >= 70 ? '#f59e0b' :
+                            '#ef4444'
                           } ${candidate.scoring.overallScore * 3.6}deg, #e5e7eb 0deg)`
                       }}>
                         <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center">
                           <div className="text-center">
                             <div className={`text-4xl font-bold ${candidate.scoring.overallScore >= 90 ? 'text-green-700' :
-                                candidate.scoring.overallScore >= 70 ? 'text-orange-700' :
-                                  'text-red-700'
+                              candidate.scoring.overallScore >= 70 ? 'text-orange-700' :
+                                'text-red-700'
                               }`}>
                               {Math.round(candidate.scoring.overallScore)}
                             </div>
@@ -376,8 +394,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div
                                   className={`h-2 rounded-full ${value.score >= 90 ? 'bg-green-500' :
-                                      value.score >= 70 ? 'bg-orange-500' :
-                                        'bg-red-500'
+                                    value.score >= 70 ? 'bg-orange-500' :
+                                      'bg-red-500'
                                     }`}
                                   style={{ width: `${value.score}%` }}
                                 />

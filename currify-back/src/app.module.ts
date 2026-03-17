@@ -11,6 +11,7 @@ import { AuditModule } from './audit/audit.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ProcessesModule } from './processes/processes.module';
 import { UsersModule } from './users/users.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -32,9 +33,11 @@ import { UsersModule } from './users/users.module';
     ScoringModule,
     AuditModule,
     NotificationsModule,
+    NotificationsModule,
     ProcessesModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

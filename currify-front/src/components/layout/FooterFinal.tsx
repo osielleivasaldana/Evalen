@@ -32,15 +32,15 @@ const FooterFinal: React.FC = () => {
 
           {/* Links */}
           <div className="flex gap-6">
-            <a href="#" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+            <button className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
               Privacidad
-            </a>
-            <a href="#" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+            </button>
+            <button className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
               Términos
-            </a>
-            <a href="#" className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
+            </button>
+            <button className="text-sm text-gray-600 hover:text-blue-600 transition-colors">
               Contacto
-            </a>
+            </button>
           </div>
         </div>
       </div>

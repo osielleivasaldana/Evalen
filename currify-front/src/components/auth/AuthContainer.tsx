@@ -1,34 +1,11 @@
 import React, { useState } from 'react';
-import Login from './Login';
-import Register from './Register';
+
 
 interface AuthContainerProps {
-  onAuthSuccess: () => void;
+  children: React.ReactNode;
 }
 
-type AuthMode = 'login' | 'register';
-
-const AuthContainer: React.FC<AuthContainerProps> = ({ onAuthSuccess }) => {
-  const [mode, setMode] = useState<AuthMode>('login');
-
-  const handleSwitchToRegister = () => {
-    setMode('register');
-  };
-
-  const handleSwitchToLogin = () => {
-    setMode('login');
-  };
-
-  if (mode === 'login') {
-    return (
-      <Login
-        onLoginSuccess={onAuthSuccess}
-        onSwitchToRegister={handleSwitchToRegister}
-      />
-    );
-  }
-
-  // Register Mode - Keep legacy centered layout
+const AuthContainer: React.FC<AuthContainerProps> = ({ children }) => {
   return (
     <div style={{
       minHeight: '100vh',
@@ -42,10 +19,7 @@ const AuthContainer: React.FC<AuthContainerProps> = ({ onAuthSuccess }) => {
         width: '100%',
         maxWidth: '500px'
       }}>
-        <Register
-          onRegisterSuccess={onAuthSuccess}
-          onSwitchToLogin={handleSwitchToLogin}
-        />
+        {children}
       </div>
     </div>
   );

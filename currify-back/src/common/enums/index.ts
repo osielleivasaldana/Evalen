@@ -25,6 +25,10 @@ export enum Currency {
   UF = 'UF'
 }
 
+// Re-export enums from Prisma to ensure type compatibility
+import { CampaignStatus } from '@prisma/client';
+export { CampaignStatus };
+
 // Valores de enums de Prisma duplicados como constantes
 // para evitar problemas de resolución en tiempo de ejecución
 export const PROCESSING_STATUS_VALUES = ['PENDING', 'COMPLETED', 'ERROR'] as const;

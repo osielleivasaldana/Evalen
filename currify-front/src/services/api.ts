@@ -19,7 +19,7 @@ const getApiUrl = (envUrl: string | undefined, port: number) => {
 };
 
 const API_BASE_URL = getApiUrl(process.env.REACT_APP_API_URL, 3001);
-const CV_PROCESSING_URL = getApiUrl(process.env.REACT_APP_SCORING_SERVICE_URL, 8000);
+const CV_PROCESSING_URL = getApiUrl(process.env.REACT_APP_SCORING_SERVICE_URL, 8001);
 
 // Auth interfaces
 interface RegisterRequest {
@@ -38,13 +38,7 @@ interface AuthResponse {
   access_token: string;
   token_type: string;
   expires_in: number;
-  user?: {
-    id: string;
-    email: string;
-    name: string;
-    company: string;
-    role: string;
-  };
+  user?: UserProfile;
 }
 
 interface UserProfile {
@@ -55,6 +49,10 @@ interface UserProfile {
   role: string;
   createdAt: string;
   updatedAt: string;
+  plan?: string;
+  cvCredits?: number;
+  campaignLimit?: number;
+  activeCampaignsCount?: number;
 }
 
 // User Management interfaces
@@ -82,6 +80,10 @@ interface UpdateUserRequest {
   name?: string;
   company?: string;
   role?: string;
+  companySize?: string;
+  hiringVolume?: string;
+  atsSystem?: string;
+  onboardingCompleted?: boolean;
 }
 
 // New enums and types
@@ -135,13 +137,14 @@ interface Campaign {
   _count?: {
     candidates: number;
   };
+  isLimitReached?: boolean;
 }
 
 interface CreateCampaignRequest {
   title: string;
   description: string;
-  requirements: string;
-  conditions: string;
+  requirements?: string;
+  conditions?: string;
   location?: string;
   workType?: 'FULL_TIME' | 'PART_TIME' | 'INTERNSHIP';
   modality?: 'REMOTE' | 'HYBRID' | 'ON_SITE';
@@ -150,7 +153,8 @@ interface CreateCampaignRequest {
   salary?: number;
   currency?: 'CLP' | 'USD' | 'EUR' | 'UF';
   showSalary?: boolean;
-  stageTemplates: StageTemplateInput[];
+  status?: 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'CLOSED';
+  stageTemplates?: StageTemplateInput[];
 }
 
 interface CampaignStats {
@@ -373,6 +377,7 @@ interface CandidateStats {
 
 class ApiService {
   private token: string | null = null;
+  public user: UserProfile | null = null;
 
   constructor() {
     this.token = localStorage.getItem('token');
@@ -385,8 +390,9 @@ class ApiService {
     };
   }
 
-  private async apiCall(url: string, options: RequestInit = {}): Promise<any> {
+  private async apiCall<T = any>(url: string, options: RequestInit = {}): Promise<T> {
     try {
+      console.log(`[API] calling ${url}`); // Debug Log
       const response = await fetch(`${API_BASE_URL}${url}`, {
         ...options,
         headers: {
@@ -413,11 +419,13 @@ class ApiService {
           // If we can't parse the error body, use the default message
         }
 
+        console.error(`[API] Error calling ${url}:`, errorMessage);
         throw new Error(errorMessage);
       }
 
       return response.json();
     } catch (error) {
+      console.error(`[API] Network error calling ${url}:`, error);
       if (error instanceof Error) {
         throw error;
       }
@@ -460,6 +468,10 @@ class ApiService {
     return data;
   }
 
+  initiateGoogleLogin() {
+    window.location.href = `${API_BASE_URL}/auth/google`;
+  }
+
   async activateAccount(token: string, password: string): Promise<AuthResponse> {
     const response = await fetch(`${API_BASE_URL}/auth/activate`, {
       method: 'POST',
@@ -477,7 +489,10 @@ class ApiService {
   }
 
   async getProfile(): Promise<UserProfile> {
-    return this.apiCall('/auth/profile');
+    const user = await this.apiCall<UserProfile>('/auth/profile');
+    // Update local user state
+    this.user = user;
+    return user;
   }
 
   // Campaign methods
@@ -575,6 +590,12 @@ class ApiService {
     return this.apiCall(`/candidates/${candidateId}`);
   }
 
+  async getCandidateWithCampaign(campaignId: string, candidateId: string): Promise<Candidate> {
+    // This endpoint must exist in backend, or we use the generic one. 
+    // Given the user URL, it seems they use /campaigns/:id/candidates/:id
+    return this.apiCall(`/campaigns/${campaignId}/candidates/${candidateId}`);
+  }
+
   async getCandidateStructuredData(candidateId: string): Promise<CVData> {
     return this.apiCall(`/candidates/${candidateId}/structured-data`);
   }
@@ -583,6 +604,13 @@ class ApiService {
     return this.apiCall(`/candidates/campaign/${campaignId}/search-by-skills`, {
       method: 'POST',
       body: JSON.stringify({ skills })
+    });
+  }
+
+  async updateCandidateStatus(candidateId: string, status: CandidateStatus): Promise<Candidate> {
+    return this.apiCall(`/candidates/${candidateId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
     });
   }
 
@@ -642,6 +670,13 @@ class ApiService {
     });
 
     return response.data;
+  }
+
+  async createCheckoutSession(plan: string): Promise<{ sessionId: string; url: string }> {
+    return this.apiCall('/payments/create-checkout-session', {
+      method: 'POST',
+      body: JSON.stringify({ plan })
+    });
   }
 
   // Process methods

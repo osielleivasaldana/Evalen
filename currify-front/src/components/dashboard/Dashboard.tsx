@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import CandidateDrawer from '../candidates/CandidateDrawer';
 import { Menu, Transition } from '@headlessui/react';
 import {
   BriefcaseIcon,
@@ -23,9 +25,16 @@ import {
   XCircleIcon,
   ArrowDownTrayIcon,
   StarIcon,
+  SparklesIcon,
+  ArrowRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import Layout from '../layout/Layout';
+import DashboardActivation from './DashboardActivation';
+import DashboardUploadModal from './DashboardUploadModal';
 import { apiService, Campaign, CampaignStats, UserProfile, Candidate as ApiCandidate } from '../../services/api';
 
 interface DashboardProps {
@@ -40,6 +49,7 @@ interface CandidateWithCampaign extends ApiCandidate {
   campaignPosition?: string;
   skills?: string[];
   location?: string;
+  role?: string;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -48,6 +58,18 @@ const Dashboard: React.FC<DashboardProps> = ({
   onEditCampaign,
   onLogout
 }) => {
+  useEffect(() => {
+    // Check for success payment flag
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('checkout_success') === 'true') {
+      alert('¡Felicidades! Tu cuenta ha sido mejorada a PRO 🚀\nDisfruta de campañas y créditos ilimitados.');
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      // Force reload to update UserContext/NavBar
+      window.location.reload();
+    }
+  }, []);
+
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [stats, setStats] = useState<CampaignStats | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -61,6 +83,110 @@ const Dashboard: React.FC<DashboardProps> = ({
     campaignId: '',
     campaignTitle: ''
   });
+  const [showStartProcessModal, setShowStartProcessModal] = useState(false);
+  const [startingProcess, setStartingProcess] = useState(false);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const scrollAmount = 320; // Card width + gap
+      scrollContainerRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleStartProcess = (candidate: CandidateWithCampaign) => {
+    setSelectedCandidate(candidate);
+    setShowStartProcessModal(true);
+  };
+
+  const executeStartProcess = async () => {
+    if (!selectedCandidate || !selectedCandidate.campaignId) return;
+
+    try {
+      setStartingProcess(true);
+      await apiService.startProcess({
+        campaignId: selectedCandidate.campaignId,
+        candidateId: selectedCandidate.id,
+        notifyCandidate: false
+      });
+      await apiService.updateCandidateStatus(selectedCandidate.id, 'IN_PROCESS');
+
+      setSnackbarMessage(`Proceso iniciado para ${selectedCandidate.name}`);
+      setShowStartProcessModal(false);
+
+      // Navigate to process view immediately
+      navigate(`/campaigns/${selectedCandidate.campaignId}/candidates/${selectedCandidate.id}/process`);
+
+      // Clear selection so when user comes back, the drawer is closed
+      setSelectedCandidate(null);
+
+      // Refresh data in background to update list (remove candidate from Top Talent)
+      loadDashboardData();
+
+    } catch (err: any) {
+      setError(err.message || 'Error al iniciar proceso');
+    } finally {
+      setStartingProcess(false);
+    }
+  };
+
+  const handleDismissCandidate = async (candidate: ApiCandidate) => {
+    try {
+      await apiService.updateCandidateStatus(candidate.id, 'NOT_SELECTED');
+      setSnackbarMessage('Candidato descartado');
+      await loadDashboardData();
+      setSelectedCandidate(null);
+    } catch (err: any) {
+      setError(err.message || 'Error al descartar candidato');
+    }
+  };
+
+  const handleViewAIAnalysis = (candidate: CandidateWithCampaign) => {
+    if (candidate.campaignId) {
+      navigate(`/campaigns/${candidate.campaignId}/candidate/${candidate.id}`);
+    }
+  };
+
+  const handleCandidateClick = async (candidate: CandidateWithCampaign) => {
+    // 1. Set optimistic candidate (basic info)
+    setSelectedCandidate(candidate);
+
+    // 2. Fetch Full Details (Phone, AI Insight, etc.) in background
+    if (candidate.campaignId) {
+      try {
+        console.log("Fetching full candidate details for:", candidate.id);
+        // Use generic getCandidate which maps to /candidates/:id (confirmed to exist)
+        const fullCandidate = await apiService.getCandidate(candidate.id);
+        console.log("Full candidate received:", fullCandidate);
+
+        // Merge full details, keeping campaign info that might be missing in full object
+        setSelectedCandidate(prev => {
+          if (prev?.id !== candidate.id) return prev;
+
+          const merged = {
+            ...fullCandidate,
+            campaignTitle: candidate.campaignTitle,
+            campaignId: candidate.campaignId,
+            // Explicitly map nested data if root is missing (Robustness)
+            phone: fullCandidate.phone || fullCandidate.structuredData?.datos_cv?.datos_contacto?.telefono || '',
+            email: fullCandidate.email || fullCandidate.structuredData?.datos_cv?.datos_contacto?.email || '',
+            // Ensure scoring is passed
+            scoring: fullCandidate.scoring || candidate.scoring
+          };
+          console.log("Merged candidate for drawer:", merged);
+          return merged;
+        });
+      } catch (err) {
+        console.error("Error loading full candidate details", err);
+      }
+    }
+  };
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -84,26 +210,49 @@ const Dashboard: React.FC<DashboardProps> = ({
         recentApplications: 0 // Will be calculated from recent candidates
       });
 
-      // Cargar candidatos recientes
+      // Cargar Top Talent (Joyas)
       const allCandidates: CandidateWithCampaign[] = [];
-      for (const campaign of campaignsList.slice(0, 3)) {
+      const topCandidatesList: CandidateWithCampaign[] = [];
+
+      for (const campaign of campaignsList) { // Scan ALL campaigns for talent
         try {
           const campaignCandidates = await apiService.getCandidates(campaign.id, {
             sortBy: 'createdAt',
             sortOrder: 'desc'
           });
-          const candidatesWithCampaign = campaignCandidates.slice(0, 2).map(c => ({
+
+          const candidatesWithCampaign = campaignCandidates.map(c => ({
             ...c,
             campaignTitle: campaign.title,
+            campaignId: campaign.id,
+            role: c.structuredData?.datos_cv?.titular_profesional?.titular ||
+              c.structuredData?.datos_cv?.experiencia_laboral?.[0]?.cargo ||
+              'Candidato'
           }));
-          allCandidates.push(...candidatesWithCampaign);
+
+          // Filter for Top Matches (>60%) and STRICTLY NEW status (Gold Rule: Action = Disappearance)
+          const topMatches = candidatesWithCampaign.filter(c =>
+            (c.scoring?.overallScore || 0) >= 60 &&
+            c.candidateStatus === 'NEW'
+          );
+
+          topCandidatesList.push(...topMatches);
+          allCandidates.push(...candidatesWithCampaign); // Still keep for stats
+
         } catch (err) {
           console.error(`Error loading candidates for campaign ${campaign.id}:`, err);
         }
       }
-      setCandidates(allCandidates.slice(0, 6));
 
-      // Update recent applications count
+      // Sort global top talent by score
+      const sortedTopTalent = topCandidatesList
+        .sort((a, b) => (b.scoring?.overallScore || 0) - (a.scoring?.overallScore || 0))
+        .sort((a, b) => (b.scoring?.overallScore || 0) - (a.scoring?.overallScore || 0))
+        .slice(0, 15); // Keep top 15
+
+      setCandidates(sortedTopTalent);
+
+      // Update recent applications count (for stats)
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
       const recentCount = allCandidates.filter(c => new Date(c.createdAt) > oneWeekAgo).length;
@@ -221,6 +370,23 @@ const Dashboard: React.FC<DashboardProps> = ({
     return name.substring(0, 2).toUpperCase();
   };
 
+  const getAIInsight = (candidate: CandidateWithCampaign) => {
+    if (candidate.scoring?.summary) return candidate.scoring.summary;
+
+    const rec = candidate.scoring?.recommendation;
+    if (!rec) return "Pendiente de análisis detallado.";
+
+    // Map slugs to text
+    const map: Record<string, string> = {
+      'weak_fit': 'Presenta una compatibilidad baja con los requisitos del puesto.',
+      'moderate_fit': 'Candidato con coincidencia parcial, se recomienda revisión.',
+      'strong_fit': 'Perfil altamente compatible con las expectativas.',
+      'reject': 'No cumple con los requisitos mínimos.'
+    };
+
+    return map[rec] || rec;
+  };
+
   if (loading) {
     return (
       <Layout showNavBar={true} showFooter={true}>
@@ -307,8 +473,8 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Campaigns Section */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-8">
-          <div className="p-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex justify-between items-center">
+        <div id="campaigns-section" className="bg-white rounded-2xl border border-gray-200 mb-8">
+          <div className="p-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex justify-between items-center rounded-t-2xl">
             <div>
               <h2 className="text-2xl font-bold mb-1">Mis Campañas</h2>
               <p className="text-sm opacity-90">
@@ -328,42 +494,24 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           {campaigns.length === 0 ? (
-            <div className="p-16 text-center">
-              <div className="w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <BriefcaseIcon className="w-12 h-12 text-indigo-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">
-                {user?.role === 'TECHNICAL_REVIEWER' ? 'No tienes campañas asignadas' : 'Aún no tienes campañas'}
-              </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                {user?.role === 'TECHNICAL_REVIEWER'
-                  ? 'Espera a que te asignen como responsable en alguna campaña para verla aquí.'
-                  : 'Comienza creando tu primera campaña de reclutamiento y empieza a recibir candidatos de manera automatizada.'}
-              </p>
-              {user && (user.role === 'ADMIN' || user.role === 'RECRUITER') && (
-                <button
-                  onClick={onCreateCampaign}
-                  className="inline-flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors"
-                >
-                  <PlusIcon className="w-5 h-5" />
-                  Crear mi primera campaña
-                </button>
-              )}
+            <div className="rounded-b-2xl overflow-hidden">
+              <DashboardActivation
+                user={user!}
+                onCreateManual={onCreateCampaign}
+              />
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
               {campaigns.map((campaign) => (
                 <div
                   key={campaign.id}
-                  className="p-6 hover:bg-gray-50 transition-colors group"
+                  className="p-6 hover:bg-gray-50 transition-colors group last:rounded-b-2xl"
                 >
                   <div className="flex items-start gap-4">
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      campaign.status === 'ACTIVE' ? 'bg-green-100' : 'bg-gray-200'
-                    }`}>
-                      <BriefcaseIcon className={`w-7 h-7 ${
-                        campaign.status === 'ACTIVE' ? 'text-green-600' : 'text-gray-500'
-                      }`} />
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${campaign.status === 'ACTIVE' ? 'bg-green-100' : 'bg-gray-200'
+                      }`}>
+                      <BriefcaseIcon className={`w-7 h-7 ${campaign.status === 'ACTIVE' ? 'text-green-600' : 'text-gray-500'
+                        }`} />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -410,11 +558,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleToggleCampaignStatus(campaign.id, campaign.status)}
-                        className={`p-2 rounded-lg transition-colors ${
-                          campaign.status === 'ACTIVE'
-                            ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
-                            : 'bg-green-50 text-green-600 hover:bg-green-100'
-                        }`}
+                        className={`p-2 rounded-lg transition-colors ${campaign.status === 'ACTIVE'
+                          ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
+                          : 'bg-green-50 text-green-600 hover:bg-green-100'
+                          }`}
                         title={campaign.status === 'ACTIVE' ? 'Pausar campaña' : 'Activar campaña'}
                       >
                         {campaign.status === 'ACTIVE' ? (
@@ -442,9 +589,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 {({ active }) => (
                                   <button
                                     onClick={() => onNavigateToCampaign(campaign.id)}
-                                    className={`${
-                                      active ? 'bg-gray-100' : ''
-                                    } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
+                                    className={`${active ? 'bg-gray-100' : ''
+                                      } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
                                   >
                                     <EyeIcon className="w-5 h-5" />
                                     Ver candidatos
@@ -455,9 +601,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 {({ active }) => (
                                   <button
                                     onClick={() => onEditCampaign(campaign.id)}
-                                    className={`${
-                                      active ? 'bg-gray-100' : ''
-                                    } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
+                                    className={`${active ? 'bg-gray-100' : ''
+                                      } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
                                   >
                                     <PencilIcon className="w-5 h-5" />
                                     Editar campaña
@@ -468,9 +613,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 {({ active }) => (
                                   <button
                                     onClick={() => handleCopyLink(campaign.publicId)}
-                                    className={`${
-                                      active ? 'bg-gray-100' : ''
-                                    } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
+                                    className={`${active ? 'bg-gray-100' : ''
+                                      } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
                                   >
                                     <ShareIcon className="w-5 h-5" />
                                     Copiar enlace
@@ -483,9 +627,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                                   <button
                                     onClick={() => handleDeleteCampaign(campaign.id)}
                                     disabled={campaign._count && campaign._count.candidates > 0}
-                                    className={`${
-                                      active ? 'bg-red-50' : ''
-                                    } flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    className={`${active ? 'bg-red-50' : ''
+                                      } flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 disabled:opacity-50 disabled:cursor-not-allowed`}
                                   >
                                     <TrashIcon className="w-5 h-5" />
                                     Eliminar
@@ -504,78 +647,222 @@ const Dashboard: React.FC<DashboardProps> = ({
           )}
         </div>
 
-        {/* Recent Candidates */}
-        <div className={`grid gap-6 ${selectedCandidate ? 'grid-cols-1 md:grid-cols-[2fr_1fr]' : 'grid-cols-1'}`}>
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-bold text-gray-900">Candidatos Recientes</h2>
-            </div>
+        {/* Top Talent Discovery Section - Only visible if there are campaigns */}
+        <div className="grid gap-6 grid-cols-1">
+          {campaigns.length > 0 && (
+            <div className="bg-gradient-to-r from-violet-50 via-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 overflow-hidden shadow-lg shadow-indigo-100/50 relative">
+              {/* Background Effects (Aurora Boreal Suave) */}
+              <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
+              <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl pointer-events-none"></div>
+              <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none"></div>
 
-            {candidates.length === 0 ? (
-              <div className="p-16 text-center">
-                <p className="text-gray-600">No hay candidatos recientes</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-200">
-                {candidates.map((candidate) => (
-                  <div
-                    key={candidate.id}
-                    onClick={() => setSelectedCandidate(candidate)}
-                    className={`p-6 cursor-pointer transition-colors ${
-                      selectedCandidate?.id === candidate.id ? 'bg-indigo-50' : 'hover:bg-gray-50'
-                    }`}
+              <div className="p-8 border-b border-indigo-50 relative z-10 flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
+                    <SparklesIcon className="w-8 h-8 text-indigo-600 animate-pulse-slow" />
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
+                      TALENTOS DESTACADOS
+                    </span>
+                  </h2>
+                  <p className="text-slate-500 mt-1 font-medium">
+                    El escenario donde brillan tus mejores candidatos.
+                  </p>
+                </div>
+                <div className="hidden sm:flex gap-2">
+                  <span className="px-3 py-1 bg-white/60 text-indigo-700 rounded-full text-xs font-bold border border-indigo-100 shadow-sm backdrop-blur-sm">
+                    Match &gt; 60%
+                  </span>
+                  <span className="px-3 py-1 bg-white/60 text-indigo-700 rounded-full text-xs font-bold border border-indigo-100 shadow-sm backdrop-blur-sm">
+                    No descartados
+                  </span>
+                </div>
+                <div className="hidden sm:flex items-center gap-3">
+                  <button
+                    onClick={() => scroll('left')}
+                    className="p-2 rounded-full border border-indigo-100 bg-white/50 hover:bg-white text-indigo-600 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-full bg-gray-400 flex items-center justify-center text-white font-semibold flex-shrink-0">
-                        {getInitials(candidate.name)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-base font-semibold text-gray-900 mb-1">{candidate.name}</h4>
-                        <p className="text-sm text-gray-600 mb-2">{candidate.email}</p>
-                        <p className="text-sm text-gray-600 mb-2">{candidate.phone}</p>
-                        <p className="text-xs text-gray-500">Aplicó: {formatDate(candidate.createdAt)}</p>
-                      </div>
-                      {candidate.documentId && (
-                        <button className="px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                          📄 CV
-                        </button>
-                      )}
-                    </div>
+                    <ChevronLeftIcon className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => scroll('right')}
+                    className="p-2 rounded-full border border-indigo-100 bg-white/50 hover:bg-white text-indigo-600 hover:shadow-md transition-all"
+                  >
+                    <ChevronRightIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {candidates.length === 0 ? (
+                <div className="py-20 px-8 text-center relative z-10 flex flex-col items-center justify-center">
+                  <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-indigo-200 animate-float">
+                    <StarIconSolid className="w-12 h-12 text-white drop-shadow-md" />
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
 
-          {/* Candidate Details */}
-          {selectedCandidate && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 sticky top-4 h-fit">
+                  <h3 className="text-slate-900 text-2xl font-bold mb-3">
+                    Aquí brillarán tus próximas estrellas ✨
+                  </h3>
+
+                  <p className="text-slate-600 max-w-lg mx-auto mb-8 text-lg leading-relaxed">
+                    La IA está rastreando tus campañas en busca de talento excepcional.
+                    <br />
+                    Sube más CVs y, cuando encontremos un <strong>Match &gt; 60%</strong>, lo destacaremos inmediatamente en este podio.
+                  </p>
+
+                  <button
+                    onClick={() => setIsUploadModalOpen(true)}
+                    className="group flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 border border-indigo-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 font-bold transition-all shadow-sm hover:shadow-md"
+                  >
+                    <ArrowDownTrayIcon className="w-5 h-5 group-hover:animate-bounce" />
+                    Subir CV a Campaña Activa
+                  </button>
+                </div>
+              ) : (
+                <div
+                  ref={scrollContainerRef}
+                  className="p-8 relative z-10 overflow-x-auto pb-8 flex gap-6 snap-x snap-mandatory scrollbar-hide"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                >
+                  {candidates.map((candidate) => (
+                    <div
+                      key={candidate.id}
+                      onClick={() => handleCandidateClick(candidate)}
+                      className={`
+                           group relative w-[280px] flex-shrink-0 bg-white/80 backdrop-blur-md rounded-2xl border border-white p-5
+                           hover:bg-white hover:border-indigo-300 hover:shadow-xl hover:-translate-y-1
+                           transition-all duration-300 cursor-pointer shadow-sm snap-center
+                           ${selectedCandidate?.id === candidate.id ? 'ring-2 ring-indigo-500 bg-white scale-105 shadow-xl' : ''}
+                        `}
+                    >
+                      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                      {/* Context Badge (Top) */}
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-indigo-100/90 backdrop-blur-sm border border-indigo-200 rounded-full px-3 py-0.5 z-20 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        <p className="text-[10px] font-bold text-indigo-800 truncate max-w-[180px]">
+                          Postula a: {candidate.campaignTitle}
+                        </p>
+                      </div>
+
+                      {/* Score Badge */}
+                      <div className="absolute top-4 right-4 animate-float">
+                        <div className="relative w-12 h-12 flex items-center justify-center">
+                          <svg className="w-full h-full transform -rotate-90">
+                            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-indigo-100" />
+                            <circle
+                              cx="24" cy="24" r="20"
+                              stroke={
+                                (candidate.scoring?.overallScore || 0) >= 80 ? '#10b981' :
+                                  (candidate.scoring?.overallScore || 0) >= 60 ? '#f59e0b' : '#f43f5e'
+                              }
+                              strokeWidth="4"
+                              fill="transparent"
+                              strokeDasharray={125.6}
+                              strokeDashoffset={125.6 - ((candidate.scoring?.overallScore || 0) / 100 * 125.6)}
+                              className="transition-all duration-1000 ease-out"
+                            />
+                          </svg>
+                          <span className="absolute text-xs font-bold text-slate-700">
+                            {Math.round(candidate.scoring?.overallScore || 0)}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Avatar & Info */}
+                      <div className="flex flex-col items-center text-center mt-6 mb-4">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 p-1 mb-3 shadow-md group-hover:shadow-indigo-200 transition-shadow">
+                          <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-xl font-bold text-indigo-600">
+                            {getInitials(candidate.name)}
+                          </div>
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-800 truncate w-full px-2" title={candidate.name}>
+                          {candidate.name}
+                        </h3>
+                        {/* Clean Role Display */}
+                        <div className="flex items-center justify-center gap-1.5 mt-1 text-slate-500 text-xs font-medium w-full px-4">
+                          {candidate.role ? (
+                            <span className="truncate" title={candidate.role}>{candidate.role}</span>
+                          ) : (
+                            <span className="italic">Candidato</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Quick Insight (AI) instead of Quote Box */}
+                      <div className="bg-slate-50 rounded-xl p-3 mb-4 text-xs text-slate-600 text-center border border-slate-100 min-h-[64px] flex items-center justify-center group-hover:bg-white group-hover:border-indigo-100 transition-colors">
+                        <p className="line-clamp-3 leading-relaxed">
+                          {getAIInsight(candidate)}
+                        </p>
+                      </div>
+
+                      {/* Action */}
+                      <button className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+                        <EyeIcon className="w-4 h-4" />
+                        Ver Perfil Completo
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}   {/* Candidate Details (Sticky Preview) - HIDDEN/REMOVED */}
+          {selectedCandidate && false && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 sticky top-4 h-fit shadow-xl animate-fade-in-right">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Vista Rápida</h3>
+                <button onClick={() => setSelectedCandidate(null)} className="text-gray-400 hover:text-gray-600">
+                  <XCircleIcon className="w-6 h-6" />
+                </button>
+              </div>
+
               <div className="text-center mb-6">
-                <div className="w-20 h-20 rounded-full bg-gray-400 flex items-center justify-center text-white text-2xl font-semibold mx-auto mb-4">
-                  {getInitials(selectedCandidate.name)}
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 p-1.5 mx-auto mb-4">
+                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-3xl font-bold text-indigo-700">
+                    {getInitials(selectedCandidate!.name)}
+                  </div>
                 </div>
-                <h3 className="text-lg font-bold mb-1">{selectedCandidate.name}</h3>
+                <h3 className="text-xl font-bold text-gray-900">{selectedCandidate!.name}</h3>
+                {/* Campaign Context in Header */}
+                <p className="text-sm text-indigo-600 font-medium mt-1">
+                  Campaña: {selectedCandidate!.campaignTitle}
+                </p>
               </div>
 
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 text-sm">
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <div className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <StarIcon className="w-5 h-5 text-indigo-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">Match Score</p>
+                    <p className="text-2xl font-black text-indigo-600">{Math.round(selectedCandidate!.scoring?.overallScore || 0)}%</p>
+                  </div>
+                </div>
+
+                {/* AI Insight in Side Panel */}
+                <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-xl p-4 border border-indigo-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <SparklesIcon className="w-4 h-4 text-indigo-600" />
+                    <span className="text-xs font-bold text-indigo-800 uppercase">Análisis IA</span>
+                  </div>
+                  <p className="text-sm text-slate-700 leading-relaxed italic">
+                    "{getAIInsight(selectedCandidate!)}"
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 text-sm border-t border-gray-100 pt-4">
                   <EnvelopeIcon className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-700">{selectedCandidate.email}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <PhoneIcon className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-700">{selectedCandidate.phone}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <CalendarIcon className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-700">Aplicó: {formatDate(selectedCandidate.createdAt)}</span>
+                  <a href={`mailto:${selectedCandidate!.email}`} className="text-gray-700 hover:text-indigo-600 truncate">
+                    {selectedCandidate!.email}
+                  </a>
                 </div>
               </div>
 
-              {selectedCandidate.documentId && (
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold">
-                  <ArrowDownTrayIcon className="w-5 h-5" />
-                  Ver CV Completo
+              {selectedCandidate!.documentId && (
+                <button
+                  onClick={() => onNavigateToCampaign(selectedCandidate!.campaignId)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 text-white rounded-xl hover:bg-slate-800 font-bold shadow-lg shadow-slate-200 transition-all hover:scale-[1.02]"
+                >
+                  <ArrowTopRightOnSquareIcon className="w-5 h-5" />
+                  Gestionar Candidato
                 </button>
               )}
             </div>
@@ -584,10 +871,23 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Snackbar */}
         {snackbarMessage && (
-          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up">
-            <p className="font-medium">{snackbarMessage}</p>
+          <div className="fixed bottom-4 right-4 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up flex items-center gap-2">
+            <CheckCircleSolid className="w-5 h-5 text-green-400" />
+            {snackbarMessage}
           </div>
         )}
+
+        {/* Upload Modal */}
+        <DashboardUploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          campaigns={campaigns.filter(c => c.status === 'ACTIVE')}
+          onUploadSuccess={() => {
+            loadDashboardData();
+            setSnackbarMessage('✅ Candidatos subidos exitosamente. Analizando...');
+            setTimeout(() => setSnackbarMessage(''), 5000);
+          }}
+        />
 
         {/* Pause Campaign Confirmation Modal */}
         {pauseConfirmModal.isOpen && (
@@ -661,6 +961,37 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
 
+        {/* Start Process Confirmation Modal */}
+        {showStartProcessModal && selectedCandidate && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-fade-in-up">
+              <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+                <PlayIcon className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Iniciar Reclutamiento</h3>
+              <p className="text-center text-slate-500 text-sm mb-6">
+                Esto moverá a <strong>{selectedCandidate.name}</strong> a la etapa de "Screening" y notificará al equipo.
+              </p>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowStartProcessModal(false)}
+                  className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={executeStartProcess}
+                  disabled={startingProcess}
+                  className="flex-1 py-3 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all flex justify-center items-center"
+                >
+                  {startingProcess ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Mobile FAB */}
         <button
           onClick={onCreateCampaign}
@@ -669,7 +1000,17 @@ const Dashboard: React.FC<DashboardProps> = ({
           <PlusIcon className="w-6 h-6" />
         </button>
       </div>
-    </Layout>
+
+      <CandidateDrawer
+        isOpen={!!selectedCandidate}
+        candidate={selectedCandidate}
+        campaign={campaigns.find(c => c.id === selectedCandidate?.campaignId)}
+        onClose={() => setSelectedCandidate(null)}
+        onDismiss={handleDismissCandidate}
+        onStartProcess={handleStartProcess}
+        onViewAIAnalysis={handleViewAIAnalysis}
+      />
+    </Layout >
   );
 };
 

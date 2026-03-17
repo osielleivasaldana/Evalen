@@ -9,7 +9,7 @@ import {
   ValidateNested
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { WorkType, Modality, Duration, Currency } from '../../common/enums';
+import { WorkType, Modality, Duration, Currency, CampaignStatus } from '../../common/enums';
 import { IsEnumValue } from '../../common/validators/is-enum-value.validator';
 
 export class StageTemplateDto {
@@ -97,6 +97,10 @@ export class CreateCampaignDto {
     return value === 'true' || value === true;
   })
   showSalary?: boolean;
+
+  @IsOptional()
+  @IsEnumValue(CampaignStatus)
+  status?: CampaignStatus;
 
   @IsArray()
   @ValidateNested({ each: true })

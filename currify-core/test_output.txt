@@ -1,0 +1,119 @@
+C:\Users\osiel\Desktop\Currify\currify-core\app\services\llm_service.py:19: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai
+INFO:app.services.scoring_service:Starting candidate-job scoring evaluation (v3: Latent Skills & Normalized Roles)
+INFO:app.services.semantic_service:\U0001f575\ufe0f Starting Latent Skill Extraction from text...
+INFO:app.services.llm_service:[LATENT_SKILL_EXTRACTION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[LATENT_SKILL_EXTRACTION] ANTHROPIC response received in 1.92s
+INFO:app.services.llm_service:STAGE LATENT_SKILL_EXTRACTION: Processing response of length 162
+INFO:app.services.llm_service:STAGE LATENT_SKILL_EXTRACTION: Response preview: ["magento", "shopify", "digital sales", "software quality", "selenium", "appium", "automated testing", "qa automation", "e-commerce", "webpay", "web development"]...
+INFO:app.services.llm_service:STAGE LATENT_SKILL_EXTRACTION: Direct JSON parsing successful
+INFO:app.services.llm_service:[LATENT_SKILL_EXTRACTION] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f575\ufe0f Latent Skills Extracted: 11 items
+INFO:app.services.semantic_service:\U0001f9e0 Expanding 13 skills: ['Python', 'Selenium', 'appium', 'automated testing', 'digital sales']...
+INFO:app.services.llm_service:[SEMANTIC_EXPANSION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[SEMANTIC_EXPANSION] ANTHROPIC response received in 1.37s
+INFO:app.services.llm_service:STAGE SEMANTIC_EXPANSION: Processing response of length 168
+INFO:app.services.llm_service:STAGE SEMANTIC_EXPANSION: Response preview: ["python", "selenium", "appium", "automated testing", "backend", "frontend", "e-commerce", "magento", "qa automation", "shopify", "software quality", "web development"]...
+INFO:app.services.llm_service:STAGE SEMANTIC_EXPANSION: Direct JSON parsing successful
+INFO:app.services.llm_service:[SEMANTIC_EXPANSION] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f9e0 Expansion result: 12 items (Original: 13)
+INFO:app.services.scoring_service:\U0001f680 FINAL Expanded Skills (Explicit + Latent): 12 items
+INFO:app.services.semantic_service:\U0001f454 Normalizing Job Titles: ['Automatizador QA', 'Desarrollador Web']
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] ANTHROPIC response received in 0.95s
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Processing response of length 43
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Response preview: ["QA Automation Engineer", "Web Developer"]...
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Direct JSON parsing successful
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f454 Normalized Titles Result: ['qa automation engineer', 'web developer']
+INFO:app.services.scoring_service:\U0001f454 Normalized Candidate Roles: ['qa automation engineer', 'web developer'] (from ['Automatizador QA', 'Desarrollador Web'])
+INFO:app.services.semantic_service:\U0001f393 Normalizing degrees: ['Ingeniero Informßtico']
+INFO:app.services.llm_service:[SEMANTIC_Normalization] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[SEMANTIC_Normalization] ANTHROPIC response received in 1.40s
+INFO:app.services.llm_service:STAGE SEMANTIC_Normalization: Processing response of length 25
+INFO:app.services.llm_service:STAGE SEMANTIC_Normalization: Response preview: ["ingeniero informatico"]...
+INFO:app.services.llm_service:STAGE SEMANTIC_Normalization: Direct JSON parsing successful
+INFO:app.services.llm_service:[SEMANTIC_Normalization] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f393 Normalized degrees result: ['ingeniero informatico']
+INFO:app.services.dynamic_rubric_service:\U0001f9e9 Generating Structured Rubric for job: QA Automation Engineer
+INFO:app.services.llm_service:[RUBRIC_EXTRACTION] Calling ANTHROPIC with Structured Output...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[RUBRIC_EXTRACTION] Successfully received structured response.
+INFO:app.services.dynamic_rubric_service:\U0001f9e9 Rubric Generated Successfully. Mandatory Skills: 4
+INFO:app.services.semantic_service:\U0001f454 Normalizing Job Titles: ['Automation Engineer', 'QA Engineer', 'Software Tester']
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] ANTHROPIC response received in 1.43s
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Processing response of length 72
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Response preview: ["automation engineer", "quality assurance engineer", "software tester"]...
+INFO:app.services.llm_service:STAGE ROLE_NORMALIZATION: Direct JSON parsing successful
+INFO:app.services.llm_service:[ROLE_NORMALIZATION] Successfully parsed JSON response on attempt 1
+INFO:app.services.semantic_service:\U0001f454 Normalized Titles Result: ['automation engineer', 'quality assurance engineer', 'software tester']
+INFO:app.services.scoring_service:\U0001f454 Normalized Rubric Roles: ['automation engineer', 'quality assurance engineer', 'software tester'] (from ['QA Engineer', 'Automation Engineer', 'Software Tester'])
+INFO:app.services.scoring_service:debug_edu: req_titles=['ingenierÝa de software', 'ciencias de la computaci¾n', 'informßtica'], cand_degrees=['ingeniero informatico']
+INFO:app.services.scoring_service:\U0001f9ee Matrix Scores: {'education': 100, 'experience': 100, 'skills_match': 60.0, 'logistics': 100, 'cultural_fit': 50, 'career_trajectory': 70}
+INFO:app.services.llm_service:[SCORING_EVALUATION] Calling ANTHROPIC API (attempt 1/2)...
+INFO:httpx:HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+INFO:app.services.llm_service:[SCORING_EVALUATION] ANTHROPIC response received in 4.81s
+INFO:app.services.llm_service:STAGE SCORING_EVALUATION: Processing response of length 1678
+INFO:app.services.llm_service:STAGE SCORING_EVALUATION: Response preview: {
+  "breakdown": {
+    "skills_match": {
+      "score": 60,
+      "reasoning": "El candidato demuestra 6/10 habilidades tÚcnicas requeridas, incluyendo Python y Selenium, pero le faltan habilidades en e-commerce y retail."
+    },
+    "experience": {
+      "score": 100,
+      "reasoning": "El candidato tiene mßs de 3 a±os de experiencia relevante en roles de QA y automatizaci¾n."
+    },
+    "education": {
+      "score": 100,
+      "reasoning": "El candidato tiene una licenciatura en IngenierÝa In...
+INFO:app.services.llm_service:STAGE SCORING_EVALUATION: Direct JSON parsing successful
+INFO:app.services.llm_service:[SCORING_EVALUATION] Successfully parsed JSON response on attempt 1
+INFO:app.services.scoring_service:\U0001f50d DEBUG: LLM Result Keys: ['breakdown', 'strengths', 'gaps', 'summary']
+INFO:app.services.scoring_service:\U0001f512 Locking Score for skills_match: LLM said 60.0, Python enforces 60.0
+INFO:app.services.scoring_service:\U0001f512 Locking Score for experience: LLM said 100.0, Python enforces 100
+INFO:app.services.scoring_service:\U0001f512 Locking Score for education: LLM said 100.0, Python enforces 100
+INFO:app.services.scoring_service:Scoring completed: 79.0/100
+
+--- STARTING EVALUATION ---
+Traceback (most recent call last):
+  File "C:\Users\osiel\Desktop\Currify\currify-core\test_generic_scoring.py", line 75, in test_generic_scoring
+    print(f"\n\u2705 Evaluation Completed!")
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2705' in position 2: character maps to <undefined>
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\osiel\Desktop\Currify\currify-core\test_generic_scoring.py", line 102, in <module>
+    asyncio.run(test_generic_scoring())
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\asyncio\base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "C:\Users\osiel\Desktop\Currify\currify-core\test_generic_scoring.py", line 97, in test_generic_scoring
+    print(f"\n\u274c EXCEPTION: {e}")
+  File "C:\Users\osiel\AppData\Local\Programs\Python\Python312\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u274c' in position 2: character maps to <undefined>

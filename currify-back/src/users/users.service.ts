@@ -12,7 +12,7 @@ export class UsersService {
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
   async create(createUserDto: CreateUserDto, currentUserId: string) {
     const { email, password, name, company, role } = createUserDto;
@@ -138,6 +138,9 @@ export class UsersService {
         role: true,
         createdAt: true,
         updatedAt: true,
+        plan: true,
+        cvCredits: true,
+        campaignLimit: true,
       },
     });
 
@@ -149,7 +152,8 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, currentUserId: string, currentUserRole: string) {
-    if (id === currentUserId && updateUserDto.role) {
+    // Allow role update if it's the onboarding process/wizard
+    if (id === currentUserId && updateUserDto.role && !updateUserDto.onboardingCompleted) {
       throw new ForbiddenException('You cannot change your own role');
     }
 

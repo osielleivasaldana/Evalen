@@ -6,7 +6,6 @@ import {
   XCircleIcon,
   ClockIcon,
   UserIcon,
-  DocumentTextIcon,
   ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
@@ -30,8 +29,9 @@ const CandidateProcessPanel: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string>('');
 
   useEffect(() => {
-    loadData();
     loadCurrentUser();
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [campaignId, candidateId]);
 
   const loadCurrentUser = async () => {
@@ -237,11 +237,10 @@ const CandidateProcessPanel: React.FC = () => {
                   <div
                     key={stage.id}
                     onClick={() => setSelectedStage(stage)}
-                    className={`cursor-pointer border-2 rounded-xl p-4 transition-all ${
-                      selectedStage?.id === stage.id
+                    className={`cursor-pointer border-2 rounded-xl p-4 transition-all ${selectedStage?.id === stage.id
                         ? 'border-indigo-500 bg-indigo-50'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-4">
                       {/* Icon */}
@@ -411,11 +410,10 @@ const CandidateProcessPanel: React.FC = () => {
               </h3>
 
               <div
-                className={`border-2 rounded-lg p-4 mb-6 ${
-                  decision === 'ACCEPTED'
+                className={`border-2 rounded-lg p-4 mb-6 ${decision === 'ACCEPTED'
                     ? 'bg-green-50 border-green-200'
                     : 'bg-red-50 border-red-200'
-                }`}
+                  }`}
               >
                 <p className="text-sm font-medium text-gray-900 mb-1">
                   Etapa: {selectedStage.stageTemplate.name}
@@ -460,11 +458,10 @@ const CandidateProcessPanel: React.FC = () => {
                 <button
                   onClick={handleStageDecision}
                   disabled={submitting || !feedback.trim()}
-                  className={`flex-1 px-4 py-3 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                    decision === 'ACCEPTED'
+                  className={`flex-1 px-4 py-3 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${decision === 'ACCEPTED'
                       ? 'bg-green-600 hover:bg-green-700'
                       : 'bg-red-600 hover:bg-red-700'
-                  }`}
+                    }`}
                 >
                   {submitting ? 'Procesando...' : 'Confirmar'}
                 </button>

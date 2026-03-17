@@ -3,12 +3,15 @@ import {
   IsString,
   IsBoolean,
   IsNumber,
-  Min
+  Min,
+  IsArray,
+  ValidateNested
 } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { CampaignStatus } from '@prisma/client';
 import { WorkType, Modality, Duration, Currency, CAMPAIGN_STATUS_VALUES } from '../../common/enums';
 import { IsEnumValue } from '../../common/validators/is-enum-value.validator';
+import { StageTemplateDto } from './create-campaign.dto';
 
 export class UpdateCampaignDto {
   @IsOptional()
@@ -81,4 +84,10 @@ export class UpdateCampaignDto {
   @IsOptional()
   @IsEnumValue(CAMPAIGN_STATUS_VALUES)
   status?: CampaignStatus;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => StageTemplateDto)
+  stageTemplates?: StageTemplateDto[];
 }

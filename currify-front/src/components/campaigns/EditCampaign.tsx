@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { apiService, Campaign, CreateCampaignRequest } from '../../services/api';
+import { apiService, Campaign, CreateCampaignRequest, StageTemplateInput, UserProfile } from '../../services/api';
 import Layout from '../layout/Layout';
 import RichTextEditor from '../common/RichTextEditor';
 import FullScreenEditorModal from '../common/FullScreenEditorModal';
+import LocationAutocomplete from '../common/LocationAutocomplete';
+import { STAGE_TEMPLATES } from '../../constants/stageTemplates';
+import { CURRENCIES } from '../../constants/currencies';
+import { formatNumber, parseNumber, formatInputNumber } from '../../utils/formatters';
 import {
   BriefcaseIcon,
   MapPinIcon,
@@ -13,7 +17,10 @@ import {
   CheckCircleIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
-  CheckIcon
+  CheckIcon,
+  UserGroupIcon,
+  PlusIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 
 interface EditCampaignProps {
@@ -23,7 +30,7 @@ interface EditCampaignProps {
   onGoToDashboard: () => void;
 }
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5;
 
 interface StepConfig {
   number: number;
@@ -35,7 +42,8 @@ const STEPS: StepConfig[] = [
   { number: 1, title: 'Información Básica', icon: BriefcaseIcon },
   { number: 2, title: 'Descripción y Requisitos', icon: DocumentTextIcon },
   { number: 3, title: 'Condiciones y Salario', icon: CurrencyDollarIcon },
-  { number: 4, title: 'Revisar', icon: CheckCircleIcon }
+  { number: 4, title: 'Etapas del Proceso', icon: UserGroupIcon },
+  { number: 5, title: 'Revisar', icon: CheckCircleIcon }
 ];
 
 const EditCampaign: React.FC<EditCampaignProps> = ({
@@ -45,7 +53,16 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
   onGoToDashboard
 }) => {
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [formData, setFormData] = useState<CreateCampaignRequest>({
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // New state for stage management
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
+  const [candidateCount, setCandidateCount] = useState<number>(0);
+
+  const [formData, setFormData] = useState<Partial<CreateCampaignRequest>>({
     title: '',
     description: '',
     requirements: '',
@@ -56,24 +73,54 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
     duration: undefined,
     inclusionPosition: false,
     salary: undefined,
-    currency: 'CLP',
+    currency: undefined,
     showSalary: false,
+    status: 'DRAFT',
     stageTemplates: []
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
 
   // Modal states for fullscreen editing
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
   const [requirementsModalOpen, setRequirementsModalOpen] = useState(false);
   const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
 
+  // Load user profile and available users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const [profile, allUsers] = await Promise.all([
+          apiService.getProfile(),
+          apiService.getUsers()
+        ]);
+        setCurrentUser(profile);
+
+        // Filter users by company if applicable
+        if (profile.role !== 'ADMIN' && profile.company) {
+          // Cast to any to avoid strict type mismatch
+          const companyUsers = allUsers.filter(u => u.company === profile.company) as any as UserProfile[];
+          setAvailableUsers(companyUsers);
+        } else {
+          setAvailableUsers(allUsers as any as UserProfile[]);
+        }
+      } catch (err) {
+        console.error('Error loading users:', err);
+      }
+    };
+    fetchUsers();
+  }, []);
+
   // Load campaign data
   const loadCampaign = useCallback(async () => {
     try {
       setLoading(true);
       const campaign = await apiService.getCampaign(campaignId);
+
+      // Check candidate count for blocking edits
+      if (campaign._count?.candidates) {
+        setCandidateCount(campaign._count.candidates);
+      }
+
       setFormData({
         title: campaign.title || '',
         description: campaign.description || '',
@@ -87,6 +134,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
         salary: campaign.salary,
         currency: campaign.currency || 'CLP',
         showSalary: campaign.showSalary || false,
+        status: campaign.status,
         stageTemplates: campaign.stageTemplates?.map(st => ({
           name: st.name,
           description: st.description,
@@ -95,7 +143,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
         })) || []
       });
     } catch (err: any) {
-      setErrors({ submit: err.message || 'Error al cargar la campaña' });
+      setError(err.message || 'Error al cargar la campaña');
     } finally {
       setLoading(false);
     }
@@ -121,8 +169,8 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
     }
 
     const newValue = type === 'checkbox' ? checked :
-                     type === 'number' ? (value ? Number(value) : undefined) :
-                     value === '' ? undefined : value;
+      type === 'number' ? (value ? Number(value) : undefined) :
+        value === '' ? undefined : value;
 
     setFormData(prev => ({
       ...prev,
@@ -130,61 +178,136 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
     }));
   };
 
-  const validateStep = (step: Step): boolean => {
+  const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
+    let isValid = true;
 
     if (step === 1) {
       if (!formData.title?.trim()) {
         newErrors.title = 'El título es requerido';
+        isValid = false;
       }
-      if (!formData.location?.trim()) {
-        newErrors.location = 'La ubicación es requerida';
+      if (!formData.location?.trim() && formData.modality !== 'REMOTE') {
+        newErrors.location = 'La ubicación es requerida para trabajos no remotos';
+        isValid = false;
       }
       if (!formData.workType) {
         newErrors.workType = 'El tipo de trabajo es requerido';
+        isValid = false;
       }
       if (!formData.modality) {
         newErrors.modality = 'La modalidad es requerida';
+        isValid = false;
       }
       if (!formData.duration) {
         newErrors.duration = 'La duración es requerida';
+        isValid = false;
       }
-    } else if (step === 2) {
-      if (!formData.description?.trim()) {
-        newErrors.description = 'La descripción es requerida';
+    }
+
+    if (step === 2) {
+      if (!formData.description || formData.description.replace(/<[^>]*>/g, '').trim().length < 50) {
+        newErrors.description = 'La descripción debe tener al menos 50 caracteres';
+        isValid = false;
       }
-      if (!formData.requirements?.trim()) {
-        newErrors.requirements = 'Los requisitos son requeridos';
+      if (!formData.requirements || formData.requirements.replace(/<[^>]*>/g, '').trim().length < 20) {
+        newErrors.requirements = 'Debe detallar los requisitos';
+        isValid = false;
       }
-    } else if (step === 3) {
-      if (!formData.conditions?.trim()) {
-        newErrors.conditions = 'Las condiciones son requeridas';
+    }
+
+    if (step === 3) {
+      if (!formData.conditions || formData.conditions.replace(/<[^>]*>/g, '').trim().length < 20) {
+        newErrors.conditions = 'Debe detallar las condiciones';
+        isValid = false;
+      }
+    }
+
+    if (step === 4) { // Stage validation
+      if (!formData.stageTemplates || formData.stageTemplates.length === 0) {
+        newErrors.stages = 'Debe haber al menos una etapa en el proceso';
+        isValid = false;
+      } else {
+        formData.stageTemplates.forEach((stage, index) => {
+          if (!stage.name.trim()) {
+            newErrors[`stage_${index}_name`] = 'El nombre de la etapa es obligatorio';
+            isValid = false;
+          }
+          if (!stage.responsibleId) {
+            newErrors[`stage_${index}_responsible`] = 'Debe asignar un responsable';
+            isValid = false;
+          }
+        });
       }
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return isValid;
+  };
+
+  const handleStageChange = (index: number, field: keyof StageTemplateInput, value: any) => {
+    const newStages = [...(formData.stageTemplates || [])];
+    newStages[index] = {
+      ...newStages[index],
+      [field]: value
+    };
+    setFormData({ ...formData, stageTemplates: newStages });
+
+    // Clear error
+    if (errors[`stage_${index}_${field}`]) {
+      const newErrors = { ...errors };
+      delete newErrors[`stage_${index}_${field}`];
+      setErrors(newErrors);
+    }
+  };
+
+  const addStage = () => {
+    const newStage: StageTemplateInput = {
+      name: '',
+      description: '',
+      responsibleId: currentUser?.id || '',
+      order: (formData.stageTemplates?.length || 0) + 1
+    };
+    setFormData({
+      ...formData,
+      stageTemplates: [...(formData.stageTemplates || []), newStage]
+    });
+  };
+
+  const removeStage = (index: number) => {
+    const newStages = (formData.stageTemplates || []).filter((_, i) => i !== index);
+    // Reorder
+    const reorderedStages = newStages.map((stage, i) => ({
+      ...stage,
+      order: i + 1
+    }));
+    setFormData({ ...formData, stageTemplates: reorderedStages });
   };
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4) as Step);
+      setCurrentStep((prev) => (prev < 5 ? (prev + 1) as Step : prev));
+      window.scrollTo(0, 0);
     }
   };
 
   const handlePrevious = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1) as Step);
+    setCurrentStep((prev) => (prev > 1 ? (prev - 1) as Step : prev));
+    window.scrollTo(0, 0);
   };
 
   const handleSubmit = async () => {
     setSaving(true);
     try {
-      // Excluir stageTemplates al actualizar (no se pueden cambiar después de crear)
-      const { stageTemplates, ...updateData } = formData;
-      const updatedCampaign = await apiService.updateCampaign(campaignId, updateData);
+      // Cast to any to bypass strict type check on stageTemplates
+      const updatedCampaign = await apiService.updateCampaign(campaignId, formData as any);
       onCampaignUpdated(updatedCampaign);
     } catch (err: any) {
       setErrors({ submit: err.message || 'Error al actualizar la campaña' });
+      // If error involves candidates, show clear message
+      if (err.message && err.message.includes('already has candidates')) {
+        setErrors({ submit: 'No se pueden editar las etapas de una campaña con candidatos activos.' });
+      }
     } finally {
       setSaving(false);
     }
@@ -237,13 +360,12 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                   <React.Fragment key={step.number}>
                     <div className="flex flex-col items-center flex-1">
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
-                          isCompleted
-                            ? 'bg-green-500 text-white'
-                            : isActive
+                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${isCompleted
+                          ? 'bg-green-500 text-white'
+                          : isActive
                             ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-110'
                             : 'bg-gray-200 text-gray-400'
-                        }`}
+                          }`}
                       >
                         {isCompleted ? (
                           <CheckIcon className="w-6 h-6" />
@@ -252,9 +374,8 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                         )}
                       </div>
                       <span
-                        className={`text-xs font-medium text-center ${
-                          isActive ? 'text-purple-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
-                        }`}
+                        className={`text-xs font-medium text-center ${isActive ? 'text-purple-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                          }`}
                       >
                         {step.title}
                       </span>
@@ -262,9 +383,8 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                     {index < STEPS.length - 1 && (
                       <div className="flex-1 h-1 mx-2 mb-8">
                         <div
-                          className={`h-full rounded transition-all duration-300 ${
-                            currentStep > step.number ? 'bg-green-500' : 'bg-gray-200'
-                          }`}
+                          className={`h-full rounded transition-all duration-300 ${currentStep > step.number ? 'bg-green-500' : 'bg-gray-200'
+                            }`}
                         />
                       </div>
                     )}
@@ -295,9 +415,8 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                     value={formData.title || ''}
                     onChange={handleInputChange}
                     placeholder="Ej: Desarrollador Full Stack Senior"
-                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all ${
-                      errors.title ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all ${errors.title ? 'border-red-500' : 'border-gray-300'
+                      }`}
                   />
                   {errors.title && (
                     <p className="mt-1 text-sm text-red-600">{errors.title}</p>
@@ -310,19 +429,13 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                     <MapPinIcon className="w-4 h-4" />
                     Ubicación Geográfica *
                   </label>
-                  <input
-                    type="text"
-                    name="location"
+                  <LocationAutocomplete
                     value={formData.location || ''}
-                    onChange={handleInputChange}
-                    placeholder="Ej: Santiago, Chile / Remoto"
-                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all ${
-                      errors.location ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    onChange={(value) => setFormData(prev => ({ ...prev, location: value }))}
+                    placeholder="Ej: Santiago, Región Metropolitana, Chile"
+                    error={errors.location}
+                    required
                   />
-                  {errors.location && (
-                    <p className="mt-1 text-sm text-red-600">{errors.location}</p>
-                  )}
                 </div>
 
                 {/* Row of selects */}
@@ -337,9 +450,8 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                       name="workType"
                       value={formData.workType || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${
-                        errors.workType ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${errors.workType ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     >
                       <option value="">Seleccionar...</option>
                       <option value="FULL_TIME">Full Time</option>
@@ -361,9 +473,8 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                       name="modality"
                       value={formData.modality || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${
-                        errors.modality ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${errors.modality ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     >
                       <option value="">Seleccionar...</option>
                       <option value="REMOTE">Remoto</option>
@@ -385,9 +496,8 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                       name="duration"
                       value={formData.duration || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${
-                        errors.duration ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${errors.duration ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     >
                       <option value="">Seleccionar...</option>
                       <option value="INDEFINITE">Indefinido</option>
@@ -521,38 +631,42 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                     Información Salarial
                   </h3>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    {/* Currency */}
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Moneda
-                      </label>
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Monto del Salario
+                    </label>
+                    <div className="flex gap-3">
+                      {/* Currency Selector */}
                       <select
                         name="currency"
                         value={formData.currency || 'CLP'}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white"
+                        className="w-64 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white"
                       >
-                        <option value="CLP">CLP</option>
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="UF">UF</option>
+                        {CURRENCIES.map(currency => (
+                          <option key={currency.code} value={currency.code}>
+                            {currency.symbol} {currency.code} - {currency.name}
+                          </option>
+                        ))}
                       </select>
-                    </div>
 
-                    {/* Salary Amount */}
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Monto del Salario
-                      </label>
+                      {/* Salary Input with thousands separator */}
                       <input
-                        type="number"
+                        type="text"
                         name="salary"
-                        value={formData.salary || ''}
-                        onChange={handleInputChange}
-                        placeholder="Ej: 800000"
-                        min="0"
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                        value={formatInputNumber(formData.salary?.toString() || '')}
+                        onChange={(e) => {
+                          const rawValue = parseNumber(e.target.value);
+                          handleInputChange({
+                            target: {
+                              name: 'salary',
+                              value: rawValue.toString(),
+                              type: 'text'
+                            }
+                          } as any);
+                        }}
+                        placeholder="Ej: 2.000.000"
+                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                       />
                     </div>
                   </div>
@@ -574,8 +688,198 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
               </div>
             )}
 
-            {/* Step 4: Review */}
+            {/* Step 4: Etapas del Proceso */}
             {currentStep === 4 && (
+              <div className="space-y-6 animate-fade-in">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                  <UserGroupIcon className="w-7 h-7 text-indigo-600" />
+                  Etapas del Proceso
+                </h2>
+
+                <div className="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-orange-700">
+                        {candidateCount > 0
+                          ? `Esta campaña tiene ${candidateCount} candidatos activos. No se pueden modificar las etapas.`
+                          : 'Define las etapas por las que pasarán los candidatos. El orden es importante.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  {(formData.stageTemplates || []).length === 0 && candidateCount === 0 ? (
+                    <div className="py-8">
+                      <div className="text-center mb-8">
+                        <h3 className="text-lg font-medium text-gray-900">Comienza con una plantilla probada</h3>
+                        <p className="text-gray-500 mt-1">Selecciona un flujo de trabajo predefinido o crea uno desde cero</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        {STAGE_TEMPLATES.map((template) => {
+                          const Icon = template.icon;
+                          return (
+                            <button
+                              key={template.id}
+                              type="button"
+                              onClick={() => {
+                                const newStages = template.stages.map((stage, index) => ({
+                                  ...stage,
+                                  responsibleId: currentUser?.id || '',
+                                  order: index + 1
+                                }));
+                                setFormData({
+                                  ...formData,
+                                  stageTemplates: newStages
+                                });
+                              }}
+                              className="flex flex-col items-center p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:shadow-md transition-all text-left group"
+                            >
+                              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                <Icon className="w-6 h-6" />
+                              </div>
+                              <h4 className="font-bold text-gray-900 mb-2">{template.name}</h4>
+                              <p className="text-sm text-gray-500 text-center mb-4">{template.description}</p>
+                              <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full group-hover:bg-indigo-100">
+                                {template.stages.length} Etapas
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="relative mb-8">
+                        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                          <div className="w-full border-t border-gray-300" />
+                        </div>
+                        <div className="relative flex justify-center">
+                          <span className="bg-white px-4 text-sm text-gray-500">O personaliza tu proceso</span>
+                        </div>
+                      </div>
+
+                      <div className="text-center">
+                        <button
+                          type="button"
+                          onClick={addStage}
+                          className="inline-flex items-center gap-2 px-6 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition-all font-medium"
+                        >
+                          <PlusIcon className="w-5 h-5" />
+                          Crear desde cero (Vacío)
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      {formData.stageTemplates?.map((stage, index) => (
+                        <div key={index} className="bg-white border-2 border-gray-200 rounded-lg p-4 relative hover:border-indigo-300 transition-colors">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
+                                {index + 1}
+                              </span>
+                              <h3 className="font-semibold text-gray-800">
+                                Etapa {index + 1}
+                              </h3>
+                            </div>
+                            {candidateCount === 0 && (
+                              <button
+                                onClick={() => removeStage(index)}
+                                className="text-gray-400 hover:text-red-500 transition-colors"
+                                title="Eliminar etapa"
+                              >
+                                <TrashIcon className="w-5 h-5" />
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Nombre de la Etapa *
+                              </label>
+                              <input
+                                type="text"
+                                value={stage.name}
+                                onChange={(e) => handleStageChange(index, 'name', e.target.value)}
+                                disabled={candidateCount > 0}
+                                className={`w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-indigo-500 ${errors[`stage_${index}_name`] ? 'border-red-500' : 'border-gray-300'
+                                  } ${candidateCount > 0 ? 'bg-gray-100' : ''}`}
+                                placeholder="Ej: Entrevista Técnica"
+                              />
+                              {errors[`stage_${index}_name`] && (
+                                <p className="mt-1 text-xs text-red-600">{errors[`stage_${index}_name`]}</p>
+                              )}
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Responsable *
+                              </label>
+                              <select
+                                value={stage.responsibleId}
+                                onChange={(e) => handleStageChange(index, 'responsibleId', e.target.value)}
+                                disabled={candidateCount > 0}
+                                className={`w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-indigo-500 bg-white ${errors[`stage_${index}_responsible`] ? 'border-red-500' : 'border-gray-300'
+                                  } ${candidateCount > 0 ? 'bg-gray-100' : ''}`}
+                              >
+                                <option value="">Seleccionar...</option>
+                                {availableUsers.map(user => (
+                                  <option key={user.id} value={user.id}>
+                                    {user.name} ({user.email})
+                                  </option>
+                                ))}
+                              </select>
+                              {errors[`stage_${index}_responsible`] && (
+                                <p className="mt-1 text-xs text-red-600">{errors[`stage_${index}_responsible`]}</p>
+                              )}
+                            </div>
+
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Descripción (Opcional)
+                              </label>
+                              <input
+                                type="text"
+                                value={stage.description || ''}
+                                onChange={(e) => handleStageChange(index, 'description', e.target.value)}
+                                disabled={candidateCount > 0}
+                                className={`w-full px-3 py-2 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-indigo-500 ${candidateCount > 0 ? 'bg-gray-100' : ''}`}
+                                placeholder="Breve descripción de qué consiste esta etapa..."
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {candidateCount === 0 && (
+                        <button
+                          type="button"
+                          onClick={addStage}
+                          className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center justify-center gap-2 font-medium"
+                        >
+                          <PlusIcon className="w-5 h-5" />
+                          Agregar Nueva Etapa
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+                {errors.stages && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-600 flex items-center gap-2">
+                    <span>⚠️</span> {errors.stages}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 5: Review */}
+            {currentStep === 5 && (
               <div className="space-y-6 animate-fade-in">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
                   <CheckCircleIcon className="w-7 h-7 text-indigo-600" />
@@ -658,6 +962,26 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                     <div className="text-gray-800 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: formData.conditions || '' }} />
                   </div>
 
+                  {/* Stages Review */}
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold text-indigo-900 mb-3 pb-2 border-b-2 border-indigo-300">
+                      Etapas del Proceso ({formData.stageTemplates?.length || 0})
+                    </h3>
+                    <div className="space-y-2">
+                      {formData.stageTemplates?.map((stage, i) => (
+                        <div key={i} className="flex items-center gap-2 text-gray-800">
+                          <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">
+                            {i + 1}
+                          </div>
+                          <span className="font-medium">{stage.name}</span>
+                          <span className="text-gray-500 text-sm">
+                            ({availableUsers.find(u => u.id === stage.responsibleId)?.name || 'Responsable desconocido'})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Salary Info */}
                   {formData.salary && (
                     <div>
@@ -697,11 +1021,10 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
               <button
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-                  currentStep === 1
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg'
-                }`}
+                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${currentStep === 1
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-600 text-white hover:bg-gray-700 hover:shadow-lg'
+                  }`}
               >
                 <ArrowLeftIcon className="w-5 h-5" />
                 Anterior
@@ -711,7 +1034,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                 Paso {currentStep} de {STEPS.length}
               </div>
 
-              {currentStep < 4 ? (
+              {currentStep < 5 ? (
                 <button
                   onClick={handleNext}
                   className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg transition-all duration-200"
@@ -723,11 +1046,10 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                 <button
                   onClick={handleSubmit}
                   disabled={saving}
-                  className={`flex items-center gap-2 px-8 py-3 rounded-lg font-semibold transition-all duration-200 ${
-                    saving
-                      ? 'bg-gray-400 text-white cursor-not-allowed'
-                      : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-lg'
-                  }`}
+                  className={`flex items-center gap-2 px-8 py-3 rounded-lg font-semibold transition-all duration-200 ${saving
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 hover:shadow-lg'
+                    }`}
                 >
                   {saving ? (
                     <>

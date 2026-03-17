@@ -7,7 +7,8 @@ import {
   Query,
   Request,
   UseGuards,
-  Body
+  Body,
+  Patch
 } from '@nestjs/common';
 import { CandidatesService } from './candidates.service';
 import { SearchCandidatesDto } from './dto/search-candidates.dto';
@@ -16,7 +17,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 @Controller('candidates')
 @UseGuards(JwtAuthGuard)
 export class CandidatesController {
-  constructor(private readonly candidatesService: CandidatesService) {}
+  constructor(private readonly candidatesService: CandidatesService) { }
 
   @Get('campaign/:campaignId')
   findAll(
@@ -65,5 +66,14 @@ export class CandidatesController {
   @Delete(':id')
   remove(@Param('id') id: string, @Request() req: any) {
     return this.candidatesService.remove(id, req.user.id);
+  }
+
+  @Patch(':id/status')
+  updateStatus(
+    @Param('id') id: string,
+    @Body('status') status: string,
+    @Request() req: any
+  ) {
+    return this.candidatesService.updateStatus(id, req.user.id, status);
   }
 }

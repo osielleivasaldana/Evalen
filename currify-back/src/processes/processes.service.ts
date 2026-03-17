@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException, BadRequestException 
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { EmailService } from '../email/email.service';
 import { StartProcessDto } from './dto/start-process.dto';
 import { UpdateStageDto } from './dto/update-stage.dto';
 
@@ -11,6 +12,7 @@ export class ProcessesService {
     private prisma: PrismaService,
     private auditService: AuditService,
     private notificationsService: NotificationsService,
+    private emailService: EmailService,
   ) { }
 
   async startProcess(userId: string, dto: StartProcessDto) {
@@ -125,10 +127,14 @@ export class ProcessesService {
       }
     });
 
-    // 8. Notificar candidato (opcional)
+    // 8. Notificar candidato
     if (notifyCandidate && candidate.email) {
-      // TODO: Implementar envío de email al candidato
-      console.log(`Notification to candidate ${candidate.email}: Process started for campaign ${campaign.title}`);
+      this.emailService.sendProcessStartedEmail(
+        candidate.email,
+        candidate.name || 'Candidato',
+        campaign.title,
+        firstStage.stageTemplate.name
+      );
     }
 
     return processInstance;
@@ -254,6 +260,16 @@ export class ProcessesService {
           candidateId: stageInstance.processInstance.candidateId
         }
       });
+
+      // Notificar candidato de avance
+      if (stageInstance.processInstance.candidate.email) {
+        this.emailService.sendStageAdvancedEmail(
+          stageInstance.processInstance.candidate.email,
+          stageInstance.processInstance.candidate.name || 'Candidato',
+          stageInstance.processInstance.campaign.title,
+          nextStage.stageTemplate.name
+        );
+      }
     } else {
       // Es la última etapa -> CANDIDATO SELECCIONADO
       await this.handleCandidateSelected(stageInstance, userId);
@@ -286,6 +302,15 @@ export class ProcessesService {
         stageName: stageInstance.stageTemplate.name
       }
     });
+
+    // Notificar candidato de rechazo
+    if (stageInstance.processInstance.candidate.email) {
+      this.emailService.sendCandidateRejectedEmail(
+        stageInstance.processInstance.candidate.email,
+        stageInstance.processInstance.candidate.name || 'Candidato',
+        stageInstance.processInstance.campaign.title
+      );
+    }
   }
 
   private async handleCandidateSelected(stageInstance: any, userId: string) {
@@ -351,6 +376,15 @@ export class ProcessesService {
         campaignId: stageInstance.processInstance.campaignId
       }
     });
+
+    // Notificar candidato de selección
+    if (stageInstance.processInstance.candidate.email) {
+      this.emailService.sendCandidateSelectedEmail(
+        stageInstance.processInstance.candidate.email,
+        stageInstance.processInstance.candidate.name || 'Candidato',
+        stageInstance.processInstance.campaign.title
+      );
+    }
   }
 
   async getProcessByCandidate(campaignId: string, candidateId: string, userId: string) {

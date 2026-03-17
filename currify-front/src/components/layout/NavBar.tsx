@@ -9,6 +9,7 @@ import {
   PlusCircleIcon,
 
   UsersIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/api';
 
@@ -19,17 +20,22 @@ interface NavBarProps {
 const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchData = async () => {
+      if (!apiService.isAuthenticated()) return;
       try {
         const profile = await apiService.getProfile();
+        console.log('[NavBar] Profile Loaded:', profile);
+        console.log('[NavBar] Plan:', profile.plan); // Debug Plan
         setUserRole(profile.role);
+        setUserProfile(profile);
       } catch (error) {
-        console.error('Error fetching user profile:', error);
+        console.error('Error fetching data:', error);
       }
     };
-    fetchUserProfile();
+    fetchData();
   }, []);
 
   const handleLogout = () => {
@@ -41,13 +47,27 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
     }
   };
 
+  const campaignLimit = userProfile?.campaignLimit ?? 1;
+  const currentActiveCampaigns = userProfile?.activeCampaignsCount ?? 0;
+  const isCampaignLimitReached = currentActiveCampaigns >= campaignLimit;
+
   const menuItems = [
     { label: 'Dashboard', icon: Squares2X2Icon, href: '/dashboard' },
-    // Only ADMIN and RECRUITER can create campaigns
-    ...(userRole === 'ADMIN' || userRole === 'RECRUITER' ? [{ label: 'Nueva Campaña', icon: PlusCircleIcon, href: '/create-campaign' }] : []),
+    // Only ADMIN and RECRUITER can create campaigns - Locked if limit reached
+    ...(userRole === 'ADMIN' || userRole === 'RECRUITER' ? [{
+      label: 'Nueva Campaña',
+      icon: isCampaignLimitReached ? LockClosedIcon : PlusCircleIcon,
+      href: isCampaignLimitReached ? '#' : '/create-campaign',
+      onClick: isCampaignLimitReached ? () => alert(`🔒 Límite de campañas alcanzado (${campaignLimit}). Mejora a PRO para campañas ilimitadas.`) : undefined
+    }] : []),
     // ADMIN and RECRUITER can manage users
     ...(userRole === 'ADMIN' || userRole === 'RECRUITER' ? [{ label: 'Gestionar Usuarios', icon: UsersIcon, href: '/admin/users' }] : []),
   ];
+
+  // Credits Logic
+  const maxCredits = 3; // TODO: Fetch from Plan
+  const remainingCredits = userProfile?.cvCredits ?? maxCredits; // Default to max (0 used) if loading
+  const usedCredits = Math.max(0, maxCredits - remainingCredits);
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-200">
@@ -81,8 +101,14 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
               return (
                 <button
                   key={item.label}
-                  onClick={() => window.location.href = item.href}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"
+                  onClick={() => {
+                    if (item.onClick) {
+                      item.onClick();
+                    } else {
+                      window.location.href = item.href;
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${item.href === '#' ? 'text-slate-400 bg-slate-50 cursor-not-allowed' : 'text-gray-700 hover:bg-blue-500 hover:text-white'}`}
                 >
                   <Icon className="w-5 h-5" />
                   {item.label}
@@ -90,6 +116,49 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
               );
             })}
           </div>
+
+          {/* Credits Badge - Limit (Free) or Status (Plus/Pro) */}
+          {/* Credits Badge - Limit (Free) or Status (Plus/Pro) */}
+          {userProfile?.plan?.toUpperCase() === 'PRO' ? (
+            <div
+              onClick={() => window.location.href = '/pricing'}
+              className="hidden md:flex items-baseline mr-6 cursor-pointer hover:scale-105 transition-transform select-none group"
+              title="Tu Plan: PRO - Haz clic para gestionar"
+            >
+              <span className="text-2xl font-black text-slate-900 tracking-tighter" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Evalen</span>
+              <span
+                className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 via-yellow-500 to-amber-600 ml-0.5 tracking-tighter drop-shadow-sm"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              >
+                Pro
+              </span>
+              <span className="ml-1 flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+              </span>
+            </div>
+          ) : (
+            <div
+              onClick={() => window.location.href = '/pricing'}
+              className="hidden md:flex items-center gap-2 mr-4 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full shadow-sm cursor-pointer transition-all hover:bg-indigo-50 hover:shadow-md hover:border-indigo-200 group"
+              title="Haz clic para obtener más créditos"
+            >
+              <span className={`font-bold animate-pulse group-hover:scale-110 transition-transform ${remainingCredits > 0 ? 'text-emerald-500' : 'text-red-500'}`}>⚡</span>
+              <span className={`text-xs font-bold transition-colors ${remainingCredits > 0 ? 'text-slate-600' : 'text-red-500'}`}>
+                {usedCredits}/{maxCredits} Usados
+              </span>
+            </div>
+          )}
+
+          {/* Upgrade Button - Visible for Free Plan */}
+          {userProfile?.plan?.toUpperCase() !== 'PRO' && (
+            <button
+              onClick={() => window.location.href = '/pricing'}
+              className="hidden md:flex items-center gap-2 mr-4 px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all text-sm animate-pulse-slow"
+            >
+              🚀 Subir a PRO
+            </button>
+          )}
 
           {/* User Menu - Desktop */}
           <div className="hidden md:block">

@@ -22,4 +22,19 @@ export class UpdateUserDto {
   @IsEnum(UserRole)
   @IsOptional()
   role?: UserRole;
+
+  @IsString()
+  @IsOptional()
+  companySize?: string;
+
+  @IsString()
+  @IsOptional()
+  hiringVolume?: string;
+
+  @IsString()
+  @IsOptional()
+  atsSystem?: string;
+
+  @IsOptional()
+  onboardingCompleted?: boolean;
 }

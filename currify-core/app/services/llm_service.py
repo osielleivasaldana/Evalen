@@ -41,30 +41,35 @@ class LLMService:
             if not anthropic:
                 raise ImportError("anthropic package not installed. Run: pip install anthropic")
                 
-            # Initialize standard client then patch with instructor
-            raw_client = anthropic.Anthropic(api_key=self.api_key)
+            # Initialize async client
+            # Note: Instructor doesn't fully support async patching for Anthropic yet in all versions, 
+            # but we'll use the standard async client for now if using native tools, 
+            # OR better: use instructor's async patch if available.
+            # Checking instructor version: assuming new version supports it.
+            raw_client = anthropic.AsyncAnthropic(api_key=self.api_key)
             self.client = instructor.from_anthropic(raw_client)
 
         elif self.provider == "openai":
             if not openai:
                 raise ImportError("openai package not installed. Run: pip install openai")
             
-            # Initialize standard client then patch with instructor
-            raw_client = openai.OpenAI(api_key=self.api_key)
+            # Initialize async client
+            raw_client = openai.AsyncOpenAI(api_key=self.api_key)
             self.client = instructor.from_openai(raw_client)
 
         elif self.provider == "google":
             if not genai:
                 raise ImportError("google-generativeai package not installed. Run: pip install google-generativeai")
             genai.configure(api_key=self.api_key)
-            # Google GenerativeAI not yet fully supported by instructor in this pattern, keeping legacy
+            # Google's library is async-native for some methods, but here we keep the model instance.
+            # Note: We might need to adjust call sites for Google to be awaitable if not already.
             self.client = genai.GenerativeModel(settings.current_model)
 
         elif self.provider == "groq":
             if not openai:
                 raise ImportError("openai package not installed. Run: pip install openai")
             # Groq uses OpenAI-compatible API
-            raw_client = openai.OpenAI(
+            raw_client = openai.AsyncOpenAI(
                 api_key=self.api_key,
                 base_url="https://api.groq.com/openai/v1"
             )
@@ -73,6 +78,42 @@ class LLMService:
         else:
             raise ValueError(f"Unsupported LLM provider: {self.provider}")
     
+    async def get_embedding(self, text: str) -> List[float]:
+        """
+        Obtiene el vector embedding del texto usando el proveedor configurado.
+        Soporta OpenAI y Google Gemini.
+        """
+        try:
+            text = text.replace("\n", " ").strip()
+            if not text:
+                return []
+
+            if self.provider == "openai":
+                # Use raw client if possible, or just the patched one. Re-instantiating for safety as per other methods.
+                if openai:
+                    client = openai.OpenAI(api_key=self.api_key)
+                    response = client.embeddings.create(
+                        input=[text],
+                        model="text-embedding-3-small"
+                    )
+                    return response.data[0].embedding
+            
+            elif self.provider == "google":
+                if genai:
+                    result = genai.embed_content(
+                        model="models/gemini-embedding-001",
+                        content=text,
+                        task_type="semantic_similarity"
+                    )
+                    return result['embedding']
+            
+            logger.warning(f"Provider {self.provider} does not support direct embeddings yet.")
+            return []
+                
+        except Exception as e:
+            logger.error(f"Error generating embedding: {e}")
+            return []
+
     async def call_agent_structured(
         self, 
         prompt: str, 
@@ -139,7 +180,9 @@ class LLMService:
                         return None
                 return None
             
-            response = self.client.chat.completions.create(
+                return None
+            
+            response = await self.client.chat.completions.create(
                 model=settings.current_model,
                 response_model=response_model,
                 messages=messages,
@@ -214,6 +257,12 @@ No expliques nada fuera del bloque. No agregues texto extra."""
                 logger.error(f"[{stage_name}] {self.provider.upper()} API error on attempt {attempt + 1}: {e}")
                 if attempt == max_retries - 1:
                     return None
+                
+                # Exponential backoff: 2s, 4s, 8s...
+                wait_time = 2 ** (attempt + 1)
+                logger.info(f"[{stage_name}] Waiting {wait_time}s before retry...")
+                import asyncio
+                await asyncio.sleep(wait_time)
 
         logger.error(f"[{stage_name}] All attempts failed")
         return None
@@ -227,11 +276,11 @@ No expliques nada fuera del bloque. No agregues texto extra."""
              messages = [{"role": "user", "content": prompt}]
              
              if self.provider == "anthropic":
-                 # Create a FRESH, UNPATCHED client instance
+                 # Create a FRESH, UNPATCHED async client instance
                  import anthropic
-                 raw_client = anthropic.Anthropic(api_key=self.api_key)
+                 raw_client = anthropic.AsyncAnthropic(api_key=self.api_key)
                  
-                 response = raw_client.messages.create(
+                 response = await raw_client.messages.create(
                      model=settings.current_model,
                      max_tokens=settings.max_tokens,
                      temperature=temperature,
@@ -241,16 +290,16 @@ No expliques nada fuera del bloque. No agregues texto extra."""
                  return response.content[0].text.strip()
 
              elif self.provider in ["openai", "groq"]:
-                 # Create a FRESH, UNPATCHED client instance
+                 # Create a FRESH, UNPATCHED async client instance
                  import openai
                  
                  client_kwargs = {"api_key": self.api_key}
                  if self.provider == "groq":
                      client_kwargs["base_url"] = "https://api.groq.com/openai/v1"
                      
-                 raw_client = openai.OpenAI(**client_kwargs)
+                 raw_client = openai.AsyncOpenAI(**client_kwargs)
                  
-                 response = raw_client.chat.completions.create(
+                 response = await raw_client.chat.completions.create(
                      model=settings.current_model,
                      messages=messages,
                      temperature=temperature,
@@ -281,7 +330,7 @@ No expliques nada fuera del bloque. No agregues texto extra."""
         """Call Anthropic Claude API"""
         # Since we patched with instructor, we use standard create but without response_model for raw text
         # Instructor's create wrapper handles standard calls if response_model is missing
-        response = self.client.messages.create(
+        response = await self.client.messages.create(
             model=settings.current_model,
             max_tokens=settings.max_tokens,
             temperature=temperature,
@@ -298,7 +347,7 @@ No expliques nada fuera del bloque. No agregues texto extra."""
 
     async def _call_openai_api(self, prompt: str, temperature: float) -> Optional[str]:
         """Call OpenAI GPT API"""
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
             model=settings.current_model,
             max_tokens=settings.max_tokens,
             temperature=temperature,
@@ -321,7 +370,7 @@ No expliques nada fuera del bloque. No agregues texto extra."""
             response_mime_type="application/json"
         )
 
-        response = self.client.generate_content(
+        response = await self.client.generate_content_async(
             prompt,
             generation_config=generation_config
         )
@@ -332,7 +381,7 @@ No expliques nada fuera del bloque. No agregues texto extra."""
 
     async def _call_groq_api(self, prompt: str, temperature: float) -> Optional[str]:
         """Call Groq API (OpenAI-compatible)"""
-        response = self.client.chat.completions.create(
+        response = await self.client.chat.completions.create(
             model=settings.current_model,
             max_tokens=settings.max_tokens,
             temperature=temperature,

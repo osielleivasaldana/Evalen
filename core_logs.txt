@@ -1,0 +1,1000 @@
+currify-core  | INFO:     127.0.0.1:46420 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:51798 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:39422 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:58226 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:42892 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:37538 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:57390 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:47356 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:53714 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33786 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50848 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:41194 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:56154 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:48892 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:49296 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:53456 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:35262 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:42172 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:48700 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:34324 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:38518 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:56196 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:56492 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:37842 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:59882 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50634 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:60256 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:48268 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:37242 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:55246 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:57900 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:38966 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:49506 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:44046 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:42036 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50140 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:55132 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:39194 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:54122 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:34242 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33230 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:41090 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:57306 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:59956 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:36498 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:48592 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:34100 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:41322 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:46876 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:46926 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:54642 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:60372 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:39520 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:39774 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:54430 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50378 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:60680 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:60726 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:44266 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:56214 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33488 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:37702 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:60482 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:58824 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:37128 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:53936 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:48044 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:54970 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:49456 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:41286 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50562 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:54996 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:51464 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:47594 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:57104 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:41134 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:40554 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:36596 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:44968 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:47760 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:48178 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:46622 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:34980 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:54576 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:42110 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:51094 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:60372 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:46760 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33906 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:46476 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:43586 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:59988 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:51988 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:43364 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50204 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:58936 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:56320 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:56182 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50314 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:39670 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:53566 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50338 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:46756 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33276 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:49056 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:46936 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:51892 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:46508 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:47536 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:35934 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:32878 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:49910 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:54900 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50026 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:57906 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:52970 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:53840 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:44696 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:57580 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:54058 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:52910 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:45700 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:48468 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50704 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:59492 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:36018 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:52640 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:58352 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:56640 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33788 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:45022 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33084 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:44006 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:59608 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:56402 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:53690 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:43406 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:40548 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:40622 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:50026 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:51204 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:42730 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:38910 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:35392 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:49914 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:58880 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:44542 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:35236 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:41824 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:37274 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:43052 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33038 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:59730 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:35964 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:56972 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:45490 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:41392 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:55924 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33830 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33062 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:58244 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     Shutting down
+currify-core  | INFO:     Waiting for application shutdown.
+currify-core  | INFO:     Application shutdown complete.
+currify-core  | INFO:     Finished server process [1]
+currify-core  | INFO:     Started server process [1]
+currify-core  | INFO:     Waiting for application startup.
+currify-core  | INFO:     Application startup complete.
+currify-core  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+currify-core  | INFO:     127.0.0.1:41724 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:58684 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:36718 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:33274 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:57878 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:58288 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:54898 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     Shutting down
+currify-core  | INFO:     Waiting for application shutdown.
+currify-core  | INFO:     Application shutdown complete.
+currify-core  | INFO:     Finished server process [1]
+currify-core  | INFO:     Started server process [1]
+currify-core  | INFO:     Waiting for application startup.
+currify-core  | INFO:     Application startup complete.
+currify-core  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+currify-core  | INFO:     127.0.0.1:36938 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:42124 - "GET /health HTTP/1.1" 200 OK
+currify-core  | 2026-01-26 13:55:55,119 - INFO - Successful login for user: kinich
+currify-core  | INFO:     172.21.0.4:45700 - "POST /auth/login HTTP/1.1" 200 OK
+currify-core  | 2026-01-26 13:55:55,212 - INFO - Processing CV extraction for file: 1769435755053_Osiel Leiva SaldaÃ±a ES.pdf
+currify-core  | 2026-01-26 13:55:55,471 - INFO - 🚀 INICIANDO EXTRACCIÓN ROBUSTA para 1769435755053_Osiel Leiva SaldaÃ±a ES.pdf
+currify-core  | 2026-01-26 13:55:55,477 - INFO - Profile detected: ProfileType.SENIOR with confidence 1.00
+currify-core  | 2026-01-26 13:55:55,477 - INFO - 📊 Longitud de texto: 13214 caracteres
+currify-core  | 2026-01-26 13:55:55,477 - INFO - 📄 Texto largo (13214 > 4000): Extracción chunked
+currify-core  | 2026-01-26 13:55:55,477 - INFO - 🔪 Ejecutando extracción por chunks
+currify-core  | 2026-01-26 13:55:55,477 - INFO - 🔪 Texto dividido en 4 chunks
+currify-core  | 2026-01-26 13:55:55,477 - INFO - 🔪 Procesando chunk 1/4
+currify-core  | 2026-01-26 13:55:55,477 - INFO - [chunk_1] Calling GOOGLE with Structured Output...
+currify-core  | 2026-01-26 13:55:55,477 - WARNING - [chunk_1] Google provider does not support native instructor yet. Falling back to text.
+currify-core  | 2026-01-26 13:55:55,477 - INFO - [chunk_1] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:56:04,500 - INFO - [chunk_1] GOOGLE response received in 9.02s
+currify-core  | 2026-01-26 13:56:04,500 - INFO - STAGE chunk_1: Processing response of length 4388
+currify-core  | 2026-01-26 13:56:04,500 - INFO - STAGE chunk_1: Response preview: {
+currify-core  |   "datos_contacto": {
+currify-core  |     "nombre_completo": "Osiel Leiva Saldaña",
+currify-core  |     "email": "osielleivasaldana@gmail.com",
+currify-core  |     "telefono": "+56 967891153",
+currify-core  |     "ubicacion": null
+currify-core  |   },
+currify-core  |   "titular_profesional": {
+currify-core  |     "titular": "Ingeniero Informático"
+currify-core  |   },
+currify-core  |   "resumen_profesional": {
+currify-core  |     "resumen": "Profesional con más de 15 años de experiencia en el área de TI, enfocado en la automatización de pruebas de software y la integración de BDD en proyectos. Apasionado por la mejora continua y la implementación de ...
+currify-core  | 2026-01-26 13:56:04,500 - INFO - STAGE chunk_1: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:56:04,501 - INFO - [chunk_1] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:56:04,501 - INFO - 🔪 Procesando chunk 2/4
+currify-core  | 2026-01-26 13:56:04,501 - INFO - [chunk_2] Calling GOOGLE with Structured Output...
+currify-core  | 2026-01-26 13:56:04,501 - WARNING - [chunk_2] Google provider does not support native instructor yet. Falling back to text.
+currify-core  | 2026-01-26 13:56:04,501 - INFO - [chunk_2] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:56:14,561 - INFO - [chunk_2] GOOGLE response received in 10.06s
+currify-core  | 2026-01-26 13:56:14,561 - INFO - STAGE chunk_2: Processing response of length 5861
+currify-core  | 2026-01-26 13:56:14,561 - INFO - STAGE chunk_2: Response preview: {
+currify-core  |   "datos_contacto": {
+currify-core  |     "nombre_completo": null,
+currify-core  |     "email": null,
+currify-core  |     "telefono": null,
+currify-core  |     "ubicacion": null
+currify-core  |   },
+currify-core  |   "titular_profesional": {
+currify-core  |     "titular": null
+currify-core  |   },
+currify-core  |   "resumen_profesional": {
+currify-core  |     "resumen": null
+currify-core  |   },
+currify-core  |   "experiencia_laboral": [
+currify-core  |     {
+currify-core  |       "cargo": "QA Test Lead Automation Enginner",
+currify-core  |       "empresa": "Kibernum S.A",
+currify-core  |       "periodo": {
+currify-core  |         "fecha_inicio": "2024-01",
+currify-core  |         "fecha_fin": "Presente",
+currify-core  |         "texto_original": "Enero 2024 - Actualidad"
+currify-core  |       },
+currify-core  |       "res...
+currify-core  | 2026-01-26 13:56:14,562 - INFO - STAGE chunk_2: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:56:14,562 - INFO - [chunk_2] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:56:14,562 - INFO - 🔪 Procesando chunk 3/4
+currify-core  | 2026-01-26 13:56:14,562 - INFO - [chunk_3] Calling GOOGLE with Structured Output...
+currify-core  | 2026-01-26 13:56:14,562 - WARNING - [chunk_3] Google provider does not support native instructor yet. Falling back to text.
+currify-core  | 2026-01-26 13:56:14,562 - INFO - [chunk_3] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:56:21,566 - INFO - [chunk_3] GOOGLE response received in 7.00s
+currify-core  | 2026-01-26 13:56:21,566 - INFO - STAGE chunk_3: Processing response of length 4659
+currify-core  | 2026-01-26 13:56:21,566 - INFO - STAGE chunk_3: Response preview: {
+currify-core  |   "datos_contacto": {
+currify-core  |     "nombre_completo": null,
+currify-core  |     "email": null,
+currify-core  |     "telefono": null,
+currify-core  |     "ubicacion": null
+currify-core  |   },
+currify-core  |   "titular_profesional": {
+currify-core  |     "titular": null
+currify-core  |   },
+currify-core  |   "resumen_profesional": {
+currify-core  |     "resumen": null
+currify-core  |   },
+currify-core  |   "experiencia_laboral": [
+currify-core  |     {
+currify-core  |       "cargo": "QA Test Automation Enginner",
+currify-core  |       "empresa": "23People",
+currify-core  |       "periodo": {
+currify-core  |         "fecha_inicio": "2019-10",
+currify-core  |         "fecha_fin": "2021-03",
+currify-core  |         "texto_original": "Octubre 2019 - Marzo 2021"
+currify-core  |       },
+currify-core  |       "responsabil...
+currify-core  | 2026-01-26 13:56:21,567 - INFO - STAGE chunk_3: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:56:21,567 - INFO - [chunk_3] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:56:21,567 - INFO - 🔪 Procesando chunk 4/4
+currify-core  | 2026-01-26 13:56:21,567 - INFO - [chunk_4] Calling GOOGLE with Structured Output...
+currify-core  | 2026-01-26 13:56:21,567 - WARNING - [chunk_4] Google provider does not support native instructor yet. Falling back to text.
+currify-core  | 2026-01-26 13:56:21,567 - INFO - [chunk_4] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:56:27,692 - INFO - [chunk_4] GOOGLE response received in 6.12s
+currify-core  | 2026-01-26 13:56:27,692 - INFO - STAGE chunk_4: Processing response of length 2955
+currify-core  | 2026-01-26 13:56:27,692 - INFO - STAGE chunk_4: Response preview: {
+currify-core  |   "datos_contacto": {
+currify-core  |     "nombre_completo": null,
+currify-core  |     "email": null,
+currify-core  |     "telefono": null,
+currify-core  |     "ubicacion": null
+currify-core  |   },
+currify-core  |   "titular_profesional": {
+currify-core  |     "titular": null
+currify-core  |   },
+currify-core  |   "resumen_profesional": {
+currify-core  |     "resumen": null
+currify-core  |   },
+currify-core  |   "experiencia_laboral": [],
+currify-core  |   "formacion_academica": [],
+currify-core  |   "habilidades": {
+currify-core  |     "habilidades_tecnicas": [
+currify-core  |       {
+currify-core  |         "skill": "Jest",
+currify-core  |         "level": "Avanzado"
+currify-core  |       },
+currify-core  |       {
+currify-core  |         "skill": "Scrum",
+currify-core  |         "level": "Avanzado"
+currify-core  |       },
+currify-core  |       {
+currify-core  |         "skill": "K...
+currify-core  | 2026-01-26 13:56:27,692 - INFO - STAGE chunk_4: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:56:27,692 - INFO - [chunk_4] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:56:27,692 - INFO - 🔄 Fusionando resultados de chunks...
+currify-core  | 2026-01-26 13:56:27,692 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,692 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': None, 'telefono': None, 'email': None, 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,692 - INFO - 📊 Evaluando nombre: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:56:27,692 - INFO - 📊 Nombre inválido o vacío
+currify-core  | 2026-01-26 13:56:27,692 - INFO - 📊 Evaluando email: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:56:27,692 - INFO - 📊 Email inválido o vacío
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Score datos contacto: 0.0/2.0
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Experiencia laboral encontrada: 6 items
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023', 'metadata': None}, 'responsabilidades': ['Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber,integradosconBrowserStack.Estaimplementaciónnospermitióverificarlacompatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidadutilizandoellenguajededominioGherkin,locualdisminuyóloserroresdecomprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'DiseñéplanesdepruebasdelashistoriasdeusuarioutilizandoZephyr,estoconelfindeabordarcasos bordes no especificados en las automatizaciones.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándosedespuésdecadadespliegue.Estopermitióladeteccióntempranadeerroresenelbackend, mejorando la estabilidad y calidad del software.', 'Identifiqué cuellos de botella en servicios críticos mediante pruebas de performance utilizando K6, esto nos permitió implementar mejoras y disminuir en un 90% los errores de transacciones.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Automation Enginner', 'empresa': '23People', 'periodo': {'fecha_inicio': '2019-10', 'fecha_fin': '2021-03', 'texto_original': 'Octubre 2019 - Marzo 2021', 'metadata': None}, 'responsabilidades': ['Diseñé y ejecuté planes de pruebas para historias de usuario utilizando Zephyr y Microsoft Azure, permitiendo abordar tanto los casos especificados como aquellos no contemplados en los criterios de aceptación, garantizando así una cobertura de pruebas exhaustiva y la identificación de posibles problemas no previstos.', 'Administré y configuré mi entorno de pruebas en Azure Deployment Environments, lo que me permitió obtener independencia y control total sobre las pruebas.', 'Participé en un proceso integral de pruebas de regresión utilizando Postman en un proyecto de Telefónica y en otro de la Asociación Chilena de Seguridad. Esto facilitó la identificación temprana de fallos en el backend, mejorando la estabilidad y la calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Score calculado antes de normalizar: 5.0/10.0 = 0.500
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Final quality score: 0.500 (raw: 5.0/10.0)
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': 'Osiel Leiva Saldaña', 'telefono': '+56 967891153', 'email': 'osielleivasaldana@gmail.com', 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Evaluando nombre: 'Osiel Leiva Saldaña' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Nombre válido - +1.0 punto
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Evaluando email: 'osielleivasaldana@gmail.com' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Email válido - +1.0 punto
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Score datos contacto: 2.0/2.0
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Experiencia laboral encontrada: 8 items
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumenté la cobertura de planes de pruebas manuales a todas las historias de usuario de frontend y bac- kend no contempladas en la automatización con el objetivo de garantizar que todas las funcionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023', 'metadata': None}, 'responsabilidades': ['Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber, integrados con BrowserStack. Esta implementación nos permitió verificar la compatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidad utilizando el lenguaje de dominio Gherkin, lo cual disminuyó los errores de comprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Diseñé planes de pruebas de las historias de usuario utilizando Zephyr, esto con el fin de abordar casos bordes no especificados en las automatizaciones.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándose después de cada despliegue. Esto permitió la detección temprana de errores en el backend, mejorando la estabilidad y calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,693 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Score calculado antes de normalizar: 8.5/10.0 = 0.850
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Final quality score: 0.850 (raw: 8.5/10.0)
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': None, 'telefono': None, 'email': None, 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando nombre: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Nombre inválido o vacío
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando email: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Email inválido o vacío
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Score datos contacto: 0.0/2.0
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Experiencia laboral encontrada: 5 items
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Automation Enginner', 'empresa': '23People', 'periodo': {'fecha_inicio': '2019-10', 'fecha_fin': '2021-03', 'texto_original': 'Octubre 2019 - Marzo 2021', 'metadata': None}, 'responsabilidades': ['Diseñé y ejecuté planes de pruebas para historias de usuario utilizando Zephyr y Microsoft Azure, permitiendo abordar tanto los casos especificados como aquellos no contemplados en los criterios de aceptación, garantizando así una cobertura de pruebas exhaustiva y la identificación de posibles problemas no previstos.', 'Administré y configuré mi entorno de pruebas en Azure Deployment Environments, lo que me permitió obtener independencia y control total sobre las pruebas.', 'Participé en un proceso integral de pruebas de regresión utilizando Postman en un proyecto de Telefónica y en otro de la Asociación Chilena de Seguridad. Esto facilitó la identificación temprana de fallos en el backend, mejorando la estabilidad y la calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'Full Stack Developer Enginner', 'empresa': 'Ticblue', 'periodo': {'fecha_inicio': '2018-05', 'fecha_fin': '2019-04', 'texto_original': 'Mayo 2018 - Abril 2019', 'metadata': None}, 'responsabilidades': ['Diseñé y desarrollé servicios de API REST en Java Spring Boot para proyectos financieros y gubernamentales.', 'Desarrollé aplicaciones en Laravel y Node.js', 'Participé en la planificación y análisis de nuevas funcionalidades con stakeholders.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'Ingeniero de Sistemas', 'empresa': 'Ingesmart', 'periodo': {'fecha_inicio': '2017-08', 'fecha_fin': '2018-04', 'texto_original': 'Agosto 2017 - Abril 2018', 'metadata': None}, 'responsabilidades': ['Trabajé en el despliegue de Microsoft Active Directory para gestionar dominios y servicios de directorio, centralizando la administración de usuarios y recursos de la red. Esto mejoró la seguridad y eficiencia, facilitando el control de acceso y la auditoría, resultando en una infraestructura de TI más segura y organizada.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Score calculado antes de normalizar: 5.5/10.0 = 0.550
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Final quality score: 0.550 (raw: 5.5/10.0)
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': 'Osiel Leiva Saldaña', 'telefono': '+56 967891153', 'email': 'osielleivasaldana@gmail.com', 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando nombre: 'Osiel Leiva Saldaña' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Nombre válido - +1.0 punto
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando email: 'osielleivasaldana@gmail.com' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Email válido - +1.0 punto
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Score datos contacto: 2.0/2.0
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Experiencia laboral encontrada: 13 items
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumenté la cobertura de planes de pruebas manuales a todas las historias de usuario de frontend y bac- kend no contempladas en la automatización con el objetivo de garantizar que todas las funcionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,694 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023', 'metadata': None}, 'responsabilidades': ['Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber, integrados con BrowserStack. Esta implementación nos permitió verificar la compatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidad utilizando el lenguaje de dominio Gherkin, lo cual disminuyó los errores de comprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Diseñé planes de pruebas de las historias de usuario utilizando Zephyr, esto con el fin de abordar casos bordes no especificados en las automatizaciones.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándose después de cada despliegue. Esto permitió la detección temprana de errores en el backend, mejorando la estabilidad y calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Score calculado antes de normalizar: 9.0/10.0 = 0.900
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Final quality score: 0.900 (raw: 9.0/10.0)
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': None, 'telefono': None, 'email': None, 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando nombre: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Nombre inválido o vacío
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando email: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Email inválido o vacío
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Score datos contacto: 0.0/2.0
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Score experiencia total: 0.0/4.0
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Score calculado antes de normalizar: 1.0/10.0 = 0.100
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Final quality score: 0.100 (raw: 1.0/10.0)
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': 'Osiel Leiva Saldaña', 'telefono': '+56 967891153', 'email': 'osielleivasaldana@gmail.com', 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando nombre: 'Osiel Leiva Saldaña' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Nombre válido - +1.0 punto
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando email: 'osielleivasaldana@gmail.com' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Email válido - +1.0 punto
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Score datos contacto: 2.0/2.0
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Experiencia laboral encontrada: 13 items
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumenté la cobertura de planes de pruebas manuales a todas las historias de usuario de frontend y bac- kend no contempladas en la automatización con el objetivo de garantizar que todas las funcionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,695 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023', 'metadata': None}, 'responsabilidades': ['Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber, integrados con BrowserStack. Esta implementación nos permitió verificar la compatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidad utilizando el lenguaje de dominio Gherkin, lo cual disminuyó los errores de comprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Diseñé planes de pruebas de las historias de usuario utilizando Zephyr, esto con el fin de abordar casos bordes no especificados en las automatizaciones.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándose después de cada despliegue. Esto permitió la detección temprana de errores en el backend, mejorando la estabilidad y calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Score calculado antes de normalizar: 9.5/10.0 = 0.950
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 📊 Final quality score: 0.950 (raw: 9.5/10.0)
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 🔧 CRITICAL: extraction_result keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,696 - INFO - 🔧 CRITICAL: extraction_result titular: {'titular': 'Ingeniero Informático', 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,697 - INFO - 🔧 CRITICAL: structured_data keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,697 - INFO - 🔧 CRITICAL: structured_data titular: {'titular': 'Ingeniero Informático', 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,697 - INFO - 🎯 Datos estructurados antes de validación - titular: {'titular': 'Ingeniero Informático', 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,697 - INFO - 🎯 Datos estructurados antes de validación - email: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:56:27,697 - INFO - 🔧 Intentando crear ResumeData con datos: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,697 - INFO - 🔧 Titular en structured_data: {'titular': 'Ingeniero Informático', 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,697 - INFO - 🔧 Email en structured_data: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:56:27,698 - INFO - 🔧 ✅ ResumeData creado exitosamente!
+currify-core  | 2026-01-26 13:56:27,698 - INFO - 🔧 ✅ Titular final: Ingeniero Informático
+currify-core  | 2026-01-26 13:56:27,698 - INFO - 🔧 ✅ Email final: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:56:27,698 - INFO - 🎯 Resume data después de validación - titular: Ingeniero Informático
+currify-core  | 2026-01-26 13:56:27,698 - INFO - 🎯 Resume data después de validación - email: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': 'Osiel Leiva Saldaña', 'telefono': '+56 967891153', 'email': 'osielleivasaldana@gmail.com', 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Evaluando nombre: 'Osiel Leiva Saldaña' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Nombre válido - +1.0 punto
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Evaluando email: 'osielleivasaldana@gmail.com' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Email válido - +1.0 punto
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Score datos contacto: 2.0/2.0
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Experiencia laboral encontrada: 7 items
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad'}, 'responsabilidades': ['Aumenté la cobertura de planes de pruebas manuales a todas las historias de usuario de frontend y bac- kend no contempladas en la automatización con el objetivo de garantizar que todas las funcionalidades cumplieran con los requisitos establecidos.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023'}, 'responsabilidades': ['Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidad utilizando el lenguaje de dominio Gherkin, lo cual disminuyó los errores de comprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidadutilizandoellenguajededominioGherkin,locualdisminuyóloserroresdecomprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber, integrados con BrowserStack. Esta implementación nos permitió verificar la compatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber,integradosconBrowserStack.Estaimplementaciónnospermitióverificarlacompatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándose después de cada despliegue. Esto permitió la detección temprana de errores en el backend, mejorando la estabilidad y calidad del software.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándosedespuésdecadadespliegue.Estopermitióladeteccióntempranadeerroresenelbackend, mejorando la estabilidad y calidad del software.', 'Identifiqué cuellos de botella en servicios críticos mediante pruebas de performance utilizando K6, esto nos permitió implementar mejoras y disminuir en un 90% los errores de transacciones.', 'Diseñé planes de pruebas de las historias de usuario utilizando Zephyr, esto con el fin de abordar casos bordes no especificados en las automatizaciones.', 'DiseñéplanesdepruebasdelashistoriasdeusuarioutilizandoZephyr,estoconelfindeabordarcasos bordes no especificados en las automatizaciones.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,699 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Automation Enginner', 'empresa': '23People', 'periodo': {'fecha_inicio': '2019-10', 'fecha_fin': '2021-03', 'texto_original': 'Octubre 2019 - Marzo 2021'}, 'responsabilidades': ['Diseñé y ejecuté planes de pruebas para historias de usuario utilizando Zephyr y Microsoft Azure, permitiendo abordar tanto los casos especificados como aquellos no contemplados en los criterios de aceptación, garantizando así una cobertura de pruebas exhaustiva y la identificación de posibles problemas no previstos.', 'Participé en un proceso integral de pruebas de regresión utilizando Postman en un proyecto de Telefónica y en otro de la Asociación Chilena de Seguridad. Esto facilitó la identificación temprana de fallos en el backend, mejorando la estabilidad y la calidad del software.', 'Administré y configuré mi entorno de pruebas en Azure Deployment Environments, lo que me permitió obtener independencia y control total sobre las pruebas.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Score calculado antes de normalizar: 9.5/10.0 = 0.950
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 Final quality score: 0.950 (raw: 9.5/10.0)
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 🎯 Confianza calculada: 0.95
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 🎯 Respuesta final - titular: Ingeniero Informático
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 🎯 Respuesta final - email: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 🎯 Respuesta final - confianza: 0.95
+currify-core  | 2026-01-26 13:56:27,700 - INFO - ✅ EXTRACCIÓN ROBUSTA COMPLETADA en 32.23s
+currify-core  | 2026-01-26 13:56:27,700 - INFO - 📊 RESUMEN EXTRACCIÓN:
+currify-core  | 2026-01-26 13:56:27,700 - INFO -    👤 Nombre: Osiel Leiva Saldaña
+currify-core  | 2026-01-26 13:56:27,700 - INFO -    💼 Experiencia laboral: 7 items
+currify-core  | 2026-01-26 13:56:27,701 - INFO -    🎓 Formación académica: 4 items
+currify-core  | 2026-01-26 13:56:27,701 - INFO -    🔧 Habilidades técnicas: 32 items
+currify-core  | 2026-01-26 13:56:27,701 - INFO - CV extraction completed for 1769435755053_Osiel Leiva SaldaÃ±a ES.pdf with confidence 0.950
+currify-core  | INFO:     172.21.0.4:45708 - "POST /resume/extract HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:38930 - "GET /health HTTP/1.1" 200 OK
+currify-core  | 2026-01-26 13:56:27,729 - INFO - Successful login for user: kinich
+currify-core  | INFO:     172.21.0.4:45952 - "POST /auth/login HTTP/1.1" 200 OK
+currify-core  | 2026-01-26 13:56:27,735 - INFO - Received job parsing request
+currify-core  | 2026-01-26 13:56:27,735 - INFO - Calling LLM for job description parsing
+currify-core  | 2026-01-26 13:56:27,735 - INFO - [JOB_PARSING] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:56:30,421 - INFO - [JOB_PARSING] GOOGLE response received in 2.69s
+currify-core  | 2026-01-26 13:56:30,421 - INFO - STAGE JOB_PARSING: Processing response of length 668
+currify-core  | 2026-01-26 13:56:30,421 - INFO - STAGE JOB_PARSING: Response preview: {
+currify-core  |   "requisitos": {
+currify-core  |     "experiencia_años": "+3 años",
+currify-core  |     "habilidades_requeridas": [
+currify-core  |       "React.js",
+currify-core  |       "Hooks",
+currify-core  |       "Context",
+currify-core  |       "TypeScript",
+currify-core  |       "TailwindCSS",
+currify-core  |       "Node.js",
+currify-core  |       "NestJS",
+currify-core  |       "Express",
+currify-core  |       "PostgreSQL",
+currify-core  |       "MongoDB",
+currify-core  |       "Docker",
+currify-core  |       "AWS",
+currify-core  |       "GCP",
+currify-core  |       "CI/CD",
+currify-core  |       "Git flow"
+currify-core  |     ],
+currify-core  |     "habilidades_blandas": [],
+currify-core  |     "educacion": "Ingeniería Civil Informática, Ingeniería en Computación o equivalente",
+currify-core  |     "idiomas": []
+currify-core  |   },
+currify-core  |   "habilid...
+currify-core  | 2026-01-26 13:56:30,421 - INFO - STAGE JOB_PARSING: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:56:30,421 - INFO - [JOB_PARSING] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:56:30,421 - INFO - Job description parsed successfully
+currify-core  | INFO:     172.21.0.4:45958 - "POST /scoring/parse-job HTTP/1.1" 200 OK
+currify-core  | 2026-01-26 13:56:30,433 - INFO - Received scoring evaluation request
+currify-core  | 2026-01-26 13:56:30,433 - INFO - 📦 Unwrapping 'datos_cv' from candidate data
+currify-core  | 2026-01-26 13:56:30,433 - INFO - Starting candidate-job scoring evaluation
+currify-core  | 2026-01-26 13:56:30,433 - INFO - 🔍 DEBUG: Candidate keys: ['intereses', 'habilidades', 'datos_contacto', 'perfiles_online', 'reconocimientos', 'experiencia_laboral', 'formacion_academica', 'resumen_profesional', 'titular_profesional', 'metadata_procesamiento', 'formacion_complementaria', 'actividades_extracurriculares']
+currify-core  | 2026-01-26 13:56:30,433 - INFO - 🔍 DEBUG: Titular: {'titular': 'Ingeniero Informático', 'metadata': None}
+currify-core  | 2026-01-26 13:56:30,433 - INFO - 🔍 DEBUG: Experiencia len: 7
+currify-core  | 2026-01-26 13:56:30,433 - INFO - 🔍 DEBUG: Habilidades raw: {'idiomas': [{'nivel': 'B2', 'idioma': 'Portugués', 'metadata': None, 'certificacion': None}, {'nivel': 'B2', 'idioma': 'Inglés', 'metadata': None, 'certificacion': None}], 'metadata': None, 'habilidades_blandas': [], 'habilidades_tecnicas': [{'level': 'Avanzado', 'skill': 'Jest', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'Katalon Studio', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Appium', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Postman', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Scrum', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'Lean', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'Kanban', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Equipos', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Proyectos', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Rest Assured', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'JMeter', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Grafana K6', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Java/Springboot', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'Python', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'Node JavaScript/TypeScript', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'Laravel', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'C++', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'C#', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'SQL MySQL', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'PostgreSQL', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'NoSQL Mongo, Firebase', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Gherkin/Cucumber', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'GIT', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'Jenkins', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Jira', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Zephyr', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'Scikit-learn', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'Knime', 'metadata': None, 'years_experience': None}, {'level': 'Básico', 'skill': 'TensorFlow', 'metadata': None, 'years_experience': None}, {'level': 'Intermedio', 'skill': 'NumPy', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Selenium Java/Python', 'metadata': None, 'years_experience': None}, {'level': 'Avanzado', 'skill': 'Cypress', 'metadata': None, 'years_experience': None}]}
+currify-core  | 2026-01-26 13:56:30,479 - INFO - 🧠 Expanding 32 skills: ['Appium', 'C#', 'C++', 'Cypress', 'Equipos']...
+currify-core  | 2026-01-26 13:56:30,479 - INFO - [SEMANTIC_EXPANSION] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:56:33,317 - INFO - [SEMANTIC_EXPANSION] GOOGLE response received in 2.84s
+currify-core  | 2026-01-26 13:56:33,317 - INFO - STAGE SEMANTIC_EXPANSION: Processing response of length 734
+currify-core  | 2026-01-26 13:56:33,317 - INFO - STAGE SEMANTIC_EXPANSION: Response preview: [
+currify-core  |   "appium",
+currify-core  |   "c#",
+currify-core  |   ".net",
+currify-core  |   "c++",
+currify-core  |   "cypress",
+currify-core  |   "javascript",
+currify-core  |   "frontend",
+currify-core  |   "equipos",
+currify-core  |   "git",
+currify-core  |   "gherkin/cucumber",
+currify-core  |   "grafana k6",
+currify-core  |   "jmeter",
+currify-core  |   "java/springboot",
+currify-core  |   "java",
+currify-core  |   "springboot",
+currify-core  |   "jenkins",
+currify-core  |   "jest",
+currify-core  |   "javascript",
+currify-core  |   "jira",
+currify-core  |   "kanban",
+currify-core  |   "katalon studio",
+currify-core  |   "knime",
+currify-core  |   "laravel",
+currify-core  |   "php",
+currify-core  |   "lean",
+currify-core  |   "nosql mongo, firebase",
+currify-core  |   "mongodb",
+currify-core  |   "firebase",
+currify-core  |   "node javascript/typescript",
+currify-core  |   "javascript",
+currify-core  |   "typescript",
+currify-core  |   "npm",
+currify-core  |   "numpy",
+currify-core  |   "python",
+currify-core  |   "postgresql",
+currify-core  |   "sql"...
+currify-core  | 2026-01-26 13:56:33,317 - INFO - STAGE SEMANTIC_EXPANSION: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:56:33,317 - INFO - [SEMANTIC_EXPANSION] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:56:33,317 - INFO - 🧠 Expansion result: 44 items (Original: 32)
+currify-core  | 2026-01-26 13:56:33,318 - INFO - 🚀 Expanded Skills for Scoring: ['.net', 'appium', 'c#', 'c++', 'cypress', 'equipos', 'firebase', 'frontend', 'gherkin/cucumber', 'git', 'grafana k6', 'java', 'java/springboot', 'javascript', 'jenkins', 'jest', 'jira', 'jmeter', 'kanban', 'katalon studio', 'knime', 'laravel', 'lean', 'mongodb', 'mysql', 'node javascript/typescript', 'nosql mongo, firebase', 'npm', 'numpy', 'php', 'postgresql', 'postman', 'proyectos', 'python', 'rest assured', 'scikit-learn', 'scrum', 'selenium java/python', 'springboot', 'sql', 'sql mysql', 'tensorflow', 'typescript', 'zephyr']
+currify-core  | 2026-01-26 13:56:33,318 - INFO - 🎓 Normalizing degrees: ['Certificación en Big Data y Analytics', 'Diplomado en Inteligencia Artificial', 'Diplomado en IoT y Ciudades Inteligentes', 'Ingeniería en Computación y Licenciatura en Ciencias de la Computación']
+currify-core  | 2026-01-26 13:56:33,318 - INFO - [SEMANTIC_Normalization] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:56:34,156 - INFO - [SEMANTIC_Normalization] GOOGLE response received in 0.84s
+currify-core  | 2026-01-26 13:56:34,156 - INFO - STAGE SEMANTIC_Normalization: Processing response of length 218
+currify-core  | 2026-01-26 13:56:34,156 - INFO - STAGE SEMANTIC_Normalization: Response preview: ["certificación en big data y analytics", "diplomado en inteligencia artificial", "diplomado en internet de las cosas y ciudades inteligentes", "ingeniería en computación", "licenciatura en ciencias de la computación"]...
+currify-core  | 2026-01-26 13:56:34,156 - INFO - STAGE SEMANTIC_Normalization: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:56:34,156 - INFO - [SEMANTIC_Normalization] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:56:34,156 - INFO - 🎓 Normalized degrees result: ['certificación en big data y analytics', 'diplomado en inteligencia artificial', 'diplomado en internet de las cosas y ciudades inteligentes', 'ingeniería en computación', 'licenciatura en ciencias de la computación']
+currify-core  | 2026-01-26 13:56:34,156 - INFO - 🚀 Normalized Degrees: ['certificación en big data y analytics', 'diplomado en inteligencia artificial', 'diplomado en internet de las cosas y ciudades inteligentes', 'ingeniería en computación', 'licenciatura en ciencias de la computación'] (from ['Certificación en Big Data y Analytics', 'Diplomado en Inteligencia Artificial', 'Diplomado en IoT y Ciudades Inteligentes', 'Ingeniería en Computación y Licenciatura en Ciencias de la Computación'])
+currify-core  | 2026-01-26 13:56:34,156 - INFO - 🧩 Generating Structured Rubric for job: Desarrollador Full Stack (React/Node) - 24 de enero
+currify-core  | 2026-01-26 13:56:34,156 - INFO - [RUBRIC_EXTRACTION] Calling GOOGLE with Structured Output...
+currify-core  | 2026-01-26 13:56:34,156 - WARNING - [RUBRIC_EXTRACTION] Google provider does not support native instructor yet. Falling back to text.
+currify-core  | 2026-01-26 13:56:34,156 - INFO - [RUBRIC_EXTRACTION] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:56:36,922 - INFO - [RUBRIC_EXTRACTION] GOOGLE response received in 2.77s
+currify-core  | 2026-01-26 13:56:36,923 - INFO - STAGE RUBRIC_EXTRACTION: Processing response of length 1308
+currify-core  | 2026-01-26 13:56:36,923 - INFO - STAGE RUBRIC_EXTRACTION: Response preview: {
+currify-core  |   "job_title": "Desarrollador Full Stack (React/Node)",
+currify-core  |   "education": {
+currify-core  |     "degree_required": [
+currify-core  |       "Computer Science",
+currify-core  |       "Software Engineering",
+currify-core  |       "Information Technology",
+currify-core  |       "Systems Engineering"
+currify-core  |     ],
+currify-core  |     "synonyms": [
+currify-core  |       "Computer Science",
+currify-core  |       "Software Engineering",
+currify-core  |       "Informatics",
+currify-core  |       "IT Engineering",
+currify-core  |       "Systems Analyst",
+currify-core  |       "Computer Engineering"
+currify-core  |     ],
+currify-core  |     "university_mandatory": true
+currify-core  |   },
+currify-core  |   "experience": {
+currify-core  |     "years_minimum": 3,
+currify-core  |     "relevant_rol...
+currify-core  | 2026-01-26 13:56:36,923 - INFO - STAGE RUBRIC_EXTRACTION: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:56:36,923 - INFO - [RUBRIC_EXTRACTION] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:56:36,925 - ERROR - [RUBRIC_EXTRACTION] Failed to instantiate Pydantic model from data: 1 validation error for StructuredRubric
+currify-core  | logistics.modality
+currify-core  |   Input should be a valid string [type=string_type, input_value=[], input_type=list]
+currify-core  |     For further information visit https://errors.pydantic.dev/2.10/v/string_type
+currify-core  | 2026-01-26 13:56:36,925 - WARNING - 🧩 LLM returned None for Rubric. returning default.
+currify-core  | 2026-01-26 13:56:36,925 - INFO - 🧩 Injecting 15 parsed skills into Rubric as Mandatory.
+currify-core  | 2026-01-26 13:56:36,925 - INFO - 🧩 Empty Required Degrees. Injecting Job Title 'Desarrollador Full Stack (React/Node) - 24 de enero' as mandatory requirement.
+currify-core  | 2026-01-26 13:56:36,925 - INFO - 🧩 Empty Key Roles. Injecting Job Title 'Desarrollador Full Stack (React/Node) - 24 de enero' as mandatory role for experience.
+currify-core  | 2026-01-26 13:56:36,925 - INFO - 🧩 Rubric Generated Successfully. Mandatory Skills: 15
+currify-core  | 2026-01-26 13:56:36,925 - INFO - 📜 Structured Rubric Generated: {'education': {'required_degrees': ['Desarrollador Full Stack (React/Node) - 24 de enero'], 'academic_level': 'Técnico', 'kill_clause': True}, 'experience': {'min_years': 0, 'key_roles': ['Desarrollador Full Stack (React/Node) - 24 de enero'], 'industry_mandatory': True, 'target_industries': []}, 'skills': {'mandatory_skills': ['React.js', 'Hooks', 'Context', 'TypeScript', 'TailwindCSS', 'Node.js', 'NestJS', 'Express', 'PostgreSQL', 'MongoDB', 'Docker', 'AWS', 'GCP', 'CI/CD', 'Git flow'], 'nice_to_have_skills': []}, 'logistics': {'requires_shift_work': False, 'modality': 'Presencial'}, 'certifications': {'mandatory_certs': []}, 'languages': {'required_languages': []}}
+currify-core  | 2026-01-26 13:56:36,925 - ERROR - Error during scoring evaluation: cannot access local variable 'mandatory' where it is not associated with a value
+currify-core  | Traceback (most recent call last):
+currify-core  |   File "/app/app/services/scoring_service.py", line 114, in evaluate_candidate
+currify-core  |     baseline_scores = self._calculate_matrix_scores(
+currify-core  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+currify-core  |   File "/app/app/services/scoring_service.py", line 282, in _calculate_matrix_scores
+currify-core  |     if mandatory:
+currify-core  |        ^^^^^^^^^
+currify-core  | UnboundLocalError: cannot access local variable 'mandatory' where it is not associated with a value
+currify-core  | 2026-01-26 13:56:36,934 - ERROR - Scoring evaluation failed - no result returned
+currify-core  | INFO:     172.21.0.4:45974 - "POST /scoring/evaluate HTTP/1.1" 500 Internal Server Error
+currify-core  | INFO:     127.0.0.1:45168 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:60648 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:59544 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:43946 - "GET /health HTTP/1.1" 200 OK
+currify-core  | 2026-01-26 13:58:41,320 - INFO - Successful login for user: kinich
+currify-core  | INFO:     172.21.0.4:41078 - "POST /auth/login HTTP/1.1" 200 OK
+currify-core  | 2026-01-26 13:58:41,332 - INFO - Processing CV extraction for file: 1769435921288_Osiel Leiva SaldaÃ±a ES.pdf
+currify-core  | 2026-01-26 13:58:41,456 - INFO - 🚀 INICIANDO EXTRACCIÓN ROBUSTA para 1769435921288_Osiel Leiva SaldaÃ±a ES.pdf
+currify-core  | 2026-01-26 13:58:41,460 - INFO - Profile detected: ProfileType.SENIOR with confidence 1.00
+currify-core  | 2026-01-26 13:58:41,460 - INFO - 📊 Longitud de texto: 13214 caracteres
+currify-core  | 2026-01-26 13:58:41,461 - INFO - 📄 Texto largo (13214 > 4000): Extracción chunked
+currify-core  | 2026-01-26 13:58:41,461 - INFO - 🔪 Ejecutando extracción por chunks
+currify-core  | 2026-01-26 13:58:41,461 - INFO - 🔪 Texto dividido en 4 chunks
+currify-core  | 2026-01-26 13:58:41,461 - INFO - 🔪 Procesando chunk 1/4
+currify-core  | 2026-01-26 13:58:41,461 - INFO - [chunk_1] Calling GOOGLE with Structured Output...
+currify-core  | 2026-01-26 13:58:41,461 - WARNING - [chunk_1] Google provider does not support native instructor yet. Falling back to text.
+currify-core  | 2026-01-26 13:58:41,461 - INFO - [chunk_1] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:58:49,744 - INFO - [chunk_1] GOOGLE response received in 8.28s
+currify-core  | 2026-01-26 13:58:49,745 - INFO - STAGE chunk_1: Processing response of length 4388
+currify-core  | 2026-01-26 13:58:49,745 - INFO - STAGE chunk_1: Response preview: {
+currify-core  |   "datos_contacto": {
+currify-core  |     "nombre_completo": "Osiel Leiva Saldaña",
+currify-core  |     "email": "osielleivasaldana@gmail.com",
+currify-core  |     "telefono": "+56 967891153",
+currify-core  |     "ubicacion": null
+currify-core  |   },
+currify-core  |   "titular_profesional": {
+currify-core  |     "titular": "Ingeniero Informático"
+currify-core  |   },
+currify-core  |   "resumen_profesional": {
+currify-core  |     "resumen": "Profesional con más de 15 años de experiencia en el área de TI, enfocado en la automatización de pruebas de software y la integración de BDD en proyectos. Apasionado por la mejora continua y la implementación de ...
+currify-core  | 2026-01-26 13:58:49,745 - INFO - STAGE chunk_1: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:58:49,745 - INFO - [chunk_1] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:58:49,745 - INFO - 🔪 Procesando chunk 2/4
+currify-core  | 2026-01-26 13:58:49,745 - INFO - [chunk_2] Calling GOOGLE with Structured Output...
+currify-core  | 2026-01-26 13:58:49,745 - WARNING - [chunk_2] Google provider does not support native instructor yet. Falling back to text.
+currify-core  | 2026-01-26 13:58:49,745 - INFO - [chunk_2] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:58:58,337 - INFO - [chunk_2] GOOGLE response received in 8.59s
+currify-core  | 2026-01-26 13:58:58,337 - INFO - STAGE chunk_2: Processing response of length 5861
+currify-core  | 2026-01-26 13:58:58,337 - INFO - STAGE chunk_2: Response preview: {
+currify-core  |   "datos_contacto": {
+currify-core  |     "nombre_completo": null,
+currify-core  |     "email": null,
+currify-core  |     "telefono": null,
+currify-core  |     "ubicacion": null
+currify-core  |   },
+currify-core  |   "titular_profesional": {
+currify-core  |     "titular": null
+currify-core  |   },
+currify-core  |   "resumen_profesional": {
+currify-core  |     "resumen": null
+currify-core  |   },
+currify-core  |   "experiencia_laboral": [
+currify-core  |     {
+currify-core  |       "cargo": "QA Test Lead Automation Enginner",
+currify-core  |       "empresa": "Kibernum S.A",
+currify-core  |       "periodo": {
+currify-core  |         "fecha_inicio": "2024-01",
+currify-core  |         "fecha_fin": "Presente",
+currify-core  |         "texto_original": "Enero 2024 - Actualidad"
+currify-core  |       },
+currify-core  |       "res...
+currify-core  | 2026-01-26 13:58:58,337 - INFO - STAGE chunk_2: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:58:58,337 - INFO - [chunk_2] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:58:58,337 - INFO - 🔪 Procesando chunk 3/4
+currify-core  | 2026-01-26 13:58:58,337 - INFO - [chunk_3] Calling GOOGLE with Structured Output...
+currify-core  | 2026-01-26 13:58:58,337 - WARNING - [chunk_3] Google provider does not support native instructor yet. Falling back to text.
+currify-core  | 2026-01-26 13:58:58,338 - INFO - [chunk_3] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:59:06,709 - INFO - [chunk_3] GOOGLE response received in 8.37s
+currify-core  | 2026-01-26 13:59:06,709 - INFO - STAGE chunk_3: Processing response of length 4659
+currify-core  | 2026-01-26 13:59:06,709 - INFO - STAGE chunk_3: Response preview: {
+currify-core  |   "datos_contacto": {
+currify-core  |     "nombre_completo": null,
+currify-core  |     "email": null,
+currify-core  |     "telefono": null,
+currify-core  |     "ubicacion": null
+currify-core  |   },
+currify-core  |   "titular_profesional": {
+currify-core  |     "titular": null
+currify-core  |   },
+currify-core  |   "resumen_profesional": {
+currify-core  |     "resumen": null
+currify-core  |   },
+currify-core  |   "experiencia_laboral": [
+currify-core  |     {
+currify-core  |       "cargo": "QA Test Automation Enginner",
+currify-core  |       "empresa": "23People",
+currify-core  |       "periodo": {
+currify-core  |         "fecha_inicio": "2019-10",
+currify-core  |         "fecha_fin": "2021-03",
+currify-core  |         "texto_original": "Octubre 2019 - Marzo 2021"
+currify-core  |       },
+currify-core  |       "responsabil...
+currify-core  | 2026-01-26 13:59:06,709 - INFO - STAGE chunk_3: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:59:06,709 - INFO - [chunk_3] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:59:06,709 - INFO - 🔪 Procesando chunk 4/4
+currify-core  | 2026-01-26 13:59:06,710 - INFO - [chunk_4] Calling GOOGLE with Structured Output...
+currify-core  | 2026-01-26 13:59:06,710 - WARNING - [chunk_4] Google provider does not support native instructor yet. Falling back to text.
+currify-core  | 2026-01-26 13:59:06,710 - INFO - [chunk_4] Calling GOOGLE API (attempt 1/2)...
+currify-core  | 2026-01-26 13:59:12,923 - INFO - [chunk_4] GOOGLE response received in 6.21s
+currify-core  | 2026-01-26 13:59:12,923 - INFO - STAGE chunk_4: Processing response of length 2955
+currify-core  | 2026-01-26 13:59:12,923 - INFO - STAGE chunk_4: Response preview: {
+currify-core  |   "datos_contacto": {
+currify-core  |     "nombre_completo": null,
+currify-core  |     "email": null,
+currify-core  |     "telefono": null,
+currify-core  |     "ubicacion": null
+currify-core  |   },
+currify-core  |   "titular_profesional": {
+currify-core  |     "titular": null
+currify-core  |   },
+currify-core  |   "resumen_profesional": {
+currify-core  |     "resumen": null
+currify-core  |   },
+currify-core  |   "experiencia_laboral": [],
+currify-core  |   "formacion_academica": [],
+currify-core  |   "habilidades": {
+currify-core  |     "habilidades_tecnicas": [
+currify-core  |       {
+currify-core  |         "skill": "Jest",
+currify-core  |         "level": "Avanzado"
+currify-core  |       },
+currify-core  |       {
+currify-core  |         "skill": "Scrum",
+currify-core  |         "level": "Avanzado"
+currify-core  |       },
+currify-core  |       {
+currify-core  |         "skill": "K...
+currify-core  | 2026-01-26 13:59:12,923 - INFO - STAGE chunk_4: Direct JSON parsing successful
+currify-core  | 2026-01-26 13:59:12,923 - INFO - [chunk_4] Successfully parsed JSON response on attempt 1
+currify-core  | 2026-01-26 13:59:12,923 - INFO - 🔄 Fusionando resultados de chunks...
+currify-core  | 2026-01-26 13:59:12,923 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,923 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': None, 'telefono': None, 'email': None, 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,923 - INFO - 📊 Evaluando nombre: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:59:12,923 - INFO - 📊 Nombre inválido o vacío
+currify-core  | 2026-01-26 13:59:12,923 - INFO - 📊 Evaluando email: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:59:12,923 - INFO - 📊 Email inválido o vacío
+currify-core  | 2026-01-26 13:59:12,923 - INFO - 📊 Score datos contacto: 0.0/2.0
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Experiencia laboral encontrada: 6 items
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023', 'metadata': None}, 'responsabilidades': ['Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber,integradosconBrowserStack.Estaimplementaciónnospermitióverificarlacompatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidadutilizandoellenguajededominioGherkin,locualdisminuyóloserroresdecomprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'DiseñéplanesdepruebasdelashistoriasdeusuarioutilizandoZephyr,estoconelfindeabordarcasos bordes no especificados en las automatizaciones.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándosedespuésdecadadespliegue.Estopermitióladeteccióntempranadeerroresenelbackend, mejorando la estabilidad y calidad del software.', 'Identifiqué cuellos de botella en servicios críticos mediante pruebas de performance utilizando K6, esto nos permitió implementar mejoras y disminuir en un 90% los errores de transacciones.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Automation Enginner', 'empresa': '23People', 'periodo': {'fecha_inicio': '2019-10', 'fecha_fin': '2021-03', 'texto_original': 'Octubre 2019 - Marzo 2021', 'metadata': None}, 'responsabilidades': ['Diseñé y ejecuté planes de pruebas para historias de usuario utilizando Zephyr y Microsoft Azure, permitiendo abordar tanto los casos especificados como aquellos no contemplados en los criterios de aceptación, garantizando así una cobertura de pruebas exhaustiva y la identificación de posibles problemas no previstos.', 'Administré y configuré mi entorno de pruebas en Azure Deployment Environments, lo que me permitió obtener independencia y control total sobre las pruebas.', 'Participé en un proceso integral de pruebas de regresión utilizando Postman en un proyecto de Telefónica y en otro de la Asociación Chilena de Seguridad. Esto facilitó la identificación temprana de fallos en el backend, mejorando la estabilidad y la calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Score calculado antes de normalizar: 5.0/10.0 = 0.500
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Final quality score: 0.500 (raw: 5.0/10.0)
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': 'Osiel Leiva Saldaña', 'telefono': '+56 967891153', 'email': 'osielleivasaldana@gmail.com', 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Evaluando nombre: 'Osiel Leiva Saldaña' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Nombre válido - +1.0 punto
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Evaluando email: 'osielleivasaldana@gmail.com' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Email válido - +1.0 punto
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Score datos contacto: 2.0/2.0
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Experiencia laboral encontrada: 8 items
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumenté la cobertura de planes de pruebas manuales a todas las historias de usuario de frontend y bac- kend no contempladas en la automatización con el objetivo de garantizar que todas las funcionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023', 'metadata': None}, 'responsabilidades': ['Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber, integrados con BrowserStack. Esta implementación nos permitió verificar la compatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidad utilizando el lenguaje de dominio Gherkin, lo cual disminuyó los errores de comprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Diseñé planes de pruebas de las historias de usuario utilizando Zephyr, esto con el fin de abordar casos bordes no especificados en las automatizaciones.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándose después de cada despliegue. Esto permitió la detección temprana de errores en el backend, mejorando la estabilidad y calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,924 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Score calculado antes de normalizar: 8.5/10.0 = 0.850
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Final quality score: 0.850 (raw: 8.5/10.0)
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': None, 'telefono': None, 'email': None, 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando nombre: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Nombre inválido o vacío
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando email: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Email inválido o vacío
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Score datos contacto: 0.0/2.0
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Experiencia laboral encontrada: 5 items
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Automation Enginner', 'empresa': '23People', 'periodo': {'fecha_inicio': '2019-10', 'fecha_fin': '2021-03', 'texto_original': 'Octubre 2019 - Marzo 2021', 'metadata': None}, 'responsabilidades': ['Diseñé y ejecuté planes de pruebas para historias de usuario utilizando Zephyr y Microsoft Azure, permitiendo abordar tanto los casos especificados como aquellos no contemplados en los criterios de aceptación, garantizando así una cobertura de pruebas exhaustiva y la identificación de posibles problemas no previstos.', 'Administré y configuré mi entorno de pruebas en Azure Deployment Environments, lo que me permitió obtener independencia y control total sobre las pruebas.', 'Participé en un proceso integral de pruebas de regresión utilizando Postman en un proyecto de Telefónica y en otro de la Asociación Chilena de Seguridad. Esto facilitó la identificación temprana de fallos en el backend, mejorando la estabilidad y la calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'Full Stack Developer Enginner', 'empresa': 'Ticblue', 'periodo': {'fecha_inicio': '2018-05', 'fecha_fin': '2019-04', 'texto_original': 'Mayo 2018 - Abril 2019', 'metadata': None}, 'responsabilidades': ['Diseñé y desarrollé servicios de API REST en Java Spring Boot para proyectos financieros y gubernamentales.', 'Desarrollé aplicaciones en Laravel y Node.js', 'Participé en la planificación y análisis de nuevas funcionalidades con stakeholders.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'Ingeniero de Sistemas', 'empresa': 'Ingesmart', 'periodo': {'fecha_inicio': '2017-08', 'fecha_fin': '2018-04', 'texto_original': 'Agosto 2017 - Abril 2018', 'metadata': None}, 'responsabilidades': ['Trabajé en el despliegue de Microsoft Active Directory para gestionar dominios y servicios de directorio, centralizando la administración de usuarios y recursos de la red. Esto mejoró la seguridad y eficiencia, facilitando el control de acceso y la auditoría, resultando en una infraestructura de TI más segura y organizada.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Score calculado antes de normalizar: 5.5/10.0 = 0.550
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Final quality score: 0.550 (raw: 5.5/10.0)
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': 'Osiel Leiva Saldaña', 'telefono': '+56 967891153', 'email': 'osielleivasaldana@gmail.com', 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando nombre: 'Osiel Leiva Saldaña' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Nombre válido - +1.0 punto
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando email: 'osielleivasaldana@gmail.com' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Email válido - +1.0 punto
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Score datos contacto: 2.0/2.0
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Experiencia laboral encontrada: 13 items
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumenté la cobertura de planes de pruebas manuales a todas las historias de usuario de frontend y bac- kend no contempladas en la automatización con el objetivo de garantizar que todas las funcionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023', 'metadata': None}, 'responsabilidades': ['Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber, integrados con BrowserStack. Esta implementación nos permitió verificar la compatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidad utilizando el lenguaje de dominio Gherkin, lo cual disminuyó los errores de comprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Diseñé planes de pruebas de las historias de usuario utilizando Zephyr, esto con el fin de abordar casos bordes no especificados en las automatizaciones.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándose después de cada despliegue. Esto permitió la detección temprana de errores en el backend, mejorando la estabilidad y calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,925 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Score calculado antes de normalizar: 9.0/10.0 = 0.900
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Final quality score: 0.900 (raw: 9.0/10.0)
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': None, 'telefono': None, 'email': None, 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Evaluando nombre: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Nombre inválido o vacío
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Evaluando email: 'None' (tipo: <class 'NoneType'>)
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Email inválido o vacío
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Score datos contacto: 0.0/2.0
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Score experiencia total: 0.0/4.0
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Score calculado antes de normalizar: 1.0/10.0 = 0.100
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Final quality score: 0.100 (raw: 1.0/10.0)
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': 'Osiel Leiva Saldaña', 'telefono': '+56 967891153', 'email': 'osielleivasaldana@gmail.com', 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Evaluando nombre: 'Osiel Leiva Saldaña' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Nombre válido - +1.0 punto
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Evaluando email: 'osielleivasaldana@gmail.com' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Email válido - +1.0 punto
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Score datos contacto: 2.0/2.0
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Experiencia laboral encontrada: 13 items
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumenté la cobertura de planes de pruebas manuales a todas las historias de usuario de frontend y bac- kend no contempladas en la automatización con el objetivo de garantizar que todas las funcionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023', 'metadata': None}, 'responsabilidades': ['Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber, integrados con BrowserStack. Esta implementación nos permitió verificar la compatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidad utilizando el lenguaje de dominio Gherkin, lo cual disminuyó los errores de comprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Diseñé planes de pruebas de las historias de usuario utilizando Zephyr, esto con el fin de abordar casos bordes no especificados en las automatizaciones.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándose después de cada despliegue. Esto permitió la detección temprana de errores en el backend, mejorando la estabilidad y calidad del software.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad', 'metadata': None}, 'responsabilidades': ['Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Score calculado antes de normalizar: 9.5/10.0 = 0.950
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 📊 Final quality score: 0.950 (raw: 9.5/10.0)
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 🔧 CRITICAL: extraction_result keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,926 - INFO - 🔧 CRITICAL: extraction_result titular: {'titular': 'Ingeniero Informático', 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🔧 CRITICAL: structured_data keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🔧 CRITICAL: structured_data titular: {'titular': 'Ingeniero Informático', 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🎯 Datos estructurados antes de validación - titular: {'titular': 'Ingeniero Informático', 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🎯 Datos estructurados antes de validación - email: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🔧 Intentando crear ResumeData con datos: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🔧 Titular en structured_data: {'titular': 'Ingeniero Informático', 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🔧 Email en structured_data: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🔧 ✅ ResumeData creado exitosamente!
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🔧 ✅ Titular final: Ingeniero Informático
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🔧 ✅ Email final: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🎯 Resume data después de validación - titular: Ingeniero Informático
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 🎯 Resume data después de validación - email: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Evaluando calidad de extracción. Keys: ['datos_contacto', 'titular_profesional', 'resumen_profesional', 'experiencia_laboral', 'formacion_academica', 'habilidades', 'perfiles_online', 'formacion_complementaria', 'reconocimientos', 'actividades_extracurriculares', 'intereses', 'metadata_procesamiento']
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Datos contacto encontrados: {'nombre_completo': 'Osiel Leiva Saldaña', 'telefono': '+56 967891153', 'email': 'osielleivasaldana@gmail.com', 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Evaluando nombre: 'Osiel Leiva Saldaña' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Nombre válido - +1.0 punto
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Evaluando email: 'osielleivasaldana@gmail.com' (tipo: <class 'str'>)
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Email válido - +1.0 punto
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Score datos contacto: 2.0/2.0
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Experiencia laboral encontrada: 7 items
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Score por cantidad experiencias: +2.0
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Evaluando experiencia 1: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Kibernum S.A', 'periodo': {'fecha_inicio': '2024-01', 'fecha_fin': 'Presente', 'texto_original': 'Enero 2024 - Actualidad'}, 'responsabilidades': ['Aumenté la cobertura de planes de pruebas manuales a todas las historias de usuario de frontend y bac- kend no contempladas en la automatización con el objetivo de garantizar que todas las funcionalidades cumplieran con los requisitos establecidos.', 'Aumentélacoberturadeplanesdepruebasmanualesatodaslashistoriasdeusuariodefrontendybac- kendnocontempladasenlaautomatizaciónconelobjetivodegarantizarquetodaslasfuncionalidades cumplieran con los requisitos establecidos.', 'Automaticé pruebas para flujos críticos en un proyecto interno de Citi Bank, reduciendo los errores en ambientes de pruebas en más de un 50%. Utilicé Selenium, Java, Cucumber y Selenium Grid desplegados en Jenkins.', 'Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Exp 1: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Exp 1: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Exp 1: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,927 - INFO - 📊 Exp 1: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Evaluando experiencia 2: {'cargo': 'QA Test Lead Automation Enginner', 'empresa': 'Zippy SpA', 'periodo': {'fecha_inicio': '2021-03', 'fecha_fin': '2023-11', 'texto_original': 'Marzo 2021 - Noviembre 2023'}, 'responsabilidades': ['Utilizando Appium, desarrollé un plan completo de pruebas para la nueva aplicación de la compañía. Se realizaron pruebas tanto en diferentes modelos de dispositivos Android como iPhone, asegurando la cobertura de escenarios críticos en múltiples plataformas. Estas pruebas se integraron en un flujo CI/CD, lo que permitió ejecutar pruebas automatizadas de forma continua y detectar problemas de forma temprana en el ciclo de desarrollo.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidad utilizando el lenguaje de dominio Gherkin, lo cual disminuyó los errores de comprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Lideré la integración de BDD para unificar el entendimiento del comportamiento esperado de cada funcionalidadutilizandoellenguajededominioGherkin,locualdisminuyóloserroresdecomprensión de las historias por parte del equipo y agilizó la automatización de pruebas con Selenium permitiendo dar cobertura hasta un 60% de las historias de usuario en un sprint.', 'Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber, integrados con BrowserStack. Esta implementación nos permitió verificar la compatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Desarrollé y ejecuté la automatización de pruebas para flujos críticos utilizando Selenium, Java y Cucumber,integradosconBrowserStack.Estaimplementaciónnospermitióverificarlacompatibilidad de nuestra interfaz de usuario en una amplia variedad de dispositivos, asegurando una experiencia consistente y libre de errores.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándose después de cada despliegue. Esto permitió la detección temprana de errores en el backend, mejorando la estabilidad y calidad del software.', 'Implementé un flujo completo de pruebas de regresión utilizando Postman integrado con CI/CD, ejecutándosedespuésdecadadespliegue.Estopermitióladeteccióntempranadeerroresenelbackend, mejorando la estabilidad y calidad del software.', 'Identifiqué cuellos de botella en servicios críticos mediante pruebas de performance utilizando K6, esto nos permitió implementar mejoras y disminuir en un 90% los errores de transacciones.', 'Diseñé planes de pruebas de las historias de usuario utilizando Zephyr, esto con el fin de abordar casos bordes no especificados en las automatizaciones.', 'DiseñéplanesdepruebasdelashistoriasdeusuarioutilizandoZephyr,estoconelfindeabordarcasos bordes no especificados en las automatizaciones.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Exp 2: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Exp 2: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Exp 2: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Exp 2: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Evaluando experiencia 3: {'cargo': 'QA Test Automation Enginner', 'empresa': '23People', 'periodo': {'fecha_inicio': '2019-10', 'fecha_fin': '2021-03', 'texto_original': 'Octubre 2019 - Marzo 2021'}, 'responsabilidades': ['Diseñé y ejecuté planes de pruebas para historias de usuario utilizando Zephyr y Microsoft Azure, permitiendo abordar tanto los casos especificados como aquellos no contemplados en los criterios de aceptación, garantizando así una cobertura de pruebas exhaustiva y la identificación de posibles problemas no previstos.', 'Participé en un proceso integral de pruebas de regresión utilizando Postman en un proyecto de Telefónica y en otro de la Asociación Chilena de Seguridad. Esto facilitó la identificación temprana de fallos en el backend, mejorando la estabilidad y la calidad del software.', 'Administré y configuré mi entorno de pruebas en Azure Deployment Environments, lo que me permitió obtener independencia y control total sobre las pruebas.'], 'ubicacion': None, 'metadata': None}
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Exp 3: Cargo/empresa válidos - +0.5
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Exp 3: Responsabilidades válidas - +0.5
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Exp 3: Fechas válidas - +0.3
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Exp 3: Válida - Score: 1.3
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Score experiencia total: 5.0/4.0
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Score calculado antes de normalizar: 9.5/10.0 = 0.950
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 Final quality score: 0.950 (raw: 9.5/10.0)
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 🎯 Confianza calculada: 0.95
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 🎯 Respuesta final - titular: Ingeniero Informático
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 🎯 Respuesta final - email: osielleivasaldana@gmail.com
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 🎯 Respuesta final - confianza: 0.95
+currify-core  | 2026-01-26 13:59:12,928 - INFO - ✅ EXTRACCIÓN ROBUSTA COMPLETADA en 31.47s
+currify-core  | 2026-01-26 13:59:12,928 - INFO - 📊 RESUMEN EXTRACCIÓN:
+currify-core  | 2026-01-26 13:59:12,928 - INFO -    👤 Nombre: Osiel Leiva Saldaña
+currify-core  | 2026-01-26 13:59:12,928 - INFO -    💼 Experiencia laboral: 7 items
+currify-core  | 2026-01-26 13:59:12,928 - INFO -    🎓 Formación académica: 4 items
+currify-core  | 2026-01-26 13:59:12,928 - INFO -    🔧 Habilidades técnicas: 32 items
+currify-core  | 2026-01-26 13:59:12,928 - INFO - CV extraction completed for 1769435921288_Osiel Leiva SaldaÃ±a ES.pdf with confidence 0.950
+currify-core  | INFO:     172.21.0.4:41092 - "POST /resume/extract HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:36412 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:52680 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:36106 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:41158 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:39324 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:38652 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:51208 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:52892 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:46530 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:44718 - "GET /health HTTP/1.1" 200 OK
+currify-core  | INFO:     127.0.0.1:36516 - "GET /health HTTP/1.1" 200 OK

@@ -14,7 +14,7 @@ class DynamicRubricService:
     def __init__(self):
         self.llm_service = LLMService()
 
-    async def generate_rubric(self, job_title: str, job_description: str) -> StructuredRubric:
+    async def generate_rubric(self, job_title: str, job_description: str, parsed_data: dict = None) -> StructuredRubric:
         """
         Analyzes the Job Description and builds a strict evaluation rubric.
         Input: Job Title + Description
@@ -67,6 +67,19 @@ class DynamicRubricService:
                 rubric = StructuredRubric()
 
             # --- POST-PROCESSING ENFORCEMENT ---
+            
+            # 0. INJECT PARSED SKILLS (Reliability Fix)
+            # If we already have parsed structural data (from FastAPI layer), prioritize it!
+            if parsed_data and parsed_data.get('requisitos', {}).get('habilidades_requeridas'):
+                skills_from_parser = parsed_data['requisitos']['habilidades_requeridas']
+                if skills_from_parser:
+                    logger.info(f"🧩 Injecting {len(skills_from_parser)} parsed skills into Rubric as Mandatory.")
+                    # Merge logic: Add if not present
+                    current_mandatory = set(s.lower() for s in rubric.skills.mandatory_skills)
+                    for skill in skills_from_parser:
+                        if skill.lower() not in current_mandatory:
+                            rubric.skills.mandatory_skills.append(skill)
+            
             # If Job Description was too vague and LLM didn't extract degrees,
             # we MUST inject the Job Title itself as a required degree logic.
             # e.g. Job: "Medical Technologist" -> Req: ["Medical Technologist"]

@@ -8,8 +8,11 @@ import logging
 from typing import Dict, Any, Optional
 from app.services.llm_service import LLMService
 from app.core.scoring_rubric import ScoringRubric
-from app.services.dynamic_rubric_service import DynamicRubricService # Added import
+from app.services.dynamic_rubric_service import DynamicRubricService
 from app.models.scoring import ScoringResponse, DimensionScore
+from app.services.education_normalizer import EducationNormalizer
+from app.services.semantic_service import SemanticService # Moved to top
+import asyncio
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +23,9 @@ class ScoringService:
     def __init__(self):
         self.llm_service = LLMService()
         self.rubric = ScoringRubric()
-        self.dynamic_rubric_service = DynamicRubricService() # Initialized service
+        self.dynamic_rubric_service = DynamicRubricService()
+        self.education_normalizer = EducationNormalizer()
+        self.semantic_service = SemanticService()
 
     async def evaluate_candidate(
         self,
@@ -28,35 +33,20 @@ class ScoringService:
         job_data: Dict[str, Any]
     ) -> Optional[ScoringResponse]:
         """
-        Evaluate candidate-job fit using AI and structured rubric
-
-        Args:
-            candidate_data: Parsed CV data from /resume/extract
-            job_data: Job posting data
-
-        Returns:
-            ScoringResponse with detailed breakdown and recommendation
+        Evaluate candidate-job fit using AI and structured rubric (Scoring v3 - Global Intelligence)
         """
         try:
-            logger.info("Starting candidate-job scoring evaluation")
+            logger.info("Starting candidate-job scoring evaluation (v3: Latent Skills & Normalized Roles)")
             
-            # DEBUG LOGGING
-            logger.info(f"🔍 DEBUG: Candidate keys: {list(candidate_data.keys())}")
-            if 'titular_profesional' in candidate_data:
-                logger.info(f"🔍 DEBUG: Titular: {candidate_data['titular_profesional']}")
-            if 'experiencia_laboral' in candidate_data:
-                exp_len = len(candidate_data['experiencia_laboral']) if isinstance(candidate_data['experiencia_laboral'], list) else 'Not List'
-                logger.info(f"🔍 DEBUG: Experiencia len: {exp_len}")
-            if 'habilidades' in candidate_data:
-                logger.info(f"🔍 DEBUG: Habilidades raw: {candidate_data['habilidades']}")
-
             # 0. GUARDRAIL: Short-circuit if extraction failed
             titular = candidate_data.get('titular_profesional', {}).get('titular', '')
             has_skills = any(candidate_data.get('habilidades', {}).values()) if isinstance(candidate_data.get('habilidades'), dict) else False
             has_experience = len(candidate_data.get('experiencia_laboral', [])) > 0
+            has_education = len(candidate_data.get('formacion_academica', [])) > 0
             
-            if titular == "Error en procesamiento" or titular == "No extraído" or (not has_experience and not has_skills):
-                logger.warning("⚠️ Extraction failed or empty data detected. Returning 0 score without LLM call.")
+            # Allow evaluation if we have at least SOME meaningful matching data
+            if not has_experience and not has_skills and not has_education:
+                logger.warning("⚠️ Extraction failed or empty data detected. Returning 0 score.")
                 return ScoringResponse(
                     overall_score=0.0,
                     recommendation="weak_fit",
@@ -66,79 +56,113 @@ class ScoringService:
                     summary="No se pudo procesar el contenido del CV para realizar la evaluación."
                 )
 
-            # 1. Semantic Expansion (Hybrid Layer)
-            from app.services.semantic_service import SemanticService
-            semantic_service = SemanticService()
+            # 1. Semantic Layer: Global Intelligence Extraction
+            # semantic_service already initialized
+            semantic_service = self.semantic_service
             
-            # Extract raw skills from various sources in the CV
+            # A. Latent Skill Discovery (Extract from Text)
+            # Combine all relevant text to find hidden gems (e.g. "Managed Magento store" implies "E-commerce")
+            full_text_parts = []
+            if candidate_data.get('resumen_profesional'):
+                full_text_parts.append(str(candidate_data['resumen_profesional'].get('resumen', '')))
+            
+            for exp in candidate_data.get('experiencia_laboral', []):
+                full_text_parts.append(str(exp.get('responsabilidades', '')))
+                full_text_parts.append(str(exp.get('cargo', '')))
+                
+            full_experience_text = " ".join(full_text_parts)
+            
+            # call AI to extract implicit skills
+            latent_skills = await semantic_service.extract_skills_from_description(full_experience_text)
+            
+            # B. Standard Skill Extraction
             raw_skills = []
             if isinstance(candidate_data.get('habilidades'), dict):
                 habs = candidate_data['habilidades']
-                raw_skills.extend(habs.get('habilidades_tecnicas', []))
-                # Also include tools mentions in experience if we extracted them (future improvement)
+                # SAFE GUARD: Ensure all skills are strings
+                for skill in habs.get('habilidades_tecnicas', []):
+                    if isinstance(skill, str):
+                        raw_skills.append(skill)
+                    elif isinstance(skill, dict):
+                        # Attempt to get 'name' or similar if it's an object
+                        val = skill.get('habilidad') or skill.get('name') or skill.get('skill') or str(skill)
+                        if val: raw_skills.append(str(val))
+                    else:
+                        raw_skills.append(str(skill))
             
-            # Expand skills deterministically
-            expanded_skills_set = await semantic_service.expand_skills(raw_skills)
+            # MERGE Explicit + Latent Skills
+            combined_skills = set(raw_skills).union(latent_skills)
+            
+            # C. Semantic Expansion (The usual expanding of dependencies)
+            expanded_skills_set = await semantic_service.expand_skills(list(combined_skills))
             expanded_skills_list = sorted(list(expanded_skills_set))
             
-            logger.info(f"🚀 Expanded Skills for Scoring: {expanded_skills_list}")
+            logger.info(f"🚀 FINAL Expanded Skills (Explicit + Latent): {len(expanded_skills_list)} items")
 
-            # Normalize Candidate Degrees (AI Standardization)
+            # D. Role Normalization
+            # Normalize Candidate Roles
+            candidate_roles_raw = [str(exp.get('cargo', '')) for exp in candidate_data.get('experiencia_laboral', [])]
+            normalized_candidate_roles = await semantic_service.normalize_job_titles(candidate_roles_raw)
+            logger.info(f"👔 Normalized Candidate Roles: {normalized_candidate_roles} (from {candidate_roles_raw})")
+            
+            # Normalize Candidate Degrees
             raw_degrees = [str(edu.get('titulo', '')) for edu in candidate_data.get('formacion_academica', [])]
             normalized_degrees = []
             if raw_degrees:
                 normalized_degrees = await semantic_service.normalize_degrees(raw_degrees)
-                logger.info(f"🚀 Normalized Degrees: {normalized_degrees} (from {raw_degrees})")
 
-
-            # 2. Rubric Extraction (Stage 1.5)
-            
-            # Robust Job Title Extraction
-            # Added 'titulo' and 'nombre' based on common Spanish JSON keys
-            job_title = str(job_data.get('title') or job_data.get('job_title') or job_data.get('position') or job_data.get('cargo') or job_data.get('titulo') or job_data.get('nombre') or '')
+            # 2. Rubric Extraction
+            job_title = str(job_data.get('title') or job_data.get('job_title') or job_data.get('position') or job_data.get('cargo') or '')
             job_desc = str(job_data.get('description', ''))
             
             if not job_title.strip():
-                logger.warning(f"⚠️ Job Title is empty. Available keys in job_data: {list(job_data.keys())}")
-                logger.warning("Rubric extraction will struggle.")
-                job_title = "Requerimientos Técnicos Generales" # Generic Fallback
+                job_title = "Requerimientos Técnicos Generales"
             
-            # Generate the "Contract" Rubric
-            structured_rubric = await self.dynamic_rubric_service.generate_rubric(job_title, job_desc)
-            logger.info(f"📜 Structured Rubric Generated: {structured_rubric.dict(exclude_none=True)}")
+            structured_rubric = await self.dynamic_rubric_service.generate_rubric(job_title, job_desc, parsed_data=job_data)
+            
+            # Normalize Rubric Required Roles (to match standardized candidate roles)
+            rubric_roles_raw = getattr(structured_rubric.experience, 'key_roles', []) or []
+            
+            # FALLBACK: If Rubric missed Education but parsedJobData has it, inject it
+            if not getattr(structured_rubric.education, 'required_degrees', []):
+                 parsed_edu = job_data.get('parsedJobData', {}).get('educacion')
+                 if parsed_edu:
+                     logger.info(f"⚠️ Rubric missed Education, injecting from parsedJobData: {parsed_edu}")
+                     structured_rubric.education.required_degrees = [str(parsed_edu)]
+            
+            normalized_rubric_roles = await semantic_service.normalize_job_titles(rubric_roles_raw)
+            logger.info(f"👔 Normalized Rubric Roles: {normalized_rubric_roles} (from {rubric_roles_raw})")
+
 
             # 3. Mathematical Scoring (Stage 2 - Matrix Execution)
-            baseline_scores = self._calculate_matrix_scores(
+            baseline_scores = await self._calculate_matrix_scores(
                 candidate_data, 
                 structured_rubric, 
                 expanded_skills=expanded_skills_list,
-                normalized_degrees=normalized_degrees
+                normalized_degrees=normalized_degrees,
+                normalized_candidate_roles=normalized_candidate_roles,
+                normalized_rubric_roles=normalized_rubric_roles,
+                job_soft_skills=job_data.get('parsedJobData', {}).get('habilidades_blandas', []),
+                job_title=job_title # Added job_title
             )
             logger.info(f"🧮 Matrix Scores: {baseline_scores}")
 
-            # Calculate system guards (Legacy) - Removed
-            # guardrails = ...
-
-
-            # Generate evaluation prompt with Rubric Context
+            # Generate evaluation prompt
             prompt = self._build_evaluation_prompt_with_rubric(structured_rubric, baseline_scores)
             
-            # Prepare input data with ENRICHED context
             input_data = json.dumps({
                 "candidate": candidate_data,
                 "job_rubric": structured_rubric.dict(),
                 "semantic_analysis": {
                     "expanded_skills": expanded_skills_list,
                     "normalized_degrees": normalized_degrees,
-                    "explanation": "These skills include strictly implied technical prerequisites."
+                    "normalized_roles": normalized_candidate_roles
                 },
                 "deterministic_metrics": baseline_scores,
                 "rubric_weights": ScoringRubric.WEIGHTS
             }, ensure_ascii=False, indent=2)
 
-
-            # Call LLM for evaluation (Stage 3 - Audit/Reasoning)
-            logger.info("Calling LLM for scoring audit")
+            # Call LLM for evaluation
             result = await self.llm_service.call_agent(
                 prompt=prompt,
                 input_data=input_data,
@@ -150,11 +174,10 @@ class ScoringService:
                 logger.error("LLM returned no result for scoring")
                 return None
 
-            # Parse and validate response (Injecting Deterministic Scores)
             scoring_response = self._parse_llm_response(result, deterministic_scores=baseline_scores)
 
             if scoring_response:
-                logger.info(f"Scoring completed: {scoring_response.overall_score:.1f}/100 - {scoring_response.recommendation}")
+                logger.info(f"Scoring completed: {scoring_response.overall_score:.1f}/100")
 
             return scoring_response
 
@@ -162,103 +185,243 @@ class ScoringService:
             logger.error(f"Error during scoring evaluation: {e}", exc_info=True)
             return None
     
-    def _calculate_matrix_scores(self, candidate, rubric, expanded_skills=None, normalized_degrees=None) -> Dict[str, Any]:
+    async def _calculate_matrix_scores(self, candidate, rubric, expanded_skills=None, normalized_degrees=None, normalized_candidate_roles=None, normalized_rubric_roles=None, job_soft_skills=None, job_title="") -> Dict[str, Any]:
         """
         Executes the Detailed Scoring Matrix (The Contract).
         Returns raw scores (0-100) per dimension.
         """
         scores = {}
         
-        # --- 1. EDUCATION (15%) ---
-        edu_score = 0
-        # CRITICAL FIX: Filter out empty strings to avoid accidental wildcard matches
-        req_titles = [t.lower().strip() for t in rubric.education.required_degrees if t.strip()]
+        # --- PRE-CALCULATION DEFINITIONS ---
+        mandatory_raw = getattr(rubric.skills, 'mandatory_skills', []) or []
+        mandatory = set(str(s).lower() for s in mandatory_raw if s)
+
+        # --- PREFETCH EMBEDDINGS (Parallel) ---
+        # Identify all text that needs comparison to warm up the cache
+        req_titles_raw = getattr(rubric.education, 'required_degrees', []) or []
+        req_titles = [str(t).lower().strip() for t in req_titles_raw if t and str(t).strip()]
         
-        # USE NORMALIZED DEGREES IF AVAILABLE
-        cand_degrees_to_check = normalized_degrees if normalized_degrees else [str(edu.get('titulo', '')) for edu in candidate.get('formacion_academica', [])]
+        cand_degrees_to_check = normalized_degrees if normalized_degrees else [
+            str(edu.get('titulo', '')) for edu in candidate.get('formacion_academica', []) if edu.get('titulo')
+        ]
+        
+        if normalized_rubric_roles:
+            req_roles = [str(r).lower().strip() for r in normalized_rubric_roles if r]
+        else:
+            req_roles = [str(r).lower().strip() for r in (getattr(rubric.experience, 'key_roles', []) or []) if r]
+            
+        cand_roles_to_check = normalized_candidate_roles if normalized_candidate_roles else [
+            str(exp.get('cargo', '')).lower() for exp in (candidate.get('experiencia_laboral', []) or [])
+        ]
+
+        # Gather all unique texts
+        all_texts = set(req_titles + cand_degrees_to_check + req_roles + cand_roles_to_check)
+        if all_texts:
+            logger.info(f"🧠 Prefetching embeddings for {len(all_texts)} terms...")
+            await asyncio.gather(*[self.semantic_service.get_text_embedding(t) for t in all_texts if t])
+        
+        logger.info(f"debug_edu: req_titles={req_titles}, cand_degrees={cand_degrees_to_check}")
         
         has_title_match = False
         
-        # Helper for fuzzy matching (Token-based Stemming)
-        def _token_fuzzy_match(req_phrase: str, cand_phrase: str) -> bool:
-            # ... (same as before)
-            # 1. Normalize both phrases
-            def normalize(s):
-                replacements = (("á", "a"), ("é", "e"), ("í", "i"), ("ó", "o"), ("ú", "u"))
-                s = s.lower().strip()
-                for a, b in replacements: s = s.replace(a, b)
-                return s
-            
-            # 2. Get stems for a word
-            def get_stem(word):
-                # Remove common suffixes roughly
-                return word.rstrip('os').rstrip('as').rstrip('es').rstrip('o').rstrip('a').rstrip('ico').rstrip('ica').rstrip('ia')
-
-            req_words = normalize(req_phrase).split()
-            cand_words = normalize(cand_phrase).split()
-            cand_stems = [get_stem(w) for w in cand_words]
-            
-            # 3. Check if ALL required significant words (len>3) have a match in candidate
-            match_count = 0
-            required_count = 0
-            
-            for rw in req_words:
-                if len(rw) < 4: continue # Skip 'de', 'el', 'en'
-                required_count += 1
-                r_stem = get_stem(rw)
-                
-                # Check if this stem exists in any candidate word stem
-                # Relaxed: check if r_stem is IN c_stem or vice versa
-                if any(r_stem in cs or cs in r_stem for cs in cand_stems if len(cs) > 2):
-                    match_count += 1
-            
-            if required_count == 0: return True # No significant words, permissive
-            # ALL significant words must match
-            return match_count == required_count
+        # Helper for Semantic Matching
+        async def _semantic_match(req_phrase: str, cand_phrase: str, threshold: float = 0.85) -> bool:
+            # 1. Direct match check
+            if req_phrase == cand_phrase: return True
+            # 2. Semantic Similarity (Threshold > 0.85)
+            # Since we prefetched, this should be fast (using cache)
+            # Use await explicitly
+            sim = await self.semantic_service.calculate_similarity(req_phrase, cand_phrase)
+            return sim > threshold
 
         if not req_titles:
-            # If no specific titles requested in Rubric (and fallback failed),
-            # Default to Neutral (50) if they have some education, else 0.
-            scores['education'] = 50 if len(cand_degrees_to_check) > 0 else 0
-        else:
-            has_title_match = False
-            for deg in cand_degrees_to_check:
-                # Token-based check
-                if any(_token_fuzzy_match(req, deg) for req in req_titles if len(req) > 2):
-                    has_title_match = True
-                    break
-            
-            if not has_title_match and rubric.education.kill_clause:
-                scores['education'] = 0 # KILL CLAUSE
+            # FALLBACK: Try to infer education from Job Title
+            # e.g. "Ingeniero de Software" -> Implies "Ingeniero" (Level 6)
+            job_title_level, _ = self.education_normalizer.normalize_degree(job_title)
+            if job_title_level > 0:
+                logger.info(f"🎓 Inferring required education level {job_title_level} from Job Title '{job_title}'")
+                
+                # Check Candidate Level
+                max_cand_level = 0
+                for d in cand_degrees_to_check:
+                     l, _ = self.education_normalizer.normalize_degree(d)
+                     if l > max_cand_level: max_cand_level = l
+                
+                if max_cand_level >= job_title_level:
+                    scores['education'] = 100 # Met implied requirement
+                elif max_cand_level > 0:
+                    scores['education'] = 60 # Has degree but lower level
+                else:
+                    scores['education'] = 0
             else:
-                scores['education'] = 100 if has_title_match else 40
+                # Default to Neutral (50) if they have some education, else 0.
+                scores['education'] = 50 if len(cand_degrees_to_check) > 0 else 0
+        else:
+            # NEW: Hierarchical Matching
+            req_level = self.education_normalizer.extract_required_level(req_titles)
+            
+            has_level_match = False
+            has_text_match = False
+            
+            # Check if any req title has multiple options split by comma or ' o '
+            expanded_req_titles = []
+            for t in req_titles:
+                parts = t.replace(' o ', ',').split(',')
+                for p in parts:
+                    if p.strip(): expanded_req_titles.append(p.strip())
+            
+            final_req_titles = expanded_req_titles if expanded_req_titles else req_titles
+
+            for deg in cand_degrees_to_check:
+                # 1. Level Check
+                cand_level, _ = self.education_normalizer.normalize_degree(deg)
+                if req_level > 0 and self.education_normalizer.check_level_match(cand_level, req_level):
+                    has_level_match = True
+                
+                # 2. Text Check (Semantic)
+                for req in final_req_titles:
+                    if await _semantic_match(req, deg):
+                        has_text_match = True
+                        break
+            
+            if has_text_match:
+                scores['education'] = 100
+            elif has_level_match:
+                 # The candidate has the required academic LEVEL (e.g., Master's), but the FIELD OF STUDY (semantic text check) 
+                 # did NOT cross the similarity threshold for the required degrees (e.g., MBA instead of Computer Science).
+                 # We shouldn't give 90 points for an unrelated degree.
+                scores['education'] = 40
+            elif rubric.education.kill_clause:
+                # SOFTEN KILL CLAUSE: Only kill if level is significantly lower (e.g. 4 vs 6)
+                # If we had partial matches or just mismatched field, give partial credit
+                # Heuristic: If has *any* degree (level > 0), give 40-50 instead of 0
+                max_cand_level = 0
+                for d in cand_degrees_to_check:
+                     l, _ = self.education_normalizer.normalize_degree(d)
+                     if l > max_cand_level: max_cand_level = l
+                
+                if max_cand_level >= req_level - 1: # Close enough in level (e.g. required 6, got 5)
+                     scores['education'] = 60 # Penalty but not 0
+                elif max_cand_level > 0:
+                     scores['education'] = 30 # Something is something
+                else:
+                    scores['education'] = 0 
+            else:
+                 # If no kill clause, give small credit for having SOME degree
+                scores['education'] = 30
 
         # --- 2. EXPERIENCE (25%) ---
         # Sub-weights: Roles (50%), Years (30%), Industry (20%)
         # Refined: If no Rubric Roles, default to 50 (Neutral) not 100
-        req_roles = [r.lower().strip() for r in rubric.experience.key_roles if r.strip()]
-        cand_exps = candidate.get('experiencia_laboral', [])
+        # USE NORMALIZED ROLES IF AVAILABLE
+        if normalized_rubric_roles:
+            req_roles = [str(r).lower().strip() for r in normalized_rubric_roles if r]
+        else:
+            key_roles_raw = getattr(rubric.experience, 'key_roles', []) or []
+            req_roles = [str(r).lower().strip() for r in key_roles_raw if r and str(r).strip()]
+            
+        # USE NORMALIZED CANDIDATE ROLES IF AVAILABLE
+        cand_roles_to_check = []
+        if normalized_candidate_roles:
+             cand_roles_to_check = normalized_candidate_roles
+        else:
+             cand_exps = candidate.get('experiencia_laboral', []) or []
+             cand_roles_to_check = [str(exp.get('cargo', '')).lower() for exp in cand_exps]
+
+        cand_exps = candidate.get('experiencia_laboral', []) or []
         
         # A. Roles Match
         role_match_score = 0
         roles_mismatch = False # Flag to penalize other sub-dimensions
         
         if not req_roles: 
-            # If no specific roles in Rubric, default to 50
+            # FALLBACK: Use Job Title as required role if no specific key roles found
+            logger.info(f"⚠️ No key_roles in rubric. Using Job Title '{job_title}' as required role.")
+            req_roles = [job_title.lower().strip()]
+            used_fallback_role = True # Flag to prevent regression
+        else:
+            used_fallback_role = False
+            
+        # Re-check if still empty (safety)
+        if not req_roles:
             role_match_score = 50 
         else:
-            matched_count = 0
-            for exp in cand_exps:
-                role = str(exp.get('cargo', ''))
-                # Semantic/Fuzzy check for roles (Token-based)
-                if any(_token_fuzzy_match(req, role) for req in req_roles if len(req) > 2):
-                    matched_count += 1
-            if matched_count > 0: 
+            # Check CURRENT role (index 0) AND PREVIOUS role (index 1)
+            # to avoid penalizing if they are currently in a generic role but were specialized before
+            current_role_match = False
+            previous_role_match = False
+            
+            # Check Current Role (First in list)
+            if cand_roles_to_check:
+                 curr = str(cand_roles_to_check[0])
+                 # Since we normalized, we can try Direct Exact Match first for speed and accuracy
+                 if curr in req_roles:
+                     current_role_match = True
+                 elif any([await _semantic_match(req, curr) for req in req_roles if len(req) > 2]):
+                     current_role_match = True
+            
+            # Check Previous Role (Second in list)
+            if len(cand_roles_to_check) > 1:
+                 prev = str(cand_roles_to_check[1])
+                 if prev in req_roles:
+                     previous_role_match = True
+                 elif any([await _semantic_match(req, prev) for req in req_roles if len(req) > 2]):
+                     previous_role_match = True
+
+            if current_role_match:
                 role_match_score = 100
-            else: 
-                role_match_score = 20 # Mismatch penalty
-                roles_mismatch = True
+            elif previous_role_match:
+                role_match_score = 90 # High credit for recent experience
+            else:
+                # Iterate ALL roles for "some" match
+                matched_count = 0
+                for role in cand_roles_to_check:
+                    if role in req_roles:
+                        matched_count += 1
+                        continue
+                        
+                    if any([await _semantic_match(req, role) for req in req_roles if len(req) > 2]):
+                        matched_count += 1
+                
+                if matched_count > 0:
+                     role_match_score = 70 # Found somewhere in history
+                else:
+                    # ROLE ADJACENCY CHECK (Generic Transferability)
+                    if mandatory:
+                         # Join all responsibilities text safely
+                         text_parts = []
+                         for e in cand_exps:
+                             c = str(e.get('cargo') or '')
+                             r = str(e.get('responsabilidades') or '')
+                             text_parts.append(c)
+                             text_parts.append(r)
+                         
+                         all_exp_text = " ".join(text_parts).lower()
+                         
+                         # Count how many mandatory skills appear in experience
+                         skill_in_exp_count = sum(1 for s in mandatory if s.lower() in all_exp_text)
+                         skill_coverage = skill_in_exp_count / len(mandatory) if len(mandatory) > 0 else 0
+                         
+                         if skill_coverage > 0.4: # If they used >40% of stack in mismatched role
+                             role_match_score = 60 # Significant recovery from 20
+                             roles_mismatch = True # Still a mismatch, but softer
+                         else:
+                             role_match_score = 20
+                             roles_mismatch = True
+                    else:
+                        role_match_score = 20 # Mismatch penalty
+                        roles_mismatch = True
         
+        # CHECK FALLBACK REGRESSION (added)
+        # CHECK FALLBACK REGRESSION (added)
+        if used_fallback_role:
+             if role_match_score < 50:
+                 logger.info(f"⚠️ Fallback Role Match failed (Score {role_match_score}). Reverting to Neutral (50).")
+                 role_match_score = 50
+             # Always clear mismatch flag if we used fallback, 
+             # because we aren't sure enough to penalize career history.
+             roles_mismatch = False 
+
         # B. Years Constraint
         # If roles don't match (e.g. Accountant in Trucking Co), years are less valuable.
         base_years = 100 if len(cand_exps) >= 2 else (60 if len(cand_exps) == 1 else 0)
@@ -269,10 +432,14 @@ class ScoringService:
         industry_score = 100 if not roles_mismatch else 50
         
         scores['experience'] = (role_match_score * 0.5) + (years_score * 0.3) + (industry_score * 0.2)
+        scores['experience'] = min(100, scores['experience'])
 
         # --- 3. SKILLS (30%) ---
-        mandatory = set(s.lower() for s in rubric.skills.mandatory_skills)
-        expanded_cand_skills = set(expanded_skills) if expanded_skills else set()
+        # mandatory already defined above
+
+        expanded_cand_skills = set()
+        if expanded_skills:
+            expanded_cand_skills = set(str(s).lower() for s in expanded_skills if s)
         
         if not mandatory:
             minutes_skills_score = 50 # Neutral if no skills listed 
@@ -281,6 +448,27 @@ class ScoringService:
             mandatory_score = minutes_skills_score
         else:
             matches = mandatory.intersection(expanded_cand_skills)
+            missing = mandatory - expanded_cand_skills
+            
+            # DEEP SEARCH for Missing Skills in Experience/Summary Text
+            if missing:
+                # Build context text (Summary + Responsibilities)
+                context_parts = []
+                if candidate.get('resumen_profesional'):
+                    context_parts.append(str(candidate['resumen_profesional'].get('resumen', '')))
+                for exp in cand_exps:
+                    context_parts.append(str(exp.get('responsabilidades', '')))
+                    context_parts.append(str(exp.get('cargo', '')))
+                
+                full_text_lower = " ".join(context_parts).lower()
+                
+                for skill in missing:
+                    # Simple check: is skill name in text?
+                    # TODO: Robust word boundary check
+                    if skill in full_text_lower:
+                        matches.add(skill)
+                        logger.info(f"🔍 Deep Search found '{skill}' in candidate text!")
+
             coverage = len(matches) / len(mandatory) if mandatory else 0.0
             mandatory_score = coverage * 100
             
@@ -290,7 +478,6 @@ class ScoringService:
         
         scores['skills_match'] = min(100, (mandatory_score * 0.8) + (nice_bonus * 0.2 if mandatory_score > 0 else 0))
 
-        # --- 4. OTHERS ---
         # --- 4. OTHERS ---
         
         # LOGISTICS (City/Region Match)
@@ -311,10 +498,53 @@ class ScoringService:
                 logistics_score = 0
         
         scores['logistics'] = logistics_score
-        scores['cultural_fit'] = 50 # Default Neutral
+        
+        # Cultural Fit - Soft Skills Match
+        # If soft skills provided in job description (parsedJobData), check for them
+        cultural_score = 50 # Default
+        if job_soft_skills and isinstance(job_soft_skills, list) and len(job_soft_skills) > 0:
+             # Build Text
+             context_parts = []
+             if candidate.get('resumen_profesional'):
+                 context_parts.append(str(candidate['resumen_profesional'].get('resumen', '')))
+             for exp in cand_exps:
+                 context_parts.append(str(exp.get('responsabilidades', '')))
+             
+             full_text_lower = " ".join(context_parts).lower()
+             
+             soft_matches = 0
+             for ss in job_soft_skills:
+                 ss_lower = str(ss).lower()
+                 # 1. Direct Match
+                 if ss_lower in full_text_lower:
+                     soft_matches += 1
+                 else:
+                     # 2. Semantic Soft Skill Match (New)
+                     # Check against chunks of text or just trust the Semantic Service if we implement it for soft skills.
+                     # For now, let's try to match against the extracted skills list causing a "bridge"
+                     # It's 'expanded_skills' in this scope (argument)
+                     skills_to_check = expanded_skills if expanded_skills else []
+                     found_semantic = False # Initialize variable
+                     for cand_skill in skills_to_check:
+                         # Use lower threshold (0.65) for Soft Skills to be more lenient
+                         if await _semantic_match(ss_lower, str(cand_skill).lower(), threshold=0.65):
+                             found_semantic = True
+                             break
+                     if found_semantic:
+                         soft_matches += 1
+             
+             # Calculate Coverage
+             coverage = soft_matches / len(job_soft_skills)
+             # Base 50 + up to 50 based on coverage
+             cultural_score = 50 + (coverage * 50)
+        
+        scores['cultural_fit'] = cultural_score 
         
         # Penalize trajectory if roles are completely mismatched
         # (e.g. Accountant applying for Medical Tech -> Trajectory is irrelevant)
+        # RECOVERY: If role_match_score was recovered to 60 via adjacency, trajectory shouldn't be 30
+        if role_match_score >= 60:
+             scores['career_trajectory'] = 70
         scores['career_trajectory'] = 30 if roles_mismatch else 70
         
         return scores
@@ -326,22 +556,21 @@ TABLA DE EVALUACIÓN (RÚBRICA MAESTRA):
 - Roles: {rubric.experience.key_roles}
 - Skills: {rubric.skills.mandatory_skills}
 
-PUNTAJES FINALES OBLIGATORIOS (Ya calculados por Matriz):
+PUNTAJES FINALES OBLIGATORIOS (Ya calculados por Matriz, NO LOS ALTERES BAJO NINGUNA CIRCUNSTANCIA):
 - Educación: {baseline_scores.get('education')}
 - Experiencia: {baseline_scores.get('experience')}
 - Skills: {baseline_scores.get('skills_match')}
 """
-        return f"""Eres un auditor de reclutamiento estricto. Tu trabajo es verificar el cumplimiento de una rúbrica técnica.
+        return f"""Eres un auditor de reclutamiento estrictamente regido por matemáticas. 
 
 {checklist_text}
 
 Genera el JSON de evaluación final siguiendo la estructura estándar. Sé breve y directo en los razonamientos.
 
-INSTRUCCIONES:
+INSTRUCCIONES CRÍTICAS INQUEBRANTABLES:
 1. Analiza cada dimensión según los criterios proporcionados en la rúbrica.
-2. ACEPTA los puntajes de Educación, Experiencia y Skills calculados por el sistema (Ya incluidos arriba). NO LOS CAMBIES salvo error flagrante de extracción.
-3. Para cada dimensión, proporciona un razonamiento claro y profesional.
-   - EVITA frases redundantes como "Se mantiene el puntaje calculado".
+2. TIENES PROHIBIDO ALTERAR LOS PUNTAJES MATEMÁTICOS OBLIGATORIOS calculados en el bloque anterior. Tu único trabajo para "Educación", "Experiencia" y "Skills" es justificar en texto el puntaje ya dado (ej. si Educación es 40, justifica por qué falló el matching semántico del título, no le subas a 100 por tu cuenta).
+3. Para cada dimensión, proporciona un razonamiento claro y profesional respaldando el número.
    - Si un puntaje es bajo (ej: Cultural Fit 50), explica qué información faltaría para subirlo.
 4. Genera strengths, gaps y summary.
 
@@ -450,4 +679,3 @@ FORMATO DE SALIDA (JSON válido):
         except Exception as e:
             logger.error(f"Error parsing LLM response: {e}", exc_info=True)
             return None
-

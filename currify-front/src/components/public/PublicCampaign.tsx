@@ -14,6 +14,7 @@ import {
   ArrowLeftIcon,
   PhoneIcon,
   EnvelopeIcon,
+  LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { apiService, Campaign, UploadDocumentRequest } from '../../services/api';
@@ -235,14 +236,7 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
     return modalities[modality] || modality;
   };
 
-  const getDurationLabel = (duration: string) => {
-    const durations: Record<string, string> = {
-      'INDEFINITE': 'Indefinido',
-      'FIXED_TERM': 'Plazo Fijo',
-      'PROJECT': 'Proyecto'
-    };
-    return durations[duration] || duration;
-  };
+
 
 
 
@@ -476,295 +470,319 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
           <div className="lg:col-span-1">
             <div className="sticky top-6">
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-                {/* Form Header */}
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
-                  <h2 className="text-2xl font-bold mb-2">Aplica Ahora</h2>
-                  <p className="text-sm opacity-90">Solo toma 2 minutos</p>
-                </div>
-
-                {/* Progress Steps */}
-                <div className="px-6 pt-6">
-                  <div className="flex items-center justify-between mb-6">
-                    {[1, 2, 3].map((step) => (
-                      <div key={step} className="flex items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentStep >= step
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-gray-200 text-gray-500'
-                          }`}>
-                          {step}
-                        </div>
-                        {step < 3 && (
-                          <div className={`w-12 h-1 mx-2 ${currentStep > step ? 'bg-indigo-600' : 'bg-gray-200'
-                            }`}></div>
-                        )}
-                      </div>
-                    ))}
+                {campaign?.isLimitReached ? (
+                  <div className="p-10 text-center flex flex-col items-center justify-center min-h-[400px]">
+                    <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                      <LockClosedIcon className="w-10 h-10 text-amber-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Límite Alcanzado</h2>
+                    <p className="text-gray-600 text-lg mb-8 leading-relaxed">
+                      Has alcanzado el límite máximo de candidatos.
+                      <br />
+                      <span className="font-bold text-indigo-600 block mt-2">
+                        Para continuar, suscríbete a PRO.
+                      </span>
+                    </p>
+                    <button
+                      onClick={() => window.location.href = '/pricing'}
+                      className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-transform"
+                    >
+                      💎 Ver Planes PRO
+                    </button>
                   </div>
-                  <p className="text-center text-sm text-gray-600 mb-6">
-                    {currentStep === 1 && 'Paso 1: Información Personal'}
-                    {currentStep === 2 && 'Paso 2: Sube tu CV'}
-                    {currentStep === 3 && 'Paso 3: Confirmar y Enviar'}
-                  </p>
-                </div>
-
-                <form onSubmit={handleSubmit} className="px-6 pb-6">
-                  {/* Step 1: Personal Info */}
-                  {currentStep === 1 && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Nombre Completo *
-                        </label>
-                        <input
-                          type="text"
-                          name="name"
-                          value={candidateInfo.name}
-                          onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                            }`}
-                          placeholder="Juan Pérez"
-                        />
-                        {errors.name && (
-                          <p className="text-red-500 text-xs mt-1">{errors.name}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Email *
-                        </label>
-                        <div className="relative">
-                          <EnvelopeIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                          <input
-                            type="email"
-                            name="email"
-                            value={candidateInfo.email}
-                            onChange={handleInputChange}
-                            className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                              }`}
-                            placeholder="juan@email.com"
-                          />
-                        </div>
-                        {errors.email && (
-                          <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Teléfono *
-                        </label>
-                        <div className="relative">
-                          <PhoneIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
-                          <input
-                            type="tel"
-                            name="phone"
-                            value={candidateInfo.phone}
-                            onChange={handleInputChange}
-                            className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                              }`}
-                            placeholder="+56 9 1234 5678"
-                          />
-                        </div>
-                        {errors.phone && (
-                          <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          LinkedIn (Opcional)
-                        </label>
-                        <input
-                          type="url"
-                          name="linkedin"
-                          value={candidateInfo.linkedin}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-                          placeholder="linkedin.com/in/tu-perfil"
-                        />
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={handleNextStep}
-                        className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-                      >
-                        Continuar
-                        <ArrowRightIcon className="w-5 h-5" />
-                      </button>
+                ) : (
+                  <>
+                    {/* Form Header */}
+                    <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+                      <h2 className="text-2xl font-bold mb-2">Aplica Ahora</h2>
+                      <p className="text-sm opacity-90">Solo toma 2 minutos</p>
                     </div>
-                  )}
 
-                  {/* Step 2: Upload CV */}
-                  {currentStep === 2 && (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Sube tu Currículum *
-                        </label>
-
-                        <div
-                          onDragEnter={handleDrag}
-                          onDragLeave={handleDrag}
-                          onDragOver={handleDrag}
-                          onDrop={handleDrop}
-                          onClick={() => document.getElementById('fileInput')?.click()}
-                          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${dragActive
-                            ? 'border-indigo-500 bg-indigo-50'
-                            : errors.file
-                              ? 'border-red-300 bg-red-50'
-                              : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'
-                            }`}
-                        >
-                          <input
-                            id="fileInput"
-                            type="file"
-                            onChange={handleFileChange}
-                            accept=".pdf,.doc,.docx"
-                            className="hidden"
-                          />
-
-                          {!selectedFile ? (
-                            <div>
-                              <DocumentArrowUpIcon className="w-16 h-16 mx-auto mb-4 text-indigo-500" />
-                              <p className="text-base font-semibold text-gray-700 mb-2">
-                                Arrastra tu CV aquí
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                o haz clic para seleccionar
-                              </p>
-                              <p className="text-xs text-gray-400 mt-2">
-                                PDF, DOC, DOCX (máx. 10MB)
-                              </p>
+                    {/* Progress Steps */}
+                    <div className="px-6 pt-6">
+                      <div className="flex items-center justify-between mb-6">
+                        {[1, 2, 3].map((step) => (
+                          <div key={step} className="flex items-center">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${currentStep >= step
+                              ? 'bg-indigo-600 text-white'
+                              : 'bg-gray-200 text-gray-500'
+                              }`}>
+                              {step}
                             </div>
-                          ) : (
-                            <div>
-                              <CheckCircleIconSolid className="w-16 h-16 mx-auto mb-4 text-green-500" />
-                              <p className="text-base font-semibold text-gray-700 mb-1">
-                                {selectedFile.name}
-                              </p>
-                              <p className="text-sm text-gray-500 mb-3">
-                                {formatFileSize(selectedFile.size)}
-                              </p>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedFile(null);
-                                }}
-                                className="text-sm text-red-600 hover:text-red-700 font-medium"
-                              >
-                                Remover archivo
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                        {errors.file && (
-                          <p className="text-red-500 text-xs mt-1">{errors.file}</p>
-                        )}
+                            {step < 3 && (
+                              <div className={`w-12 h-1 mx-2 ${currentStep > step ? 'bg-indigo-600' : 'bg-gray-200'
+                                }`}></div>
+                            )}
+                          </div>
+                        ))}
                       </div>
-
-                      <div className="flex gap-3">
-                        <button
-                          type="button"
-                          onClick={handlePrevStep}
-                          className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-bold hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
-                        >
-                          <ArrowLeftIcon className="w-5 h-5" />
-                          Atrás
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleNextStep}
-                          className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
-                        >
-                          Continuar
-                          <ArrowRightIcon className="w-5 h-5" />
-                        </button>
-                      </div>
+                      <p className="text-center text-sm text-gray-600 mb-6">
+                        {currentStep === 1 && 'Paso 1: Información Personal'}
+                        {currentStep === 2 && 'Paso 2: Sube tu CV'}
+                        {currentStep === 3 && 'Paso 3: Confirmar y Enviar'}
+                      </p>
                     </div>
-                  )}
 
-                  {/* Step 3: Review & Submit */}
-                  {currentStep === 3 && (
-                    <div className="space-y-6">
-                      <div>
-                        <h3 className="font-bold text-gray-900 mb-4">Revisa tu información:</h3>
+                    <form onSubmit={handleSubmit} className="px-6 pb-6">
+                      {/* Step 1: Personal Info */}
+                      {currentStep === 1 && (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Nombre Completo *
+                            </label>
+                            <input
+                              type="text"
+                              name="name"
+                              value={candidateInfo.name}
+                              onChange={handleInputChange}
+                              className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                }`}
+                              placeholder="Juan Pérez"
+                            />
+                            {errors.name && (
+                              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+                            )}
+                          </div>
 
-                        <div className="bg-gray-50 rounded-xl p-4 space-y-3 mb-6">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Nombre:</span>
-                            <span className="font-semibold text-gray-900">{candidateInfo.name}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Email:</span>
-                            <span className="font-semibold text-gray-900">{candidateInfo.email}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Teléfono:</span>
-                            <span className="font-semibold text-gray-900">{candidateInfo.phone}</span>
-                          </div>
-                          {candidateInfo.linkedin && (
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600">LinkedIn:</span>
-                              <span className="font-semibold text-gray-900 truncate ml-2">{candidateInfo.linkedin}</span>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Email *
+                            </label>
+                            <div className="relative">
+                              <EnvelopeIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                              <input
+                                type="email"
+                                name="email"
+                                value={candidateInfo.email}
+                                onChange={handleInputChange}
+                                className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                  }`}
+                                placeholder="juan@email.com"
+                              />
                             </div>
-                          )}
-                          <div className="flex justify-between text-sm pt-3 border-t border-gray-200">
-                            <span className="text-gray-600">CV:</span>
-                            <span className="font-semibold text-gray-900">{selectedFile?.name}</span>
+                            {errors.email && (
+                              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                            )}
                           </div>
-                        </div>
 
-                        {/* Privacy Notice */}
-                        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
-                          <p className="text-xs text-indigo-900 leading-relaxed">
-                            <ShieldCheckIcon className="w-4 h-4 inline mr-1" />
-                            Al enviar esta aplicación, aceptas que procesemos tus datos personales de acuerdo con nuestra política de privacidad.
-                            Tus datos están seguros y encriptados.
-                          </p>
-                        </div>
-                      </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Teléfono *
+                            </label>
+                            <div className="relative">
+                              <PhoneIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                              <input
+                                type="tel"
+                                name="phone"
+                                value={candidateInfo.phone}
+                                onChange={handleInputChange}
+                                className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                  }`}
+                                placeholder="+56 9 1234 5678"
+                              />
+                            </div>
+                            {errors.phone && (
+                              <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                            )}
+                          </div>
 
-                      {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
-                          <XMarkIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                          <span>{error}</span>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              LinkedIn (Opcional)
+                            </label>
+                            <input
+                              type="url"
+                              name="linkedin"
+                              value={candidateInfo.linkedin}
+                              onChange={handleInputChange}
+                              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
+                              placeholder="linkedin.com/in/tu-perfil"
+                            />
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={handleNextStep}
+                            className="w-full bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                          >
+                            Continuar
+                            <ArrowRightIcon className="w-5 h-5" />
+                          </button>
                         </div>
                       )}
 
-                      <div className="flex gap-3">
-                        <button
-                          type="button"
-                          onClick={handlePrevStep}
-                          disabled={uploading}
-                          className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-bold hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                        >
-                          <ArrowLeftIcon className="w-5 h-5" />
-                          Atrás
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={uploading}
-                          className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-xl font-bold hover:from-green-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {uploading ? (
-                            <>
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                              Enviando...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircleIcon className="w-5 h-5" />
-                              Enviar Aplicación
-                            </>
+                      {/* Step 2: Upload CV */}
+                      {currentStep === 2 && (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Sube tu Currículum *
+                            </label>
+
+                            <div
+                              onDragEnter={handleDrag}
+                              onDragLeave={handleDrag}
+                              onDragOver={handleDrag}
+                              onDrop={handleDrop}
+                              onClick={() => document.getElementById('fileInput')?.click()}
+                              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${dragActive
+                                ? 'border-indigo-500 bg-indigo-50'
+                                : errors.file
+                                  ? 'border-red-300 bg-red-50'
+                                  : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'
+                                }`}
+                            >
+                              <input
+                                id="fileInput"
+                                type="file"
+                                onChange={handleFileChange}
+                                accept=".pdf,.doc,.docx"
+                                className="hidden"
+                              />
+
+                              {!selectedFile ? (
+                                <div>
+                                  <DocumentArrowUpIcon className="w-16 h-16 mx-auto mb-4 text-indigo-500" />
+                                  <p className="text-base font-semibold text-gray-700 mb-2">
+                                    Arrastra tu CV aquí
+                                  </p>
+                                  <p className="text-sm text-gray-500">
+                                    o haz clic para seleccionar
+                                  </p>
+                                  <p className="text-xs text-gray-400 mt-2">
+                                    PDF, DOC, DOCX (máx. 10MB)
+                                  </p>
+                                </div>
+                              ) : (
+                                <div>
+                                  <CheckCircleIconSolid className="w-16 h-16 mx-auto mb-4 text-green-500" />
+                                  <p className="text-base font-semibold text-gray-700 mb-1">
+                                    {selectedFile.name}
+                                  </p>
+                                  <p className="text-sm text-gray-500 mb-3">
+                                    {formatFileSize(selectedFile.size)}
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setSelectedFile(null);
+                                    }}
+                                    className="text-sm text-red-600 hover:text-red-700 font-medium"
+                                  >
+                                    Remover archivo
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            {errors.file && (
+                              <p className="text-red-500 text-xs mt-1">{errors.file}</p>
+                            )}
+                          </div>
+
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              onClick={handlePrevStep}
+                              className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-bold hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
+                            >
+                              <ArrowLeftIcon className="w-5 h-5" />
+                              Atrás
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleNextStep}
+                              className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-xl font-bold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
+                            >
+                              Continuar
+                              <ArrowRightIcon className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Step 3: Review & Submit */}
+                      {currentStep === 3 && (
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="font-bold text-gray-900 mb-4">Revisa tu información:</h3>
+
+                            <div className="bg-gray-50 rounded-xl p-4 space-y-3 mb-6">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Nombre:</span>
+                                <span className="font-semibold text-gray-900">{candidateInfo.name}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Email:</span>
+                                <span className="font-semibold text-gray-900">{candidateInfo.email}</span>
+                              </div>
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Teléfono:</span>
+                                <span className="font-semibold text-gray-900">{candidateInfo.phone}</span>
+                              </div>
+                              {candidateInfo.linkedin && (
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">LinkedIn:</span>
+                                  <span className="font-semibold text-gray-900 truncate ml-2">{candidateInfo.linkedin}</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between text-sm pt-3 border-t border-gray-200">
+                                <span className="text-gray-600">CV:</span>
+                                <span className="font-semibold text-gray-900">{selectedFile?.name}</span>
+                              </div>
+                            </div>
+
+                            {/* Privacy Notice */}
+                            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6">
+                              <p className="text-xs text-indigo-900 leading-relaxed">
+                                <ShieldCheckIcon className="w-4 h-4 inline mr-1" />
+                                Al enviar esta aplicación, aceptas que procesemos tus datos personales de acuerdo con nuestra política de privacidad.
+                                Tus datos están seguros y encriptados.
+                              </p>
+                            </div>
+                          </div>
+
+                          {error && (
+                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
+                              <XMarkIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                              <span>{error}</span>
+                            </div>
                           )}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </form>
+
+                          <div className="flex gap-3">
+                            <button
+                              type="button"
+                              onClick={handlePrevStep}
+                              disabled={uploading}
+                              className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-xl font-bold hover:bg-gray-300 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                              <ArrowLeftIcon className="w-5 h-5" />
+                              Atrás
+                            </button>
+                            <button
+                              type="submit"
+                              disabled={uploading}
+                              className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-xl font-bold hover:from-green-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {uploading ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                  Enviando...
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircleIcon className="w-5 h-5" />
+                                  Enviar Aplicación
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </form>
+                  </>
+                )}
               </div>
 
               {/* Trust Indicators Below Form */}

@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Any, Union
 from datetime import datetime
 
 from app.services.llm_service import LLMService
-from app.models.resume import ResumeData, ResumeExtractionRequest, ResumeExtractionResponse
+from app.models.resume import ResumeData, ResumeExtractionRequest, ResumeExtractionResponse, ThinkingResumeData
 from app.services.profile_detection_service import ProfileDetectionService
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class RobustExtractionService:
 
         # Configuración de texto
         self.max_text_length = 4000  # Caracteres máximos para procesamiento directo
-        self.chunk_overlap = 200     # Solapamiento entre chunks para contexto
+        self.chunk_overlap = 600     # Solapamiento aumentado para mejor contexto (antes 200)
 
     async def extract_from_text(self, request: ResumeExtractionRequest) -> ResumeExtractionResponse:
         """
@@ -154,7 +154,11 @@ class RobustExtractionService:
         # 3. Normalizar guiones y caracteres especiales comunes en PDFs
         text = text.replace('–', '-').replace('—', '-').replace(''', "'").replace(''', "'").replace('"', '"').replace('"', '"')
 
-        # 4. Remover espacios excesivos pero mantener estructura
+        # 4. Detect multi-column gaps (3+ spaces) and insert separator
+        # This is critical for layout=True extraction
+        text = re.sub(r'[ \t]{3,}', ' | ', text)
+
+        # 5. Remove remaining excessive spaces
         text = re.sub(r' +', ' ', text)
 
         # 5. Preservar separadores importantes pero limpiar líneas vacías excesivas
@@ -177,17 +181,18 @@ class RobustExtractionService:
         prompt = self._create_robust_extraction_prompt()
 
         try:
-            # 1. Intentar con Instructor (Extracción Estricta)
+            # 1. Intentar con Instructor (Extracción Estricta + CoT)
             result = await self.llm_service.call_agent_structured(
                 prompt=prompt,
                 input_data=cv_text,
-                response_model=ResumeData,
+                response_model=ThinkingResumeData,
                 stage_name="structured_extraction_main"
             )
 
             if result:
-                logger.info("✅ Extracción estructurada exitosa")
-                return result.model_dump()
+                logger.info("✅ Extracción estructurada exitosa con CoT")
+                logger.info(f"🧠 Thinking Process: {result.thinking_process[:200]}...")
+                return result.extraction.model_dump()
             
             logger.warning("⚠️ Falló la extracción estructurada, intentando fallback JSON...")
             
@@ -306,75 +311,29 @@ class RobustExtractionService:
         Prompt optimizado para Structured Outputs
         """
         return """
-Eres un experto en análisis de currículums con 10+ años de experiencia.
-Tu tarea es extraer TODA la información del CV en el formato estructurado solicitado.
+<system_role>
+Eres un experto analista de currículums y reclutador senior. 
+Tu objetivo es transformar documentos de CV (que pueden ser desordenados) en datos estructurados JSON de alta precisión.
+</system_role>
 
-INSTRUCCIONES CLAVE:
-1. Extrae TODO el historial laboral, no omitas ningún empleo.
-2. Extrae TODAS las responsabilidades detalladas.
-3. Distingue claramente entre "Titular Profesional" (tu profesión general) y "Cargos" (puestos específicos).
-4. Si falta información, usa null o listas vacías, no inventes datos.
-5. Normaliza fechas al formato YYYY-MM.
-6. INFERENCIA DE FECHAS: Si no hay fechas explícitas, busca años/meses en el texto cercano.
-7. INFERENCIA DE UBICACIÓN: Si no se menciona ciudad, infiere la ubicación por el nombre de la empresa/institución (ej. 'Hospital de Parral' -> 'Parral').
-8. PROHIBIDO USAR '<UNKNOWN>': Si no tienes información, usa null. NUNCA devuelvas el string '<UNKNOWN>'.
-9. PERIODOS: Siempre intenta extraer fecha_inicio y fecha_fin. Si es trabajo actual, fecha_fin es 'Presente'.
+<instructions>
+1. **Análisis Profundo:** Antes de extraer, analiza el documento para entender su estructura, idioma y matices.
+2. **Exhaustividad:** Extrae TODO el historial laboral y educativo. No omitas nada por parecer "antiguo". NO mezcles instituciones ni títulos. Si dice "Título de Contador" y abajo "Universidad Diego Portales", mantén el nombre exacto del título.
+3. **Inferencia Inteligente:** Si falta la ciudad, infiérela de la empresa/universidad. Si falta el año de fin y dice "Actualidad", usa "Presente".
+4. **Resumen Profesional:** Busca cualquier párrafo introductorio bajo títulos como "Perfil", "Resumen", "Descripción Profesional" o "Sobre mí" y extráelo completo en `resumen_profesional.resumen`.
+5. **Normalización:** Fechas a YYYY-MM. 
+6. **Búsqueda de Contacto Extrema:** Busca exhaustivamente en márgenes, encabezados y pies de página por correos electrónicos y teléfonos, aun si el recuadro que los contiene parece "roto" o con espacios (ej. +56 9 1 2 3).
+</instructions>
 
-ESTRUCTURA DE HABILIDADES (CRÍTICO):
-El campo 'habilidades' es un OBJETO con tres listas:
-- 'habilidades_tecnicas': Lista de objetos {skill, level} o strings.
-- 'idiomas': Lista de objetos {idioma, nivel}.
-- 'habilidades_blandas': Lista de strings.
-NO DEVOLVER UN STRING JSON PARA ESTE CAMPO, DEBE SER UN OBJETO ANIDADO.
+<critical_rules>
+- **Titular vs Cargo:** "Titular Profesional" es quién es la persona (ej: Ingeniero Civil). "Cargo" es qué puesto ocupó (ej: Jefe de Obra).
+- **Habilidades Estructuradas:** El campo 'habilidades' NO es un string. Es un objeto con 'habilidades_tecnicas', 'idiomas', 'habilidades_blandas'.
+- **Sanitización:** Nunca devuelvas valores como "N/A", "Unknown". Usa null o listas vacías. IMPORTANTE: Para campos de tipo string como 'email', 'telefono' o 'ubicacion', NUNCA devuelvas arreglos vacíos `[]`. Si la información no existe, debes devolver explícitamente `null`.
+</critical_rules>
 
-EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
-{
-  "datos_contacto": {
-    "nombre_completo": "Juan Pérez",
-    "email": "juan@email.com",
-    "telefono": "+56912345678",
-    "ubicacion": "Santiago, Chile"
-  },
-  "titular_profesional": {
-    "titular": "Ingeniero de Software Senior"
-  },
-  "resumen_profesional": {
-    "resumen": "Profesional con 10 años de experiencia..."
-  },
-  "experiencia_laboral": [
-    {
-      "cargo": "Desarrollador Backend",
-      "empresa": "Tech Corp",
-      "periodo": {
-        "fecha_inicio": "2020-01",
-        "fecha_fin": "Presente",
-        "texto_original": "Enero 2020 - Actualidad"
-      },
-      "responsabilidades": ["Diseño de APIs", "Optimización de DB"],
-      "ubicacion": "Remoto"
-    }
-  ],
-  "formacion_academica": [
-    {
-      "titulo": "Ingeniería Informática",
-      "institucion": "Universidad X",
-      "periodo": {
-        "fecha_inicio": "2010-03",
-        "fecha_fin": "2015-12"
-      }
-    }
-  ],
-  "habilidades": {
-    "habilidades_tecnicas": [
-      {"skill": "Python", "level": "Avanzado"},
-      {"skill": "Docker", "level": "Intermedio"}
-    ],
-    "idiomas": [
-      {"idioma": "Inglés", "nivel": "C1 Avanzado"}
-    ],
-    "habilidades_blandas": ["Liderazgo", "Comunicación"]
-  }
-}
+<output_schema>
+El output final debe corresponder exactamente al modelo ResumeData.
+</output_schema>
 """
 
 
@@ -583,6 +542,9 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
         
         # Deduplicación de experiencias (Fix: "No especificado" duplicate entries)
         extraction = self._deduplicate_experiences(extraction)
+        
+        # Deduplicación de educación (Fix: Duplicates due to chunking/dates)
+        extraction = self._deduplicate_education(extraction)
 
         # Validación de clasificación académica
         extraction = self._validate_academic_classification(extraction)
@@ -680,6 +642,82 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
         data["experiencia_laboral"] = unique_exps
         return data
 
+    def _deduplicate_education(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Elimina educación duplicada (normalmente chunking artifacts), prefiriendo la que tiene fechas específicas.
+        """
+        if not data.get("formacion_academica"):
+            return data
+            
+        edu_list = data["formacion_academica"]
+        if not isinstance(edu_list, list): return data
+        
+        # 1. Group by normalized key (Title + Institution)
+        grouped = {}
+        import re
+        
+        for edu in edu_list:
+            if not isinstance(edu, dict): continue
+            
+            titulo = str(edu.get("titulo", "")).lower().strip()
+            institucion = str(edu.get("institucion", "")).lower().strip()
+            
+            # Simple normalization: remove punctuation, extra spaces
+            titulo_norm = re.sub(r'[^\w\s]', '', titulo)
+            inst_norm = re.sub(r'[^\w\s]', '', institucion)
+            
+            # If both are empty, ignore (junk)
+            if not titulo_norm and not inst_norm:
+                continue
+
+            key = f"{titulo_norm}|{inst_norm}"
+            
+            if key not in grouped:
+                grouped[key] = []
+            grouped[key].append(edu)
+            
+        # 2. Select best candidate per group
+        final_list = []
+        for key, candidates in grouped.items():
+            if not candidates: continue
+            if len(candidates) == 1:
+                final_list.append(candidates[0])
+                continue
+                
+            best = candidates[0]
+            best_score = -100
+            
+            for cand in candidates:
+                score = 0
+                periodo = cand.get("periodo", {})
+                if not isinstance(periodo, dict): periodo = {}
+                
+                inicio = str(periodo.get("fecha_inicio", "")).lower()
+                fin = str(periodo.get("fecha_fin", "")).lower()
+                
+                # Score based on date quality
+                # Prefer explicit dates over "n/a", "no especificado", "none"
+                if inicio and "n/a" not in inicio and "no especificado" not in inicio and "none" not in inicio and "presente" not in inicio:
+                    score += 2
+                if fin and "n/a" not in fin and "no especificado" not in fin and "none" not in fin:
+                    score += 2
+                
+                # Tie-breaker: content length (more info is usually better)
+                try:
+                    cand_str = json.dumps(cand)
+                    score += len(cand_str) * 0.001
+                except:
+                    pass
+                
+                if score > best_score:
+                    best_score = score
+                    best = cand
+            
+            final_list.append(best)
+            
+        data["formacion_academica"] = final_list
+        return data
+
     def _post_process_dates(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Post-procesamiento inteligente de fechas
@@ -734,38 +772,32 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
             "vigente", "curso", "continuo", "ongoing", "present", "date"
         ]
 
-        # AGGRESSIVE RECOVERY:
-        # If we have texto_original but missing dates, try to parse from text (LLM might have failed)
-        if p["texto_original"] and str(p["texto_original"]).lower() not in bad_values:
-            raw_text = str(p["texto_original"]).lower()
-            
-            # Check for "Actualidad" markers in raw text
-            is_current = any(syn in raw_text for syn in current_synonyms)
-            
-            # If explicit "Actualidad" likely found in text, force fecha_fin to Presente FIRST
-            # This overrides any hallucinated date if the text says "Presente"
-            if is_current:
-                p["fecha_fin"] = "Presente"
-
-            # Only try parsing if we are missing at least one date
-            if not p["fecha_inicio"] or not p["fecha_fin"]:
-                 parsed = self._parse_period_string(p["texto_original"])
-                 
-                 # Fill in gaps
-                 if not p["fecha_inicio"] and parsed["fecha_inicio"]:
-                     p["fecha_inicio"] = parsed["fecha_inicio"]
-                 
-                 if not p["fecha_fin"] and parsed["fecha_fin"]:
-                     p["fecha_fin"] = parsed["fecha_fin"]
-                     
-        # Specific Fix: If fecha_fin is still None but text implies current (redundant check but safe)
-        if not p["fecha_fin"]:
-             raw_text = str(p.get("texto_original", "")).lower()
-             if any(k in raw_text for k in current_synonyms):
-                p["fecha_fin"] = "Presente"
+        # AGGRESSIVE RECOVERY & CORRECTION:
+        # If we have texto_original, we TRUST regex parsing over LLM inference.
+        # LLM often drops months (YYYY) or hallucinates years.
+        # Regex is strict and grounded in the actual text chunk.
         
-        # Clean up 'Presente' variations
-        if p["fecha_fin"] and str(p["fecha_fin"]).lower() in current_synonyms:
+        if p.get("texto_original") and str(p["texto_original"]).lower() not in bad_values:
+            parsed = self._parse_period_string(p["texto_original"])
+            
+            # 1. Start Date Correction
+            # If regex successfully found a start date (e.g., "2024-01" or "2024"), use it.
+            if parsed.get("fecha_inicio"):
+                # Prefer parsed value (likely YYYY-MM) over likely LLM YYYY
+                p["fecha_inicio"] = parsed["fecha_inicio"]
+
+            # 2. End Date Correction
+            if parsed.get("fecha_fin"):
+                p["fecha_fin"] = parsed["fecha_fin"]
+            
+            # 3. Handle 'Actualidad' Logic explicitly again just in case regex missed it keying off specific words
+            # (Though _parse_period_string handles this now)
+            raw_text = str(p["texto_original"]).lower()
+            if any(syn in raw_text for syn in current_synonyms):
+                 p["fecha_fin"] = "Presente"
+        
+        # Final safety cleanup for 'Presente' normalization
+        if p.get("fecha_fin") and str(p["fecha_fin"]).lower() in current_synonyms:
              p["fecha_fin"] = "Presente"
              
         return p
@@ -790,13 +822,51 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
         fecha_inicio = None
         fecha_fin = None
 
-        # Patrón: "Enero 2018 - Julio 2019"
-        match = re.search(r'(\w+)\s+(\d{4})\s*[-–]\s*(\w+)\s+(\d{4})', period_str, re.IGNORECASE)
+        # Patrón Normal: "Enero 2018 - Julio 2019"
+        # Patrón con texto extra: "Kibernum S.A. (Enero 2024 - Actualidad)"
+        
+        # 1. Limpiar strings envolventes
+        period_str_clean = period_str.replace('(', '').replace(')', '').strip()
+        
+        # 2. Buscar patrón principal (Mes Año - Mes Año) o (Mes Año - Texto)
+        # Regex explanation:
+        # Group 1 (Start Month): ([A-Za-z]+)
+        # Group 2 (Start Year): (\d{4})
+        # Separator: \s*[-–]\s*
+        # Group 3 (End): ([A-Za-z]+|\d{4}) -> Can be Month OR 'Actualidad'
+        # Group 4 (End Year - Optional): (\d{4})?
+        
+        match = re.search(r'([A-Za-z]+)\s+(\d{4})\s*[-–]\s*([A-Za-z0-9]+)(?:\s+(\d{4}))?', period_str_clean, re.IGNORECASE)
+        
         if match:
-            start_month, start_year, end_month, end_year = match.groups()
-            if start_month.lower() in months and end_month.lower() in months:
+            start_month, start_year, end_part1, end_year = match.groups()
+            
+            # Parse Start Date
+            if start_month.lower() in months:
                 fecha_inicio = f"{start_year}-{months[start_month.lower()]}"
-                fecha_fin = f"{end_year}-{months[end_month.lower()]}"
+                
+            # Parse End Date
+            is_current = any(syn in end_part1.lower() for syn in ["presente", "actualidad", "actual", "current", "hoy", "vigente"])
+            
+            if is_current:
+                fecha_fin = "Presente"
+            elif end_part1.lower() in months and end_year:
+                fecha_fin = f"{end_year}-{months[end_part1.lower()]}"
+            elif end_part1.isdigit() and len(end_part1) == 4:
+                 # Case: 2020 - 2021 (without months?)
+                 pass 
+        
+        # fallback for "2020 - 2021" simple format
+        if not fecha_inicio:
+             match_years = re.search(r'(\d{4})\s*[-–]\s*(\d{4}|Presente|Actualidad)', period_str_clean, re.IGNORECASE)
+             if match_years:
+                 s_year, e_part = match_years.groups()
+                 fecha_inicio = f"{s_year}-01"
+                 if e_part.lower() in ["presente", "actualidad"]:
+                     fecha_fin = "Presente"
+                 else:
+                     fecha_fin = f"{e_part}-12"
+
 
         # Patrón: "Enero 2018 - Presente"
         if not fecha_inicio:
@@ -837,9 +907,15 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
         ]
 
         # Revisar si hay items mal clasificados en formacion_complementaria
-        # Revisar si hay items mal clasificados en formacion_complementaria
-        if (data.get("formacion_complementaria") or {}).get("certificaciones_cursos"):
-            cursos = data["formacion_complementaria"]["certificaciones_cursos"]
+        fc = data.get("formacion_complementaria")
+        cursos = []
+        if isinstance(fc, list):
+            cursos = fc
+            data["formacion_complementaria"] = {"certificaciones_cursos": cursos}
+        elif isinstance(fc, dict):
+            cursos = fc.get("certificaciones_cursos") or []
+            
+        if cursos:
             academic_items = []
             complementary_items = []
 
@@ -969,13 +1045,42 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
         """
         Reparar campos requeridos faltantes con valores por defecto razonables
         """
+        import re
         fixed_data = data.copy()
+        # Normalization for fallbacks
+        tp = fixed_data.get('titular_profesional')
+        if tp is not None:
+            if not isinstance(tp, dict):
+                if isinstance(tp, list) and len(tp) > 0:
+                    fixed_data['titular_profesional'] = {'titular': str(tp[0])}
+                else:
+                    fixed_data['titular_profesional'] = {'titular': str(tp)}
+            else:
+                inner_titular = tp.get('titular')
+                if isinstance(inner_titular, dict):
+                    tp['titular'] = str(inner_titular.get('titular') or inner_titular.get('titulo') or inner_titular.get('name') or "No extraído")
+                elif isinstance(inner_titular, list) and len(inner_titular) > 0:
+                    tp['titular'] = str(inner_titular[0])
+                
+        rp = fixed_data.get('resumen_profesional')
+        if rp is not None:
+            if not isinstance(rp, dict):
+                if isinstance(rp, list) and len(rp) > 0:
+                    fixed_data['resumen_profesional'] = {'resumen': str(rp[0])}
+                else:
+                    fixed_data['resumen_profesional'] = {'resumen': str(rp)}
+            else:
+                inner_resumen = rp.get('resumen')
+                if isinstance(inner_resumen, dict):
+                    rp['resumen'] = str(inner_resumen.get('resumen') or inner_resumen.get('summary') or "No extraído")
+                elif isinstance(inner_resumen, list) and len(inner_resumen) > 0:
+                    rp['resumen'] = str(inner_resumen[0])
 
         # Asegurar resumen_profesional (campo que más frecuentemente falta)
         if 'resumen_profesional' not in fixed_data or not fixed_data['resumen_profesional']:
             logger.info("🔧 Agregando resumen_profesional faltante")
             # Intentar generar un resumen basado en el titular
-            titular = fixed_data.get('titular_profesional', {}).get('titular', '')
+            titular = (fixed_data.get('titular_profesional') or {}).get('titular', '')
             logger.info(f"🔧 Titular disponible para generar resumen: '{titular}'")
 
             if titular and 'No extraído' not in titular:
@@ -986,9 +1091,11 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
                 logger.info(f"🔧 Resumen por defecto: '{resumen}'")
 
             fixed_data['resumen_profesional'] = {'resumen': resumen}
+        elif isinstance(fixed_data.get('resumen_profesional'), dict) and not fixed_data['resumen_profesional'].get('resumen'):
+            fixed_data['resumen_profesional']['resumen'] = "Perfil profesional no especificado en el CV"
 
         # Asegurar datos_contacto
-        if 'datos_contacto' not in fixed_data:
+        if 'datos_contacto' not in fixed_data or not fixed_data['datos_contacto']:
             logger.info("🔧 Agregando datos_contacto faltantes")
             fixed_data['datos_contacto'] = {
                 'nombre_completo': 'No extraído',
@@ -996,21 +1103,70 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
                 'email': 'no-extraido@example.com',
                 'ubicacion': None
             }
+        elif isinstance(fixed_data.get('datos_contacto'), dict):
+            # Fill in missing keys instead of overwriting the whole dict
+            dc = fixed_data['datos_contacto']
+            if not dc.get('nombre_completo'): dc['nombre_completo'] = 'No extraído'
+            if 'telefono' not in dc: dc['telefono'] = None
+            if not dc.get('email'): dc['email'] = 'no-extraido@example.com'
+            if 'ubicacion' not in dc: dc['ubicacion'] = None
+
+        # --- MEJORA: Regex Fallback para Email y Teléfono ---
+        if cv_text and isinstance(fixed_data.get('datos_contacto'), dict):
+            dc = fixed_data['datos_contacto']
+            texto_limpio = cv_text.strip()
+            
+            # 1. Fallback Email
+            if not dc.get('email') or 'no-extraido' in dc.get('email', '').lower():
+                # Buscar posibles correos en todo el texto
+                match_email = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', texto_limpio)
+                if match_email:
+                    encontrado = match_email.group(0)
+                    logger.info(f"🔧 [REGEX Fallback] Email recuperado del texto: {encontrado}")
+                    dc['email'] = encontrado
+
+            # 2. Fallback Teléfono
+            if not dc.get('telefono'):
+                # Busca celulares típicos: (+569) 1234 5678, +56 9 1234 5678, 912345678
+                match_phone = re.search(r'(\+?56\s*9\s*\d{4}\s*\d{4}|\+?56\s*9\d{8}|(?<!\d)9\s*\d{4}\s*\d{4}(?!\d))', texto_limpio)
+                if match_phone:
+                    encontrado = match_phone.group(0)
+                    logger.info(f"🔧 [REGEX Fallback] Teléfono recuperado del texto: {encontrado}")
+                    dc['telefono'] = encontrado
 
         # Asegurar titular_profesional
         if ('titular_profesional' not in fixed_data or
             not fixed_data['titular_profesional'] or
-            not fixed_data['titular_profesional'].get('titular')):
+            not fixed_data['titular_profesional'].get('titular') or
+            fixed_data['titular_profesional'].get('titular') == 'No extraído'):
+            
             logger.info("🔧 Reparando titular_profesional faltante o vacío")
             logger.info(f"🔧 Estado actual titular_profesional: {fixed_data.get('titular_profesional', 'No existe')}")
 
-            # Intentar extraer titular del texto original si está disponible
             titular_extraido = 'No extraído'
+            
+            # 1. Intentar extraer de las primeras líneas del texto original PRIMERO
             if cv_text:
-                titular_extraido = self._extract_titular_from_text(cv_text)
-                logger.info(f"🔧 Titular extraído del texto: '{titular_extraido}'")
+                titular_extraido_texto = self._extract_titular_from_text(cv_text)
+                if titular_extraido_texto != 'No extraído':
+                    logger.info(f"🔧 Titular extraído del texto en fallback: '{titular_extraido_texto}'")
+                    titular_extraido = titular_extraido_texto
+            
+            # 2. Fallback semántico: Tratar de extraer el cargo más reciente (el que esté en "Presente" o el primero de la lista) SOLO si falló lo anterior
+            if titular_extraido == 'No extraído':
+                experiencias = fixed_data.get("experiencia_laboral", [])
+                cargo_reciente = None
+                if experiencias and isinstance(experiencias, list) and len(experiencias) > 0:
+                    first_exp = experiencias[0]
+                    if isinstance(first_exp, dict) and first_exp.get("cargo"):
+                        cargo_reciente = str(first_exp["cargo"])
+                        logger.info(f"🔧 [Semantic Fallback] Titular_profesional inferido desde la experiencia más reciente: {cargo_reciente}")
+                        titular_extraido = cargo_reciente
 
-            fixed_data['titular_profesional'] = {'titular': titular_extraido}
+            if 'titular_profesional' not in fixed_data or not fixed_data['titular_profesional']:
+                fixed_data['titular_profesional'] = {'titular': titular_extraido}
+            else:
+                 fixed_data['titular_profesional']['titular'] = titular_extraido
 
         # Asegurar listas (estas son requeridas pero pueden estar vacías)
         for field in ['experiencia_laboral', 'formacion_academica']:
@@ -1018,8 +1174,44 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
                 logger.info(f"🔧 Reparando lista {field}")
                 fixed_data[field] = []
 
+        # Sanitizar formacion_academica
+        if isinstance(fixed_data.get('formacion_academica'), list):
+            sanitized_edu = []
+            for edu in fixed_data['formacion_academica']:
+                if isinstance(edu, dict):
+                    titulo = edu.get('titulo')
+                    if isinstance(titulo, dict):
+                        edu['titulo'] = str(titulo.get('titulo') or titulo.get('name') or "No especificado")
+                    inst = edu.get('institucion')
+                    if isinstance(inst, dict):
+                        edu['institucion'] = str(inst.get('institucion') or inst.get('name') or "No especificado")
+                    sanitized_edu.append(edu)
+                else:
+                    sanitized_edu.append({"titulo": str(edu), "institucion": "No especificado"})
+            fixed_data['formacion_academica'] = sanitized_edu
+            
+        # Sanitizar experiencia_laboral
+        if isinstance(fixed_data.get('experiencia_laboral'), list):
+            sanitized_exp = []
+            for exp in fixed_data['experiencia_laboral']:
+                if isinstance(exp, dict):
+                    cargo = exp.get('cargo')
+                    if isinstance(cargo, dict):
+                        exp['cargo'] = str(cargo.get('cargo') or cargo.get('title') or "No especificado")
+                    empresa = exp.get('empresa')
+                    if isinstance(empresa, dict):
+                        exp['empresa'] = str(empresa.get('empresa') or empresa.get('company') or "No especificado")
+                        
+                    resp = exp.get('responsabilidades')
+                    if isinstance(resp, dict):
+                        exp['responsabilidades'] = [str(v) for v in resp.values()]
+                    sanitized_exp.append(exp)
+                else:
+                    sanitized_exp.append({"cargo": str(exp), "empresa": "No especificado"})
+            fixed_data['experiencia_laboral'] = sanitized_exp
+
         # Asegurar habilidades
-        if 'habilidades' not in fixed_data:
+        if 'habilidades' not in fixed_data or not fixed_data['habilidades']:
             logger.info("🔧 Agregando habilidades faltantes")
             fixed_data['habilidades'] = {
                 'habilidades_tecnicas': [],
@@ -1179,11 +1371,25 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
             logger.info(f"🔪 Procesando chunk {i+1}/{len(chunks)}")
             
             prompt = f"""
-            ESTE ES EL CHUNK {i+1} DE {len(chunks)} DE UN CURRÍCULUM.
-            TU OBJETIVO: Extraer TODA la información relevante encontrada EXCLUSIVAMENTE en este fragmento.
-            
-            {self._create_robust_extraction_prompt()}
-            """
+<system_role>
+Estás analizando el FRAGMENTO {i+1} de {len(chunks)} de un currículum extenso.
+</system_role>
+
+<instructions>
+1. Extrae únicamente la información presente en este fragmento.
+2. Si una sección está cortada (ej: empieza en el anterior), extrae lo que veas aquí.
+3. Mantén la estructura JSON exacta de ChunkResumeData.
+4. IMPORTANTE: Si en este fragmento logras identificar el título profesional principal del candidato, extráelo en `titular_profesional`.
+5. IMPORTANTE: Para la experiencia laboral, desglosa las descripciones de los cargos en viñetas dentro del arreglo `responsabilidades`. NO debes devolver un párrafo de texto largo en el campo `descripcion`.
+</instructions>
+
+<context_hint>
+Este fragmento tiene un solapamiento de 600 caracteres con el anterior para asegurar continuidad.
+Evita duplicar si es redundante, pero ante la duda, EXTRAE.
+</context_hint>
+
+{self._create_robust_extraction_prompt()}
+"""
             
             try:
                 # 1. Intentar Instructor
@@ -1266,13 +1472,84 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
         for i in range(1, len(results)):
             current = results[i]
             
-            # Fusionar experiencia laboral (concatenar y dedalespués)
+            # Fusionar titular_profesional si el actual está vacío
+            merged_titular_obj = merged.get("titular_profesional")
+            merged_titular = merged_titular_obj.get("titular", "") if isinstance(merged_titular_obj, dict) else str(merged_titular_obj or "")
+            if not merged_titular or merged_titular == "No extraído" or merged_titular == "None":
+                curr_titular_obj = current.get("titular_profesional")
+                curr_titular = curr_titular_obj.get("titular", "") if isinstance(curr_titular_obj, dict) else str(curr_titular_obj or "")
+                if curr_titular and curr_titular != "No extraído" and curr_titular != "None":
+                    merged["titular_profesional"] = current["titular_profesional"]
+
+            # Fusionar resumen_profesional si el actual está vacío
+            merged_resumen_obj = merged.get("resumen_profesional")
+            merged_resumen = merged_resumen_obj.get("resumen", "") if isinstance(merged_resumen_obj, dict) else str(merged_resumen_obj or "")
+            if not merged_resumen or merged_resumen == "No extraído" or merged_resumen == "None":
+                curr_resumen_obj = current.get("resumen_profesional")
+                curr_resumen = curr_resumen_obj.get("resumen", "") if isinstance(curr_resumen_obj, dict) else str(curr_resumen_obj or "")
+                if curr_resumen and curr_resumen != "No extraído" and curr_resumen != "None":
+                    merged["resumen_profesional"] = current["resumen_profesional"]
+
+            # Fusionar experiencia laboral con deduplicación/combinación al vuelo
             if current.get("experiencia_laboral"):
-                merged["experiencia_laboral"].extend(current["experiencia_laboral"])
+                merged_exp_list = merged.get("experiencia_laboral", [])
+                for curr_exp in current["experiencia_laboral"]:
+                    curr_empresa = (curr_exp.get("empresa") or "").strip().lower()
+                    curr_cargo = (curr_exp.get("cargo") or "").strip().lower()
+                    
+                    found_match = False
+                    # Only try to merge if we actually have fields to match on
+                    if curr_empresa and curr_cargo:
+                        for existing_exp in merged_exp_list:
+                            existing_empresa = (existing_exp.get("empresa") or "").strip().lower()
+                            existing_cargo = (existing_exp.get("cargo") or "").strip().lower()
+                            
+                            # Si empresa y cargo coinciden (ignorando mayúsculas/espacios), combinamos
+                            if curr_empresa == existing_empresa and curr_cargo == existing_cargo:
+                                found_match = True
+                                
+                                # Combine responsabilidades
+                                existing_resp = existing_exp.get("responsabilidades", [])
+                                if not isinstance(existing_resp, list):
+                                    existing_resp = [existing_resp] if existing_resp else []
+                                    
+                                curr_resp = curr_exp.get("responsabilidades", [])
+                                if not isinstance(curr_resp, list):
+                                    # Might be a description string, just append it
+                                    curr_resp = [curr_resp] if curr_resp else []
+
+                                for r in curr_resp:
+                                    if r not in existing_resp:
+                                        existing_resp.append(r)
+                                existing_exp["responsabilidades"] = existing_resp
+
+                                # Fallback: Combine descriptions if present and responsibilities are missing
+                                existing_desc = existing_exp.get("descripcion")
+                                curr_desc = curr_exp.get("descripcion")
+                                if curr_desc and not existing_desc:
+                                    existing_exp["descripcion"] = curr_desc
+
+                                # Merge Period if one is missing data
+                                existing_period = existing_exp.get("periodo", {})
+                                curr_period = curr_exp.get("periodo", {})
+                                if isinstance(existing_period, dict) and isinstance(curr_period, dict):
+                                    if not existing_period.get("fecha_inicio") and curr_period.get("fecha_inicio"):
+                                        existing_period["fecha_inicio"] = curr_period["fecha_inicio"]
+                                    if not existing_period.get("fecha_fin") and curr_period.get("fecha_fin"):
+                                        existing_period["fecha_fin"] = curr_period["fecha_fin"]
+                                    if not existing_period.get("texto_original") and curr_period.get("texto_original"):
+                                        existing_period["texto_original"] = curr_period["texto_original"]
+                                    
+                                break
+
+                    if not found_match:
+                        merged_exp_list.append(curr_exp)
                 
-            # Fusionar formación (concatenar)
+                merged["experiencia_laboral"] = merged_exp_list
+                
+            # Fusionar formación (concatenar, ya existe un paso de deduplicación después)
             if current.get("formacion_academica"):
-                merged["formacion_academica"].extend(current["formacion_academica"])
+                merged.setdefault("formacion_academica", []).extend(current["formacion_academica"])
                 
             # Fusionar habilidades (unir sets)
             if current.get("habilidades"):
@@ -1327,9 +1604,14 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
                 merged["habilidades"]["idiomas"] = merged_lang
             
             # Actualizar contacto si el chunk actual tiene más info
-            if self._calculate_confidence(current) > self._calculate_confidence(merged):
-                if current.get("datos_contacto", {}).get("email") != "no-extraido@example.com":
-                    merged["datos_contacto"] = current["datos_contacto"]
+            curr_contact = current.get("datos_contacto", {})
+            if curr_contact:
+                merged_contact = merged.setdefault("datos_contacto", {})
+                for field in ["nombre_completo", "email", "telefono", "ubicacion", "linkedin"]:
+                    curr_val = curr_contact.get(field)
+                    if curr_val and "no-extraido" not in str(curr_val).lower() and "no extraído" not in str(curr_val).lower():
+                        if not merged_contact.get(field) or "no-extraido" in str(merged_contact.get(field)).lower() or "no extraído" in str(merged_contact.get(field)).lower():
+                            merged_contact[field] = curr_val
                     
         return merged
         """
@@ -1388,13 +1670,22 @@ EJEMPLO DE SALIDA ESPERADA (No incluir markdown, solo datos):
             # Crear parser
             file_parser = FileParserService()
 
-            # Validar archivo
+            # Validar archivo (puede ser síncrono o asíncrono dependiendo de la implementación)
             validation_result = file_parser.validate_file(file_content, filename)
+            if asyncio.iscoroutine(validation_result):
+                 validation_result = await validation_result
+
             if not validation_result["is_valid"]:
                 raise ValueError(f"Archivo inválido: {', '.join(validation_result['issues'])}")
 
-            # Extraer texto del archivo
-            parse_result = file_parser.parse_file(file_content, filename)
+            # Extraer texto del archivo (ES ASÍNCRONO)
+            parse_result = await file_parser.parse_file(file_content, filename)
+            
+            # Defensa contra retorno de corutina inesperada
+            if asyncio.iscoroutine(parse_result):
+                logger.warning("⚠️ parse_result returned a coroutine despite await. Double awaiting...")
+                parse_result = await parse_result
+
             if not parse_result["success"]:
                 raise ValueError(f"Error al procesar archivo: {parse_result['error']}")
 

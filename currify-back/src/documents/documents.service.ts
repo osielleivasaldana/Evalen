@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { ScoringService } from '../scoring/scoring.service';
@@ -41,10 +41,37 @@ export class DocumentsService {
 
     const timestamp = Date.now();
     const fileName = `${timestamp}_${file.originalname}`;
-    const filePath = path.join('uploads', fileName);
+    const uploadsDir = path.join(process.cwd(), 'uploads');
+
+    // Ensure uploads directory exists
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const filePath = path.join(uploadsDir, fileName);
 
     try {
+      // 1. Check if user has credits
+      const user = await this.prisma.user.findUnique({
+        where: { id: campaign.userId },
+        select: { cvCredits: true, plan: true }
+      });
+
+      if (!user) {
+        throw new NotFoundException('User owner of campaign not found');
+      }
+
+      if (user.cvCredits <= 0) {
+        throw new ForbiddenException('Has usado todos tus créditos de evaluación. Mejora tu plan para continuar.');
+      }
+
       fs.writeFileSync(filePath, file.buffer);
+
+      // Decrement credit immediately (safe decrement)
+      await this.prisma.user.update({
+        where: { id: campaign.userId },
+        data: { cvCredits: { decrement: 1 } }
+      });
 
       let candidate = await this.prisma.candidate.findFirst({
         where: {
@@ -86,7 +113,8 @@ export class DocumentsService {
       };
 
     } catch (error) {
-      throw new BadRequestException('Failed to upload document');
+      console.error('[DOCUMENTS] Upload failed:', error);
+      throw new BadRequestException(`Failed to upload document: ${error.message}`);
     }
   }
 
@@ -120,7 +148,7 @@ export class DocumentsService {
             where: { id: document.candidate.id },
             data: {
               structuredData: extractedData.structuredData,
-              processingStatus: ProcessingStatus.COMPLETED,
+              // processingStatus remains PROCESSING until scoring is done
               name: extractedData.structuredData.datos_cv?.datos_contacto?.nombre_completo || document.candidate.name,
               email: extractedData.structuredData.datos_cv?.datos_contacto?.email || document.candidate.email,
               phone: extractedData.structuredData.datos_cv?.datos_contacto?.telefono || document.candidate.phone,
@@ -138,7 +166,15 @@ export class DocumentsService {
         }
       } catch (scoringError) {
         console.error('[SCORING_ERROR] Error calculating candidate score:', scoringError);
-        // We log it but don't fail the extraction process
+        // We log it but don't fail the process
+      }
+
+      // FINAL STEP: Mark candidate as COMPLETED only after scoring attempt
+      if (document.candidate) {
+        await this.prisma.candidate.update({
+          where: { id: document.candidate.id },
+          data: { processingStatus: ProcessingStatus.COMPLETED }
+        });
       }
 
     } catch (error) {
@@ -158,7 +194,15 @@ export class DocumentsService {
     }
   }
 
+  private tokenCache: string | null = null;
+  private tokenExpiry: number = 0;
+
   private async getCoreServiceToken(): Promise<string> {
+    const now = Date.now();
+    if (this.tokenCache && now < this.tokenExpiry) {
+      return this.tokenCache;
+    }
+
     try {
       const response = await axios.post(`${this.coreServiceUrl}/auth/login`, {
         username: 'kinich',
@@ -170,7 +214,11 @@ export class DocumentsService {
         }
       });
 
-      return response.data.access_token;
+      const token = response.data.access_token as string;
+      this.tokenCache = token;
+      // Token usually lasts 60 mins, refresh after 50 mins
+      this.tokenExpiry = now + (50 * 60 * 1000);
+      return token;
     } catch (error) {
       console.error('Error getting token from core service:', error);
       throw new Error('Failed to authenticate with core service');

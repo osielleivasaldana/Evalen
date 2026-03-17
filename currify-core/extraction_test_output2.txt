@@ -1,0 +1,548 @@
+C:\Users\osiel\Desktop\Currify\currify-core\app\services\llm_service.py:19: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai
+[chunk_1] Google provider does not support native instructor yet. Falling back to text.
+[chunk_2] Google provider does not support native instructor yet. Falling back to text.
+[chunk_3] Google provider does not support native instructor yet. Falling back to text.
+[chunk_4] Google provider does not support native instructor yet. Falling back to text.
+[chunk_5] Google provider does not support native instructor yet. Falling back to text.
+--- Extracting from C:\Users\osiel\Desktop\Currify\currify-core\tests\..\samples\cvs\CUR_Logan Higuera _1.pdf ---
+--- Running extraction ---
+
+--- RESULTS ---
+{
+  "datos_cv": {
+    "datos_contacto": {
+      "nombre_completo": "No extraÝdo",
+      "telefono": "+56 9 34293844",
+      "email": "logan.higuera@gmail.com",
+      "ubicacion": null,
+      "metadata": null
+    },
+    "titular_profesional": {
+      "titular": "Contador Auditor",
+      "metadata": null
+    },
+    "resumen_profesional": {
+      "resumen": "Contador Auditor, Master Business Administration (MBA), con una fuerte orientaci¾n al desarrollo de proyectos y nuevos negocios. Interesado en enfrentar nuevos desafÝos y trabajar en equipos multidisciplinarios. Con gran capacidad de liderazgo y comunicaci¾n, para dirigir equipos de trabajo. Me defino como una persona acogedora, que busca generar una energÝa positiva al relacionarse, que se concentra en lo positivo y en busca de soluciones a los problemas, conflictos y diferencias. Me defino como un lÝder positivo, de un trato deferente, amplio, motivador, que busca el compromiso del equipo y que valora la actitud de las personas.",
+      "metadata": null
+    },
+    "experiencia_laboral": [
+      {
+        "cargo": "Gerente de Sucursal Valdivia",
+        "empresa": "Salfa Sur Limitada",
+        "periodo": {
+          "fecha_inicio": "2019-01",
+          "fecha_fin": "Presente",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Reportar peri¾dicamente a la gerencia general de la compa±Ýa, la informaci¾n de los estados econ¾micos financieros de la sucursal y las diferentes unidades de negocio.",
+          "Aplicaci¾n de las estrategias comerciales y de ventas que buscan posicionar el negocio en el mercado altamente competitivo.",
+          "Responsable de la gesti¾n comercial y administrativa de la sucursal, en las diferentes ßreas de negocio de la compa±Ýa.",
+          "Trabajo en terreno con el equipo de ventas, visita de clientes, asÝ como de su planificaci¾n y control.",
+          "Aplicaci¾n de estßndares de atenci¾n a clientes y experiencia de servicio."
+        ],
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "cargo": "Gerente",
+        "empresa": "Euro Star Repuestos Limitada",
+        "periodo": {
+          "fecha_inicio": "2017-04",
+          "fecha_fin": "2018-12",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Generar instancias de negociaci¾n con proveedores, bajo convenios de abastecimiento y condiciones comerciales para el negocio.",
+          "Revisi¾n y anßlisis de los estados econ¾micos financieros, contables, flujos y de la elaboraci¾n del presupuesto anual.",
+          "B·squeda de instancias y estrategias para posicionar el negocio en el mercado.",
+          "Trabajo en terreno con el equipo de ventas, visita de clientes.",
+          "Direcci¾n, administraci¾n y gesti¾n financiera.",
+          "Venta de Repuestos, accesorios y Lubricantes",
+          "Implementaci¾n de un nuevo negocio."
+        ],
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "cargo": "Gerente General",
+        "empresa": "Cooperativa de Servicios Coopeserau Limitada",
+        "periodo": {
+          "fecha_inicio": "2014-03",
+          "fecha_fin": "2017-03",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Gesti¾n econ¾mica y financiera y de todas las funciones asociadas al manejo eficiente de los recursos financieros, proyecciones de los flujos, inversiones, anßlisis de proyectos, financiamiento y el resguardo de los fondos.",
+          "Reportar peri¾dicamente al directorio de administraci¾n, la informaci¾n de los estados econ¾micos financieros, contables, flujos y de la elaboraci¾n del presupuesto anual.",
+          "Definir y crear procedimientos, polÝticas, procesos de control y de restructuraci¾n de los distintos procesos de la operaci¾n.",
+          "Definir y cumplir los objetivos de la planificaci¾n estratÚgica de la empresa, asÝ como los objetivos a corto y largo plazo.",
+          "Reportar al ¾rgano fiscalizador, el Departamento de Cooperativas (Decoop), dependiente del Ministerio de EconomÝa.",
+          "Proponer y generar nuevas estrategias para crecimiento y desarrollo de la empresa.",
+          "Realizar negociaciones con clientes y proveedores.",
+          "Gesti¾n financiera y comercial del negocio.",
+          "Direcci¾n y administraci¾n general.",
+          "Crear nuevos negocios."
+        ],
+        "ubicacion": "Temuco",
+        "metadata": null
+      },
+      {
+        "cargo": "Jefe Departamento de Contabilidad",
+        "empresa": "Casino de Juegos Temuco S.A.",
+        "periodo": {
+          "fecha_inicio": "2008-10",
+          "fecha_fin": "2009-07",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Participaci¾n en la parametrizaci¾n y estructura de los distintos sistemas, en especial el de contabilidad, que se utilizaran en las distintas empresas del grupo.",
+          "Reportar la informaci¾n contable, tributaria y de los estados financieros a la jefatura local y corporativa.",
+          "Participaci¾n en la estructuraci¾n de los distintos procesos de la operaci¾n y creaci¾n de procedimientos.",
+          "Responsable de la contabilidad del grupo de empresas que operan en la propiedad de Temuco."
+        ],
+        "ubicacion": "Temuco",
+        "metadata": null
+      },
+      {
+        "cargo": "Analista Contable",
+        "empresa": "Aguas AraucanÝa S.A",
+        "periodo": {
+          "fecha_inicio": "2007-08",
+          "fecha_fin": "2008-10",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Preparaci¾n de distintos informes y de los Estados Financieros de la compa±Ýa.",
+          "Preparaci¾n de los Estados Financieros de la compa±Ýa.",
+          "Preparaci¾n de distintos informes.",
+          "Anßlisis contable y tributario.",
+          "Contabilidad de la filial.",
+          "Conciliaciones bancarias.",
+          "Anßlisis al activo fijo.",
+          "Presupuestos.",
+          "Inventarios.",
+          "Cierres.",
+          "Costos."
+        ],
+        "ubicacion": "Temuco",
+        "metadata": null
+      },
+      {
+        "cargo": "Encargado de Administraci¾n y Finanzas",
+        "empresa": "Fßbrica de Cecinas Don Amancio Ltda.",
+        "periodo": {
+          "fecha_inicio": "2000-03",
+          "fecha_fin": "2007-07",
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Contador de la Sociedad y de las demßs empresas asociadas, en los rubros agrÝcola, panaderÝa y transportes.",
+          "Cumpliendo funciones como el Contador de la Sociedad y de las demßs empresas asociadas.",
+          "Encargado de las ┴reas de Contabilidad, Personal y Remuneraciones.",
+          "Encargado de Administraci¾n y Finanzas.",
+          "Declaraciones de impuestos mensuales.",
+          "Control de clientes y proveedores.",
+          "Imposiciones previsionales.",
+          "Procesos administrativos.",
+          "Conciliaciones bancarias.",
+          "Liquidaciones de sueldo.",
+          "Declaraciones de renta.",
+          "Declaraciones juradas.",
+          "Contratos de Trabajo.",
+          "Elaboraci¾n de",
+          "Finiquitos."
+        ],
+        "ubicacion": "Temuco",
+        "metadata": null
+      },
+      {
+        "cargo": "Encargado de Administraci¾n y Finanzas",
+        "empresa": "Cecinas Don Amancio Limitada",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Contador de la Sociedad y de las demßs empresas asociadas, en los rubros agrÝcola, panaderÝa y transportes.",
+          "Estados de resultado y los respectivos anßlisis contable y tributarios.",
+          "Encargado de las ┴reas de Contabilidad, Personal y Remuneraciones.",
+          "Declaraciones de impuestos mensuales.",
+          "Control de clientes y proveedores.",
+          "Imposiciones previsionales.",
+          "Procesos administrativos.",
+          "Conciliaciones bancarias.",
+          "Liquidaciones de sueldo.",
+          "Elaboraci¾n de balances.",
+          "Declaraciones de renta.",
+          "Declaraciones juradas.",
+          "Contratos de Trabajo.",
+          "Finiquitos."
+        ],
+        "ubicacion": "Temuco, Chile",
+        "metadata": null
+      },
+      {
+        "cargo": "Profesor ayudante",
+        "empresa": "Universidad Diego Portales",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "responsabilidades": [
+          "Profesor ayudante por dos a±os en la Universidad Diego Portales, Cßtedras de Contabilidad y Costos."
+        ],
+        "ubicacion": "Santiago, Chile",
+        "metadata": null
+      }
+    ],
+    "formacion_academica": [
+      {
+        "titulo": "GRADO DE MAGISTER EN DIRECCION Y GESTION DE EMPRESAS (MBA)",
+        "institucion": "Universidad Mayor",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "TITULO DE CONTADOR PUBLICO - AUDITOR",
+        "institucion": "Universidad Diego Portales",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "LICENCIADO EN CONTABILIDAD Y AUDITORIA",
+        "institucion": "Universidad Diego Portales",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "TITULO DE CONTADOR GENERAL",
+        "institucion": "Centro Educacional ôJuan Schleyerö de Freire",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "PREMIO EXCELENCIA ACADEMICA MEJOR EGRESADO",
+        "institucion": "Universidad Diego Portales",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "Diplomado en Programaci¾n Neuroling³Ýstica (PNL)",
+        "institucion": "Centro de Programaci¾n Neuroling³Ýstica de Concepci¾n",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "Diplomado en Emprendimiento, Innovaci¾n y Transferencia Tecnol¾gica en SmartCities",
+        "institucion": "Universidad de la Frontera, Ciudad de Temuco",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "Diplomado en Normas Contables IFRS",
+        "institucion": "Universidad de la Frontera, Ciudad de Temuco",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "Diplomado en Planificaci¾n Tributaria.",
+        "institucion": "Universidad de Chile, Ciudad de Puerto Montt",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "Curso de Ingles - Nivel Intermedio",
+        "institucion": "Bond University, Gold Coast Australia",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "Diplomado en Coaching para ejercer el Liderazgo.",
+        "institucion": "Universidad De La Frontera, Ciudad de Temuco",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "Magister en Administraci¾n de Empresas MBA Executive.",
+        "institucion": "Universidad MAYOR, Ciudad de Temuco",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "Ense±anza Superior Carrera de Auditoria.",
+        "institucion": "Universidad DIEGO PORTALES",
+        "periodo": {
+          "fecha_inicio": null,
+          "fecha_fin": null,
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "Diplomado en Normas Contables IFRS",
+        "institucion": "Universidad de Chile",
+        "periodo": {
+          "fecha_inicio": "2014",
+          "fecha_fin": "2014",
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": "Ciudad de Puerto Montt",
+        "metadata": null
+      },
+      {
+        "titulo": "Diplomado en Planificaci¾n Tributaria",
+        "institucion": "Bond University",
+        "periodo": {
+          "fecha_inicio": "2013",
+          "fecha_fin": "2013",
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": "Gold Coast Australia",
+        "metadata": null
+      },
+      {
+        "titulo": "Curso de Ingles - Nivel Intermedio",
+        "institucion": "Universidad De La Frontera",
+        "periodo": {
+          "fecha_inicio": "2012",
+          "fecha_fin": "2013",
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": "Ciudad de Temuco",
+        "metadata": null
+      },
+      {
+        "titulo": "Diplomado en Coaching para ejercer el Liderazgo",
+        "institucion": "Universidad MAYOR",
+        "periodo": {
+          "fecha_inicio": "2010",
+          "fecha_fin": "2011",
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": "Ciudad de Temuco",
+        "metadata": null
+      },
+      {
+        "titulo": "Magister en Administraci¾n de Empresas MBA Executive",
+        "institucion": "Universidad DIEGO PORTALES",
+        "periodo": {
+          "fecha_inicio": "2002",
+          "fecha_fin": "2006",
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": null,
+        "metadata": null
+      },
+      {
+        "titulo": "No especificado",
+        "institucion": "Bond University",
+        "periodo": {
+          "fecha_inicio": "2013",
+          "fecha_fin": "2013",
+          "texto_original": null,
+          "metadata": null
+        },
+        "gpa": null,
+        "ubicacion": "Gold Coast, Australia",
+        "metadata": null
+      }
+    ],
+    "habilidades": {
+      "habilidades_tecnicas": [
+        {
+          "skill": "Conocimientos de herramientas informßticas, nivel Intermedio - avanzado.",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "Conocimiento de distintos sistemas administrativos y contables.",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Softland, Nivel Avanzado",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Fin700",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Softland",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Sun System",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "ERP Transtecnia",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "Material Control",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        },
+        {
+          "skill": "Micros 9700",
+          "level": null,
+          "years_experience": null,
+          "metadata": null
+        }
+      ],
+      "idiomas": [
+        {
+          "idioma": "Ingles nivel Intermedio",
+          "nivel": "Hablado, escrito, comprensi¾n de lectura",
+          "certificacion": null,
+          "metadata": null
+        }
+      ],
+      "habilidades_blandas": [],
+      "metadata": null
+    },
+    "perfiles_online": null,
+    "formacion_complementaria": null,
+    "reconocimientos": null,
+    "actividades_extracurriculares": null,
+    "intereses": null,
+    "metadata_procesamiento": null
+  },
+  "confianza_general": 0.85,
+  "advertencias": [],
+  "campos_faltantes": [
+    "nombre_completo"
+  ],
+  "tiempo_procesamiento": 39.49697923660278,
+  "timestamp": "2026-02-20T17:05:58.922466"
+}

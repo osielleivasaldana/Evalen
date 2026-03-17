@@ -5,7 +5,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CandidatesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // Helper function to check if user has access to a campaign
   private async checkCampaignAccess(campaignId: string, userId: string): Promise<boolean> {
@@ -179,6 +179,28 @@ export class CandidatesService {
 
     return this.prisma.candidate.delete({
       where: { id },
+    });
+  }
+
+  async updateStatus(id: string, userId: string, status: string) {
+    const candidate = await this.prisma.candidate.findUnique({
+      where: { id },
+      include: { campaign: true }
+    });
+
+    if (!candidate) {
+      throw new NotFoundException('Candidate not found');
+    }
+
+    // Check if user has access to this campaign
+    const hasAccess = await this.checkCampaignAccess(candidate.campaignId, userId);
+    if (!hasAccess) {
+      throw new ForbiddenException('You do not have access to update this candidate');
+    }
+
+    return this.prisma.candidate.update({
+      where: { id },
+      data: { candidateStatus: status as any }, // strict typing might fail if not importing enum, using as any for safety or string if prisma accepts it
     });
   }
 

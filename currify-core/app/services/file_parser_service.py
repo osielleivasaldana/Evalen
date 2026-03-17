@@ -12,16 +12,17 @@ class FileParserService:
     def __init__(self):
         self.supported_formats = ['.pdf', '.docx', '.doc', '.txt', '.rtf']
 
-    def parse_file(self, file_content: bytes, filename: str) -> Dict[str, any]:
+    async def parse_file(self, file_content: bytes, filename: str) -> Dict[str, any]:
         """
-        Extrae texto de un archivo basado en su extensión
+        Extrae texto de un archivo de forma asíncrona (non-blocking)
+        Ejecuta el parsing intensivo en un thread pool.
+        """
+        import asyncio
+        return await asyncio.to_thread(self._parse_file_sync, file_content, filename)
 
-        Args:
-            file_content: Contenido del archivo en bytes
-            filename: Nombre del archivo con extensión
-
-        Returns:
-            Dict con texto extraído y metadatos
+    def _parse_file_sync(self, file_content: bytes, filename: str) -> Dict[str, any]:
+        """
+        Método síncrono interno para el parsing real
         """
         try:
             file_extension = Path(filename).suffix.lower()
@@ -66,10 +67,17 @@ class FileParserService:
                 pages_count = len(pdf.pages)
                 for i, page in enumerate(pdf.pages):
                     try:
-                        # Extract text preserving layout somewhat, but prioritizing clarity
-                        page_text = page.extract_text(x_tolerance=2, y_tolerance=3)
-                        if page_text and page_text.strip():
-                            text_parts.append(page_text)
+                        # Hybrid Strategy: Extract both Default (for reading) and Layout (for columns)
+                        # This ensures we get clean paragraphs AND table/column structure
+                        text_default = page.extract_text(x_tolerance=2, y_tolerance=3) or ""
+                        text_layout = page.extract_text(layout=True) or ""
+                        
+                        # Use default as primary, but append layout version if they differ significantly
+                        # or just append page-by-page?
+                        # Appending page-by-page keeps context together.
+                        combined_page = f"{text_default}\n\n--- LAYOUT CONTEXT (PAGE {i+1}) ---\n{text_layout}"
+                        text_parts.append(combined_page)
+                        
                     except Exception as e:
                         logger.warning(f"Error extracting text from page {i + 1}: {e}")
                         continue

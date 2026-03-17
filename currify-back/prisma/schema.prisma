@@ -72,6 +72,20 @@ enum UserRole {
   TECHNICAL_REVIEWER
 }
 
+enum PlanTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum StripeStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  TRIALING
+}
+
 model User {
   id                 String    @id @default(cuid())
   email              String    @unique
@@ -82,6 +96,29 @@ model User {
   isActive           Boolean   @default(false)
   activationToken    String?   @unique
   activationExpiry   DateTime?
+  
+  // SaaS & Monetization Fields
+  plan               PlanTier      @default(FREE)
+  trialEndsAt        DateTime?
+  cvCredits          Int           @default(3)
+  campaignLimit      Int           @default(1)
+  
+  // Stripe Integration
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?
+  stripeStatus           StripeStatus?
+  stripePriceId          String?
+  
+  // Profiling & Onboarding
+  companySize        String?
+  hiringVolume       String?
+  atsSystem          String?
+  onboardingCompleted Boolean    @default(false)
+  
+  // Social Auth
+  socialProvider     String?
+  socialId           String?
+  
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 

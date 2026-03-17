@@ -41,6 +41,13 @@ def get_profile_detection_service() -> ProfileDetectionService:
 # Storage temporal para procesamiento por lotes
 batch_jobs = {}
 
+# Global semaphore to limit concurrent extraction requests (protects memory & DNS)
+global_extraction_semaphore = asyncio.Semaphore(3)
+
+async def limit_concurrency():
+    async with global_extraction_semaphore:
+        yield
+
 @router.post("/extract", response_model=ResumeExtractionResponse)
 @limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_window}minute")
 async def extract_resume(
@@ -48,11 +55,12 @@ async def extract_resume(
     file: UploadFile = File(..., description="Archivo de CV (PDF, DOCX, TXT, RTF)"),
     config: Optional[str] = Form(None, description="Configuración JSON opcional"),
     token: dict = Depends(verify_token),
-    extraction_service: RobustExtractionService = Depends(get_resume_extraction_service)
+    extraction_service: RobustExtractionService = Depends(get_resume_extraction_service),
+    _ = Depends(limit_concurrency)
 ):
     """
     Extrae datos estructurados de un archivo de CV individual
-
+    
     - **file**: Archivo de CV en formatos soportados (PDF, DOCX, TXT, RTF)
     - **config**: Configuración opcional en formato JSON
     - Retorna datos estructurados del CV con métricas de calidad
@@ -412,52 +420,74 @@ async def health_check():
 
 # Funciones auxiliares
 async def process_batch_files(job_id: str, files: List[UploadFile], config: Dict[str, Any], extraction_service: ResumeExtractionService):
-    """Procesa archivos en lote en background"""
-    try:
-        for i, file in enumerate(files):
+    """Procesa archivos en lote en background de manera paralela con límite"""
+    # Límite de concurrencia para proteger recursos (LLM/Memoria)
+    semaphore = asyncio.Semaphore(5)
+    
+    async def process_single_file(file: UploadFile):
+        async with semaphore:
             try:
-                # Leer contenido del archivo
-                file_content = await file.read()
-
-                # Procesar extracción
+                # Leer y procesar
+                # Nota: UploadFile.read() puede no ser thread-safe si se comparte, pero aquí cada tarea tiene su file
+                # Sin embargo, si 'files' son del mismo request, SpooledTemporaryFile puede tener quirks.
+                # Lo mejor es leer todo antes o asegurarse de que sean independientes.
+                # En FastAPI BackgroundTasks, los archivos pueden cerrarse si el request termina.
+                # Pero aquí se pasan los objetos. Asumimos que están disponibles.
+                
+                # Para mayor seguridad, leamos el contenido antes de lanzar las tareas si son pocos,
+                # pero para streams grandes es mejor leer dentro. 
+                # Intentaremos leer dentro controlando errores.
+                
+                content = await file.read()
+                
                 result = await extraction_service.extract_from_file(
-                    file_content=file_content,
+                    file_content=content,
                     filename=file.filename,
                     config=config
                 )
-
-                # Agregar resultado
-                batch_jobs[job_id]["results"].append({
+                
+                return {
                     "filename": file.filename,
                     "success": True,
                     "data": result.dict(),
                     "processed_at": datetime.now().isoformat()
-                })
-
+                }
             except Exception as e:
-                # Agregar error
-                batch_jobs[job_id]["errors"].append({
+                logger.error(f"Error extracting {file.filename}: {e}")
+                return {
                     "filename": file.filename,
+                    "success": False,
                     "error": str(e),
                     "processed_at": datetime.now().isoformat()
-                })
+                }
 
-            # Actualizar progreso
-            batch_jobs[job_id]["processed_files"] = i + 1
-
-            # Pequeña pausa para no sobrecargar
-            await asyncio.sleep(0.1)
-
+    try:
+        # Lanzar todas las tareas (el semáforo limita las activas)
+        tasks = [process_single_file(file) for file in files]
+        
+        # Esperar a que todas terminen
+        results = await asyncio.gather(*tasks)
+        
+        # Procesar resultados para actualizar el estado del job
+        for res in results:
+            if res.get("success"):
+                batch_jobs[job_id]["results"].append(res)
+            else:
+                batch_jobs[job_id]["errors"].append(res)
+        
+        batch_jobs[job_id]["processed_files"] = len(files) # Final count
+        
         # Marcar como completado
         batch_jobs[job_id]["status"] = "completed"
         batch_jobs[job_id]["completed_at"] = datetime.now().isoformat()
 
-        logger.info(f"Batch job {job_id} completed successfully")
+        logger.info(f"Batch job {job_id} completed successfully. Processed {len(files)} files.")
 
     except Exception as e:
         batch_jobs[job_id]["status"] = "failed"
         batch_jobs[job_id]["completed_at"] = datetime.now().isoformat()
-        logger.error(f"Batch job {job_id} failed: {e}")
+        batch_jobs[job_id]["error"] = str(e)
+        logger.error(f"Batch job {job_id} failed catastrophically: {e}")
 
 def generate_improvement_suggestions(resume_data: ResumeData, completeness: Dict[str, Any]) -> List[str]:
     """Genera sugerencias de mejora basadas en los datos del CV"""

@@ -28,6 +28,8 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  const isSelectionRef = useRef(false);
+
   // Mapbox Access Token from environment variables
   const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN || '';
 
@@ -45,6 +47,12 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
   // Debounced search function
   useEffect(() => {
+    // Skip search if the update comes from a selection
+    if (isSelectionRef.current) {
+      isSelectionRef.current = false;
+      return;
+    }
+
     if (!value || value.length < 3) {
       setSuggestions([]);
       setIsOpen(false);
@@ -81,6 +89,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   }, [value]);
 
   const handleSelectLocation = (location: LocationSuggestion) => {
+    isSelectionRef.current = true; // Mark as selection to prevent re-search
     onChange(location.place_name);
     setIsOpen(false);
     setSuggestions([]);

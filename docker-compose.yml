@@ -53,11 +53,12 @@ services:
       # Environment
       - ENVIRONMENT=${ENVIRONMENT}
       - DEBUG=${DEBUG}
+      - WATCHFILES_FORCE_POLLING=true
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
-      - ./currify-core/uploads:/app/uploads
-      - ./currify-core/app:/app/app
+      - ./currify-core:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       postgres:
         condition: service_healthy
@@ -74,12 +75,22 @@ services:
       context: ./currify-back
       dockerfile: Dockerfile
     container_name: currify-backend
+    volumes:
+      - ./currify-back:/app
+      - /app/node_modules
+    entrypoint: [ "dumb-init", "--" ]
+    command: npm run start:dev
     environment:
       # Database Configuration
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       # JWT Configuration
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN}
+      # Google Auth
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=http://localhost:3001/api/auth/google/callback
       # LinkedIn API (opcional)
       - LINKEDIN_CLIENT_ID=${LINKEDIN_CLIENT_ID}
       - LINKEDIN_CLIENT_SECRET=${LINKEDIN_CLIENT_SECRET}
@@ -103,10 +114,12 @@ services:
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_FROM_NAME=${SMTP_FROM_NAME}
       - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
+      # Stripe
+      - STRIPE_SECRET_KEY=dummy
+      - STRIPE_PRICE_ID_PRO=${STRIPE_PRICE_ID_PRO}
     ports:
       - "3001:3001"
-    volumes:
-      - ./currify-back/uploads:/app/uploads
+
     depends_on:
       postgres:
         condition: service_healthy
@@ -124,17 +137,22 @@ services:
     build:
       context: ./currify-front
       dockerfile: Dockerfile
+      target: builder
       args:
-        - REACT_APP_API_URL=${REACT_APP_API_URL}
+        - REACT_APP_API_URL=/api
         - REACT_APP_SCORING_SERVICE_URL=${REACT_APP_SCORING_SERVICE_URL}
         - REACT_APP_MAPBOX_TOKEN=${REACT_APP_MAPBOX_TOKEN}
     container_name: currify-frontend
+    command: npm start
     environment:
       - REACT_APP_API_URL=${REACT_APP_API_URL}
       - REACT_APP_SCORING_SERVICE_URL=${REACT_APP_SCORING_SERVICE_URL}
       - REACT_APP_MAPBOX_TOKEN=${REACT_APP_MAPBOX_TOKEN}
     ports:
       - "3000:3000"
+    volumes:
+      - ./currify-front:/app
+      - /app/node_modules
     depends_on:
       - currify-backend
     healthcheck:

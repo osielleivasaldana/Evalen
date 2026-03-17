@@ -8,6 +8,7 @@ import LocationAutocomplete from '../common/LocationAutocomplete';
 import { CURRENCIES } from '../../constants/currencies';
 import { formatNumber, parseNumber, formatInputNumber } from '../../utils/formatters';
 import DOMPurify from 'dompurify';
+import { STAGE_TEMPLATES } from '../../constants/stageTemplates';
 import {
   BriefcaseIcon,
   MapPinIcon,
@@ -190,11 +191,12 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
       }
     } else if (step === 4) {
       // Validar etapas
-      if (formData.stageTemplates.length === 0) {
+      const templates = formData.stageTemplates || [];
+      if (templates.length === 0) {
         newErrors.stages = 'Debes definir al menos una etapa del proceso';
       } else {
         // Validar cada etapa
-        formData.stageTemplates.forEach((stage, index) => {
+        templates.forEach((stage, index) => {
           if (!stage.name?.trim()) {
             newErrors[`stage_${index}_name`] = `El nombre de la etapa ${index + 1} es requerido`;
           }
@@ -587,7 +589,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                         name="currency"
                         value={formData.currency || 'CLP'}
                         onChange={handleInputChange}
-                        className="w-48 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white"
+                        className="w-64 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white"
                       >
                         {CURRENCIES.map(currency => (
                           <option key={currency.code} value={currency.code}>
@@ -650,15 +652,16 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                   <button
                     type="button"
                     onClick={() => {
+                      const currentStages = formData.stageTemplates || [];
                       const newStage: StageTemplateInput = {
                         name: '',
                         description: '',
                         responsibleId: currentUser?.id || '',
-                        order: formData.stageTemplates.length + 1
+                        order: currentStages.length + 1
                       };
                       setFormData({
                         ...formData,
-                        stageTemplates: [...formData.stageTemplates, newStage]
+                        stageTemplates: [...currentStages, newStage]
                       });
                     }}
                     className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -675,32 +678,80 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                   </p>
                 </div>
 
-                {formData.stageTemplates.length === 0 ? (
-                  <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                    <UserGroupIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-4">No hay etapas definidas aún</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newStage: StageTemplateInput = {
-                          name: '',
-                          description: '',
-                          responsibleId: currentUser?.id || '',
-                          order: 1
-                        };
-                        setFormData({
-                          ...formData,
-                          stageTemplates: [newStage]
-                        });
-                      }}
-                      className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                    >
-                      Crear Primera Etapa
-                    </button>
+                {(formData.stageTemplates || []).length === 0 ? (
+                  <div className="py-8">
+                    <div className="text-center mb-8">
+                      <h3 className="text-lg font-medium text-gray-900">Comienza con una plantilla probada</h3>
+                      <p className="text-gray-500 mt-1">Selecciona un flujo de trabajo predefinido o crea uno desde cero</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                      {STAGE_TEMPLATES.map((template) => {
+                        const Icon = template.icon;
+                        return (
+                          <button
+                            key={template.id}
+                            type="button"
+                            onClick={() => {
+                              const newStages = template.stages.map((stage, index) => ({
+                                ...stage,
+                                responsibleId: currentUser?.id || '',
+                                order: index + 1
+                              }));
+                              setFormData({
+                                ...formData,
+                                stageTemplates: newStages
+                              });
+                            }}
+                            className="flex flex-col items-center p-6 bg-white border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:shadow-md transition-all text-left group"
+                          >
+                            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                              <Icon className="w-6 h-6" />
+                            </div>
+                            <h4 className="font-bold text-gray-900 mb-2">{template.name}</h4>
+                            <p className="text-sm text-gray-500 text-center mb-4">{template.description}</p>
+                            <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full group-hover:bg-indigo-100">
+                              {template.stages.length} Etapas
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="relative mb-8">
+                      <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div className="w-full border-t border-gray-300" />
+                      </div>
+                      <div className="relative flex justify-center">
+                        <span className="bg-white px-4 text-sm text-gray-500">O personaliza tu proceso</span>
+                      </div>
+                    </div>
+
+                    <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newStage: StageTemplateInput = {
+                            name: '',
+                            description: '',
+                            responsibleId: currentUser?.id || '',
+                            order: 1
+                          };
+                          setFormData({
+                            ...formData,
+                            stageTemplates: [newStage]
+                          });
+                        }}
+                        className="inline-flex items-center gap-2 px-6 py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition-all font-medium"
+                      >
+                        <PlusIcon className="w-5 h-5" />
+                        Crear desde cero (Vacío)
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {formData.stageTemplates.map((stage, index) => (
+                    {(formData.stageTemplates || []).map((stage, index) => (
                       <div key={index} className="bg-white border-2 border-gray-200 rounded-lg p-6 hover:border-indigo-300 transition-colors">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
@@ -712,7 +763,8 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                           <button
                             type="button"
                             onClick={() => {
-                              const newStages = formData.stageTemplates.filter((_, i) => i !== index);
+                              const currentStages = formData.stageTemplates || [];
+                              const newStages = currentStages.filter((_, i) => i !== index);
                               // Reordenar
                               newStages.forEach((s, i) => s.order = i + 1);
                               setFormData({
@@ -736,7 +788,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                               type="text"
                               value={stage.name}
                               onChange={(e) => {
-                                const newStages = [...formData.stageTemplates];
+                                const newStages = [...(formData.stageTemplates || [])];
                                 newStages[index].name = e.target.value;
                                 setFormData({
                                   ...formData,
@@ -759,7 +811,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                             <textarea
                               value={stage.description || ''}
                               onChange={(e) => {
-                                const newStages = [...formData.stageTemplates];
+                                const newStages = [...(formData.stageTemplates || [])];
                                 newStages[index].description = e.target.value;
                                 setFormData({
                                   ...formData,
@@ -779,7 +831,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                             <select
                               value={stage.responsibleId}
                               onChange={(e) => {
-                                const newStages = [...formData.stageTemplates];
+                                const newStages = [...(formData.stageTemplates || [])];
                                 newStages[index].responsibleId = e.target.value;
                                 setFormData({
                                   ...formData,
