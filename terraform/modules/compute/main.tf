@@ -33,11 +33,6 @@ resource "google_cloud_run_v2_service" "core" {
       image = "us-docker.pkg.dev/cloudrun/container/hello" # Placeholder temporal hasta el primer CI/CD
       
       env {
-        name  = "PORT"
-        value = "8000"
-      }
-      
-      env {
         name = "GOOGLE_API_KEY"
         value_source {
           secret_key_ref {
@@ -53,6 +48,8 @@ resource "google_cloud_run_v2_service" "core" {
       max_instance_count = 5
     }
   }
+
+  depends_on = [google_project_iam_member.secret_accessor]
 }
 
 # Permitir acceso público no autenticado al core (o configuraremos IAM después)
@@ -90,4 +87,6 @@ resource "google_cloud_run_v2_job" "prisma_migrate" {
       }
     }
   }
+
+  depends_on = [google_project_iam_member.secret_accessor]
 }
