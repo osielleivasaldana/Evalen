@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     timeout_seconds: float = 60.0
     
     # Security
-    api_secret_key: str
+    api_secret_key: str = "evalen-secreto-temporal-123"
     allowed_origins: str = "http://localhost:3000,http://localhost:8080,http://localhost:5173"
     
     # Authentication
