@@ -41,6 +41,21 @@ resource "google_cloud_run_v2_service" "core" {
           }
         }
       }
+
+      env {
+        name  = "API_SECRET_KEY"
+        value = "17adb908927887e60b6f9108415facd42f3c8b8e69498df9d36e5b72c497316d"
+      }
+
+      env {
+        name  = "ALLOWED_ORIGINS"
+        value = "http://localhost:3000,http://localhost:8080,http://localhost:5173"
+      }
+      
+      env {
+        name  = "ENVIRONMENT"
+        value = "production"
+      }
     }
     
     scaling {
