@@ -2,6 +2,8 @@ variable "project_id" {}
 variable "region" {}
 variable "db_url_secret_id" {}
 variable "google_api_secret_id" {}
+variable "google_client_id_secret_id" {}
+variable "google_client_secret_secret_id" {}
 
 # ===============================================
 # Service Account para Cloud Run
@@ -131,6 +133,26 @@ resource "google_cloud_run_v2_service" "backend" {
         value_source {
           secret_key_ref {
             secret  = var.db_url_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "GOOGLE_CLIENT_ID"
+        value_source {
+          secret_key_ref {
+            secret  = var.google_client_id_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "GOOGLE_CLIENT_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = var.google_client_secret_secret_id
             version = "latest"
           }
         }

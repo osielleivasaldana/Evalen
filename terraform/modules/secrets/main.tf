@@ -1,6 +1,8 @@
 variable "project_id" {}
 variable "db_url" {}
 variable "google_api_key" {}
+variable "google_client_id" {}
+variable "google_client_secret" {}
 
 # Secreto: DATABASE_URL
 resource "google_secret_manager_secret" "db_url" {
@@ -28,6 +30,32 @@ resource "google_secret_manager_secret_version" "google_api_data" {
   secret_data = var.google_api_key
 }
 
+# Secreto: GOOGLE_CLIENT_ID
+resource "google_secret_manager_secret" "google_client_id" {
+  secret_id = "GOOGLE_CLIENT_ID"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "google_client_id_data" {
+  secret      = google_secret_manager_secret.google_client_id.id
+  secret_data = var.google_client_id
+}
+
+# Secreto: GOOGLE_CLIENT_SECRET
+resource "google_secret_manager_secret" "google_client_secret" {
+  secret_id = "GOOGLE_CLIENT_SECRET"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret_version" "google_client_secret_data" {
+  secret      = google_secret_manager_secret.google_client_secret.id
+  secret_data = var.google_client_secret
+}
+
 # Outputs para ser usados en Cloud Run
 output "db_url_secret_id" {
   value = google_secret_manager_secret.db_url.secret_id
@@ -35,4 +63,12 @@ output "db_url_secret_id" {
 
 output "google_api_secret_id" {
   value = google_secret_manager_secret.google_api.secret_id
+}
+
+output "google_client_id_secret_id" {
+  value = google_secret_manager_secret.google_client_id.secret_id
+}
+
+output "google_client_secret_secret_id" {
+  value = google_secret_manager_secret.google_client_secret.secret_id
 }

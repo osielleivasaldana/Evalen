@@ -35,6 +35,8 @@ module "secrets" {
   project_id = var.project_id
   db_url     = var.db_url
   google_api_key = var.google_api_key
+  google_client_id = var.google_client_id
+  google_client_secret = var.google_client_secret
   depends_on = [module.project_services]
 }
 
@@ -45,8 +47,10 @@ module "compute" {
   region     = var.region
   
   # Secretos referenciados
-  db_url_secret_id         = module.secrets.db_url_secret_id
-  google_api_secret_id     = module.secrets.google_api_secret_id
+  db_url_secret_id               = module.secrets.db_url_secret_id
+  google_api_secret_id           = module.secrets.google_api_secret_id
+  google_client_id_secret_id     = module.secrets.google_client_id_secret_id
+  google_client_secret_secret_id = module.secrets.google_client_secret_secret_id
   
   # Dependemos de que el repositorio exista
   depends_on = [google_artifact_registry_repository.currify_repo, module.secrets]
