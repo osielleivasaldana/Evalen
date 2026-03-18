@@ -6,16 +6,14 @@ const getBaseUrl = (port: number) => {
 };
 
 const getApiUrl = (envUrl: string | undefined, port: number) => {
-  const currentHostname = window.location.hostname;
-  const isLocalhost = currentHostname === 'localhost' || currentHostname === '127.0.0.1';
-
-  // If we are NOT on localhost (e.g. mobile), force dynamic IP to avoid connecting to localhost on the phone
-  if (!isLocalhost) {
-    return getBaseUrl(port);
+  // Always respect the environment variable if provided (crucial for Cloud Run / Production)
+  if (envUrl) {
+    return envUrl;
   }
 
-  // Otherwise (we are on localhost), use env var if present, or fallback to dynamic
-  return envUrl || getBaseUrl(port);
+  // Fallback for local development
+  const currentHostname = window.location.hostname;
+  return `http://${currentHostname}:${port}`;
 };
 
 const API_BASE_URL = getApiUrl(process.env.REACT_APP_API_URL, 3001);
