@@ -148,7 +148,7 @@ resource "google_cloud_run_v2_service" "backend" {
 
       env {
         name  = "GOOGLE_CALLBACK_URL"
-        value = "https://currify-backend-4yfulzoska-uc.a.run.app/api/v1/auth/google/callback" 
+        value = "https://currify-backend-4yfulzoska-uc.a.run.app/api/auth/google/callback" 
       }
     }
 
