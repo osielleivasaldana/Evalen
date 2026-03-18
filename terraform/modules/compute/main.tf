@@ -50,6 +50,16 @@ resource "google_cloud_run_v2_service" "core" {
       }
 
       env {
+        name  = "ADMIN_USERNAME"
+        value = "kinich"
+      }
+
+      env {
+        name  = "ADMIN_PASSWORD"
+        value = "kinich!"
+      }
+
+      env {
         name  = "ALLOWED_ORIGINS"
         value = "http://localhost:3000,http://localhost:8080,http://localhost:5173"
       }
@@ -156,6 +166,21 @@ resource "google_cloud_run_v2_service" "backend" {
             version = "latest"
           }
         }
+      }
+
+      env {
+        name  = "SCORING_SERVICE_URL"
+        value = google_cloud_run_v2_service.core.uri
+      }
+
+      env {
+        name  = "SCORING_SERVICE_USERNAME"
+        value = "kinich"
+      }
+
+      env {
+        name  = "SCORING_SERVICE_PASSWORD"
+        value = "kinich!"
       }
 
       env {
