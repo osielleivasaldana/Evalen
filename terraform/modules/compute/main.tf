@@ -111,3 +111,97 @@ resource "google_cloud_run_v2_job" "prisma_migrate" {
 
   depends_on = [google_project_iam_member.secret_accessor]
 }
+
+# ===============================================
+# 3. Cloud Run: Backend (NestJS)
+# ===============================================
+resource "google_cloud_run_v2_service" "backend" {
+  name     = "currify-backend"
+  location = var.region
+  ingress  = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    service_account = google_service_account.cloudrun_sa.email
+
+    containers {
+      image = "us-docker.pkg.dev/cloudrun/container/hello"
+
+      env {
+        name = "DATABASE_URL"
+        value_source {
+          secret_key_ref {
+            secret  = var.db_url_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name  = "JWT_SECRET"
+        value = "evalen-jwt-secreto-temporal-123"
+      }
+      
+      env {
+        name  = "FRONTEND_URL"
+        value = "https://currify.com" 
+      }
+    }
+
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 5
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image
+    ]
+  }
+
+  depends_on = [google_project_iam_member.secret_accessor]
+}
+
+resource "google_cloud_run_service_iam_member" "public_backend" {
+  location = var.region
+  service  = google_cloud_run_v2_service.backend.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+# ===============================================
+# 4. Cloud Run: Frontend (React)
+# ===============================================
+resource "google_cloud_run_v2_service" "frontend" {
+  name     = "currify-frontend"
+  location = var.region
+  ingress  = "INGRESS_TRAFFIC_ALL"
+
+  template {
+    service_account = google_service_account.cloudrun_sa.email
+
+    containers {
+      image = "us-docker.pkg.dev/cloudrun/container/hello"
+    }
+
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 5
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      template[0].containers[0].image
+    ]
+  }
+
+  depends_on = [google_project_iam_member.secret_accessor]
+}
+
+resource "google_cloud_run_service_iam_member" "public_frontend" {
+  location = var.region
+  service  = google_cloud_run_v2_service.frontend.name
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
