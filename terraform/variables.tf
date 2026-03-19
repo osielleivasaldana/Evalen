@@ -34,3 +34,16 @@ variable "google_client_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "stripe_secret_key" {
+  description = "Stripe Secret Key"
+  type        = string
+  sensitive   = true
+  default     = "dummy"
+}
+
+variable "stripe_price_id_pro" {
+  description = "Stripe Price ID for PRO plan"
+  type        = string
+  default     = ""
+}

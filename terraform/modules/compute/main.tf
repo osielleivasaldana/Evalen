@@ -4,6 +4,8 @@ variable "db_url_secret_id" {}
 variable "google_api_secret_id" {}
 variable "google_client_id_secret_id" {}
 variable "google_client_secret_secret_id" {}
+variable "stripe_secret_key_secret_id" {}
+variable "stripe_price_id_pro_secret_id" {}
 
 # ===============================================
 # Service Account para Cloud Run
@@ -163,6 +165,26 @@ resource "google_cloud_run_v2_service" "backend" {
         value_source {
           secret_key_ref {
             secret  = var.google_client_secret_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "STRIPE_SECRET_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = var.stripe_secret_key_secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "STRIPE_PRICE_ID_PRO"
+        value_source {
+          secret_key_ref {
+            secret  = var.stripe_price_id_pro_secret_id
             version = "latest"
           }
         }

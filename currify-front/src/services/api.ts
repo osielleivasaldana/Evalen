@@ -16,7 +16,7 @@ const getApiUrl = (envUrl: string | undefined, port: number) => {
   return `http://${currentHostname}:${port}`;
 };
 
-const API_BASE_URL = getApiUrl(process.env.REACT_APP_API_URL, 3001);
+const API_BASE_URL = getApiUrl(process.env.REACT_APP_API_URL, 3001).replace(/\/+$/, '');
 const CV_PROCESSING_URL = getApiUrl(process.env.REACT_APP_SCORING_SERVICE_URL, 8001);
 
 // Auth interfaces
@@ -390,8 +390,11 @@ class ApiService {
 
   private async apiCall<T = any>(url: string, options: RequestInit = {}): Promise<T> {
     try {
-      console.log(`[API] calling ${url}`); // Debug Log
-      const response = await fetch(`${API_BASE_URL}${url}`, {
+      const path = url.startsWith('/') ? url : `/${url}`;
+      const fullUrl = `${API_BASE_URL}${path}`;
+
+      console.log(`[API] calling ${fullUrl}`); // Debug Log
+      const response = await fetch(fullUrl, {
         ...options,
         headers: {
           ...this.getAuthHeaders(),

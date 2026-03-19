@@ -37,6 +37,8 @@ module "secrets" {
   google_api_key = var.google_api_key
   google_client_id = var.google_client_id
   google_client_secret = var.google_client_secret
+  stripe_secret_key = var.stripe_secret_key
+  stripe_price_id_pro = var.stripe_price_id_pro
   depends_on = [module.project_services]
 }
 
@@ -51,6 +53,8 @@ module "compute" {
   google_api_secret_id           = module.secrets.google_api_secret_id
   google_client_id_secret_id     = module.secrets.google_client_id_secret_id
   google_client_secret_secret_id = module.secrets.google_client_secret_secret_id
+  stripe_secret_key_secret_id    = module.secrets.stripe_secret_key_secret_id
+  stripe_price_id_pro_secret_id  = module.secrets.stripe_price_id_pro_secret_id
   
   # Dependemos de que el repositorio exista
   depends_on = [google_artifact_registry_repository.currify_repo, module.secrets]
