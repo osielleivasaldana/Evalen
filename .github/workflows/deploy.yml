@@ -100,7 +100,7 @@ jobs:
         run: |
           docker run --rm \
             postgres:15-alpine \
-            sh -c "apt-get update && apt-get install -y postgresql-client > /dev/null 2>&1; \
+            sh -c "apk add --no-cache postgresql-client > /dev/null 2>&1; \
             psql \"\$DATABASE_URL\" -c \"UPDATE _prisma_migrations SET finished_at = NOW(), applied_steps_count = 1 WHERE migration_name = '20250929134217_init';\""
         env:
           DATABASE_URL: ${{ env.DATABASE_URL }}
