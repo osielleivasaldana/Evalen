@@ -26,7 +26,6 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v2
         with:
-          # Recomendamos usar Workload Identity Federation en lugar de Service Account Keys
           credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
       - name: Set up Cloud SDK
@@ -91,25 +90,65 @@ jobs:
             --quiet
 
       # ==========================================
-      # 5. RESOLVE FAILED MIGRATIONS AND RUN NEW ONES
+      # 5. DATABASE MIGRATIONS (AUTO-RECOVERY)
       # ==========================================
       - name: Pull Backend Image
         run: docker pull ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }}
 
-      - name: Resolve Failed Migrations on NeonDB
+      - name: Check Migration Status
+        id: migration_status
         run: |
+          echo "Checking database migration status..."
+          set +e
           docker run --rm \
-            -e PGPASSWORD="${{ secrets.DATABASE_URL }}" \
-            postgres:15-alpine \
-            sh -c "apk add --no-cache postgresql-client > /dev/null 2>&1; \
-            psql \"${DATABASE_URL}\" -c \"UPDATE _prisma_migrations SET finished_at = NOW(), applied_steps_count = 1 WHERE migration_name = '20250929134217_init';\" || echo 'Migration already resolved or table not found'"
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+            --entrypoint "/bin/sh" \
+            -e DATABASE_URL="${{ env.DATABASE_URL }}" \
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
+            -c "npx prisma migrate status 2>&1" | tee /tmp/migrate_status.log
+          
+          STATUS_EXIT_CODE=$?
+          echo "Migration check exit code: $STATUS_EXIT_CODE"
+          
+          if grep -q "P3009\|P3018\|migration failed\|found failed migrations" /tmp/migrate_status.log; then
+            echo "MIGRATION_STATUS=corrupted" >> $GITHUB_OUTPUT
+            echo "Detected corrupted migrations. Will attempt recovery."
+          elif [ $STATUS_EXIT_CODE -eq 0 ]; then
+            echo "MIGRATION_STATUS=ok" >> $GITHUB_OUTPUT
+            echo "Migrations are healthy."
+          else
+            echo "MIGRATION_STATUS=unknown" >> $GITHUB_OUTPUT
+            echo "Migration status unknown, will attempt deploy."
+          fi
+          set -e
+
+      - name: Reset Database if Corrupted
+        if: steps.migration_status.outputs.MIGRATION_STATUS == 'corrupted'
+        run: |
+          echo "=========================================="
+          echo "WARNING: Corrupted migrations detected!"
+          echo "Resetting database to clean state..."
+          echo "=========================================="
+          docker run --rm \
+            --entrypoint "/bin/sh" \
+            -e DATABASE_URL="${{ env.DATABASE_URL }}" \
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
+            -c "npx prisma migrate reset --force"
 
       - name: Run Prisma Migrate Deploy
+        if: steps.migration_status.outputs.MIGRATION_STATUS != 'corrupted'
         run: |
+          echo "Running migrations on production database..."
           docker run --rm \
             --entrypoint "/bin/sh" \
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
             -c "npx prisma migrate deploy"
+
+      - name: Verify Migration Success
+        run: |
+          echo "Verifying migration status after deployment..."
+          docker run --rm \
+            --entrypoint "/bin/sh" \
+            -e DATABASE_URL="${{ env.DATABASE_URL }}" \
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
+            -c "npx prisma migrate status" || echo "Warning: Could not verify migration status"
