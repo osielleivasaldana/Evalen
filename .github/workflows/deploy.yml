@@ -39,7 +39,7 @@ jobs:
       # 1. BUILD & PUSH: CURRIFY-CORE
       # ==========================================
       - name: Build Core
-        run: docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-core:${{ github.sha }} ./currify-core
+        run: docker build --no-cache -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-core:${{ github.sha }} ./currify-core
       - name: Push Core
         run: docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-core:${{ github.sha }}
 
@@ -47,7 +47,7 @@ jobs:
       # 2. BUILD & PUSH: CURRIFY-BACK
       # ==========================================
       - name: Build Backend
-        run: docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} ./currify-back
+        run: docker build --no-cache -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} ./currify-back
       - name: Push Backend
         run: docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }}
 
@@ -56,7 +56,7 @@ jobs:
       # ==========================================
       - name: Build Frontend
         run: |
-          docker build \
+          docker build --no-cache \
             --build-arg REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }} \
             --build-arg REACT_APP_SCORING_SERVICE_URL=${{ secrets.REACT_APP_SCORING_SERVICE_URL }} \
             --build-arg REACT_APP_MAPBOX_TOKEN=${{ secrets.REACT_APP_MAPBOX_TOKEN }} \
