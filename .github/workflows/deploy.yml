@@ -100,24 +100,26 @@ jobs:
         run: |
           echo "Checking database migration status..."
           set +e
-          docker run --rm \
+          MIGRATION_OUTPUT=$(docker run --rm \
             --entrypoint "/bin/sh" \
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
-            -c "npx prisma migrate status 2>&1" | tee /tmp/migrate_status.log
+            -c "npx prisma migrate status 2>&1")
           
-          STATUS_EXIT_CODE=$?
-          echo "Migration check exit code: $STATUS_EXIT_CODE"
+          MIGRATION_EXIT_CODE=$?
+          echo "$MIGRATION_OUTPUT" | tee /tmp/migrate_status.log
+          echo "---"
+          echo "Migration check exit code: $MIGRATION_EXIT_CODE"
           
-          if grep -q "P3009\|P3018\|migration failed\|found failed migrations" /tmp/migrate_status.log; then
+          if echo "$MIGRATION_OUTPUT" | grep -qiE "P3009|P3018|migration failed|found failed|already exists|corrupted"; then
             echo "MIGRATION_STATUS=corrupted" >> $GITHUB_OUTPUT
-            echo "Detected corrupted migrations. Will attempt recovery."
-          elif [ $STATUS_EXIT_CODE -eq 0 ]; then
+            echo "::notice::Detected corrupted migrations. Will attempt recovery."
+          elif [ $MIGRATION_EXIT_CODE -eq 0 ]; then
             echo "MIGRATION_STATUS=ok" >> $GITHUB_OUTPUT
-            echo "Migrations are healthy."
+            echo "::notice::Migrations are healthy."
           else
             echo "MIGRATION_STATUS=unknown" >> $GITHUB_OUTPUT
-            echo "Migration status unknown, will attempt deploy."
+            echo "::notice::Migration status unknown, will attempt deploy."
           fi
           set -e
 
@@ -135,14 +137,39 @@ jobs:
             -c "npx prisma migrate reset --force"
 
       - name: Run Prisma Migrate Deploy
-        if: steps.migration_status.outputs.MIGRATION_STATUS != 'corrupted'
         run: |
           echo "Running migrations on production database..."
+          set +e
           docker run --rm \
             --entrypoint "/bin/sh" \
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
-            -c "npx prisma migrate deploy"
+            -c "npx prisma migrate deploy" 2>&1 | tee /tmp/migrate_deploy.log
+          DEPLOY_EXIT_CODE=$?
+          echo "Migrate deploy exit code: $DEPLOY_EXIT_CODE"
+          
+          if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
+            echo "=========================================="
+            echo "Migration failed! Attempting auto-recovery..."
+            echo "=========================================="
+            
+            echo "Step 1: Resetting database..."
+            docker run --rm \
+              --entrypoint "/bin/sh" \
+              -e DATABASE_URL="${{ env.DATABASE_URL }}" \
+              ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
+              -c "npx prisma migrate reset --force"
+            
+            echo "Step 2: Re-applying migrations..."
+            docker run --rm \
+              --entrypoint "/bin/sh" \
+              -e DATABASE_URL="${{ env.DATABASE_URL }}" \
+              ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
+              -c "npx prisma migrate deploy"
+            
+            echo "Auto-recovery completed successfully!"
+          fi
+          set -e
 
       - name: Verify Migration Success
         run: |
