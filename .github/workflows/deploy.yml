@@ -9,6 +9,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: us-central1
   REPO_NAME: currify-repo
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
 jobs:
   build-and-deploy:
@@ -90,15 +91,14 @@ jobs:
             --quiet
 
       # ==========================================
-      # 5. RUN PRISMA MIGRATIONS VIA CLOUD RUN JOB
+      # 5. RESOLVE FAILED MIGRATIONS AND RUN NEW ONES
       # ==========================================
-      - name: Update and Execute Prisma Migrate Job
+      - name: Pull Backend Image
+        run: docker pull ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }}
+
+      - name: Resolve Failed Migrations and Deploy
         run: |
-          gcloud run jobs update currify-prisma-migrate \
-            --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
-            --region ${{ env.REGION }} \
-            --quiet
-          
-          gcloud run jobs execute currify-prisma-migrate \
-            --region ${{ env.REGION }} \
-            --wait
+          docker run --rm \
+            -e DATABASE_URL="${{ env.DATABASE_URL }}" \
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
+            sh -c "chmod +x ./scripts/migrate.sh && ./scripts/migrate.sh"

@@ -109,8 +109,8 @@ El proyecto está preparado para la nube y entornos escalables mediante contened
   * Cada uno de los tres módulos cuenta con su propio Dockerfile optimizado (separación de dependencias de desarrollo Dockerfile.dev y producción).  
   * docker-compose.yml permite levantar todo el stack localmente (Core, Backend, Frontend y PostgreSQL) con un solo comando, facilitando el desarrollo.  
 * **Infraestructura como Código (Terraform) (terraform/):**  
-  * Configuración formalizada para AWS (u otro proveedor de nube).  
-  * Incluye módulos para computación (modules/compute/) y manejo de secretos (modules/secrets/).  
+    * Configuración formalizada para **Google Cloud Platform (GCP)**.  
+    * Incluye módulos para servicios (project_services/), manejo de secretos (modules/secrets/) y compute (Cloud Run).
 * **CI/CD (GitHub Actions) (.github/workflows/deploy.yml):**  
   * Pipeline automatizado. Tras hacer push a la rama principal, automatiza las pruebas (tests del backend y core), la construcción de imágenes Docker y el despliegue al servidor de producción a través del script deploy.sh.
 
