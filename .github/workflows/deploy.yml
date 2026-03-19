@@ -96,10 +96,19 @@ jobs:
       - name: Pull Backend Image
         run: docker pull ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }}
 
-      - name: Resolve Failed Migrations and Deploy
+      - name: Resolve Failed Migrations on NeonDB
+        run: |
+          docker run --rm \
+            postgres:15-alpine \
+            sh -c "apt-get update && apt-get install -y postgresql-client > /dev/null 2>&1; \
+            psql \"\$DATABASE_URL\" -c \"UPDATE _prisma_migrations SET finished_at = NOW(), applied_steps_count = 1 WHERE migration_name = '20250929134217_init';\""
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Run Prisma Migrate Deploy
         run: |
           docker run --rm \
             --entrypoint "/bin/sh" \
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
-            -c "chmod +x ./scripts/migrate.sh && ./scripts/migrate.sh"
+            -c "npx prisma migrate deploy"
