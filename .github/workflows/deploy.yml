@@ -99,6 +99,7 @@ jobs:
       - name: Resolve Failed Migrations and Deploy
         run: |
           docker run --rm \
+            --entrypoint "/bin/sh" \
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
-            sh -c "chmod +x ./scripts/migrate.sh && ./scripts/migrate.sh"
+            -c "chmod +x ./scripts/migrate.sh && ./scripts/migrate.sh"
