@@ -131,6 +131,7 @@ export class AuthService {
         plan: true,
         cvCredits: true,
         campaignLimit: true,
+        onboardingCompleted: true,
         createdAt: true,
       },
     });

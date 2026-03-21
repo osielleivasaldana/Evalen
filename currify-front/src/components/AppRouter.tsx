@@ -29,6 +29,37 @@ import PublicCampaign from './public/PublicCampaign';
 import FileUpload from './FileUpload';
 import CVResults from './CVResults';
 
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  requiresOnboarding?: boolean;
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiresOnboarding = true }) => {
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '18px',
+        color: '#666'
+      }}>
+        Cargando Evalen...
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (requiresOnboarding && onboardingCompleted === false) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 const PublicCampaignWrapper: React.FC = () => {
   const { publicId } = useParams<{ publicId: string }>();
@@ -40,6 +71,7 @@ const PublicCampaignWrapper: React.FC = () => {
 
 const AppRouter: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,14 +81,16 @@ const AppRouter: React.FC = () => {
   const checkAuth = async () => {
     try {
       if (apiService.isAuthenticated()) {
-        // Verify token is still valid
-        await apiService.getProfile();
+        const profile = await apiService.getProfile();
+        setOnboardingCompleted(profile.onboardingCompleted ?? false);
         setIsAuthenticated(true);
+      } else {
+        setOnboardingCompleted(false);
       }
     } catch (error) {
-      // Token is invalid, clear it
       apiService.clearToken();
       setIsAuthenticated(false);
+      setOnboardingCompleted(false);
     } finally {
       setLoading(false);
     }
@@ -109,56 +143,82 @@ const AppRouter: React.FC = () => {
         {isAuthenticated ? (
           <>
             <Route
+              path="/onboarding"
+              element={<OnboardingWizard />}
+            />
+            <Route
               path="/dashboard"
               element={
-                <Dashboard
-                  onNavigateToCampaign={(campaignId) => window.location.href = `/campaigns/${campaignId}`}
-                  onCreateCampaign={() => window.location.href = '/create-campaign'}
-                  onEditCampaign={(campaignId) => window.location.href = `/edit-campaign/${campaignId}`}
-                  onLogout={handleLogout}
-                />
+                <ProtectedRoute>
+                  <Dashboard
+                    onNavigateToCampaign={(campaignId) => window.location.href = `/campaigns/${campaignId}`}
+                    onCreateCampaign={() => window.location.href = '/create-campaign'}
+                    onEditCampaign={(campaignId) => window.location.href = `/edit-campaign/${campaignId}`}
+                    onLogout={handleLogout}
+                  />
+                </ProtectedRoute>
               }
             />
-            <Route path="/onboarding" element={<OnboardingWizard />} />
             <Route
               path="/create-campaign"
               element={
-                <CreateCampaign
-                  onCampaignCreated={(campaign) => {
-                    // Campaign created successfully, the component handles the success state
-                  }}
-                  onCancel={() => window.location.href = '/dashboard'}
-                  onGoToDashboard={() => window.location.href = '/dashboard'}
-                  onManageCandidates={(campaignId) => window.location.href = `/campaigns/${campaignId}`}
-                />
+                <ProtectedRoute>
+                  <CreateCampaign
+                    onCampaignCreated={(campaign) => {
+                      // Campaign created successfully, the component handles the success state
+                    }}
+                    onCancel={() => window.location.href = '/dashboard'}
+                    onGoToDashboard={() => window.location.href = '/dashboard'}
+                    onManageCandidates={(campaignId) => window.location.href = `/campaigns/${campaignId}`}
+                  />
+                </ProtectedRoute>
               }
             />
             <Route
               path="/edit-campaign/:campaignId"
-              element={<EditCampaignWrapper />}
+              element={
+                <ProtectedRoute>
+                  <EditCampaignWrapper />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/campaigns/:campaignId"
-              element={<CampaignDetailsWrapper />}
+              element={
+                <ProtectedRoute>
+                  <CampaignDetailsWrapper />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/campaigns/:campaignId/candidate/:candidateId"
-              element={<CandidateDetailWrapper />}
+              element={
+                <ProtectedRoute>
+                  <CandidateDetailWrapper />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/campaigns/:campaignId/candidates/:candidateId/process"
-              element={<CandidateProcessPanel />}
+              element={
+                <ProtectedRoute>
+                  <CandidateProcessPanel />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/admin/users"
-              element={<UserManagement />}
+              element={
+                <ProtectedRoute>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
             />
             <Route path="/pricing" element={<PricingPage />} />
             <Route
               path="/"
               element={<Navigate to="/dashboard" replace />}
             />
-            {/* Redirect /login to /dashboard if already authenticated */}
             <Route
               path="/login"
               element={<Navigate to="/dashboard" replace />}

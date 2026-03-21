@@ -51,6 +51,7 @@ interface UserProfile {
   cvCredits?: number;
   campaignLimit?: number;
   activeCampaignsCount?: number;
+  onboardingCompleted?: boolean;
 }
 
 // User Management interfaces

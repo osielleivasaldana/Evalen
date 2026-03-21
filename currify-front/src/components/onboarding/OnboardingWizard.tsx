@@ -1,10 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import { BriefcaseIcon, UserGroupIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 const OnboardingWizard: React.FC = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [userName, setUserName] = useState('');
+    const [formData, setFormData] = useState({
+        company: '',
+        companySize: '',
+        role: '',
+    });
+
+    useEffect(() => {
+        const loadUser = async () => {
+            try {
+                const user = await apiService.getProfile();
+                setUserName(user.name.split(' ')[0]);
+                if (user.onboardingCompleted) {
+                    navigate('/dashboard', { replace: true });
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        };
+        loadUser();
+    }, []);
     const [loading, setLoading] = useState(false);
     const [userName, setUserName] = useState('');
     const [formData, setFormData] = useState({
