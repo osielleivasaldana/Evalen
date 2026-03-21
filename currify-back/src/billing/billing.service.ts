@@ -52,8 +52,8 @@ export class BillingService {
     }
 
     const plan = user.plan || 'FREE';
-    const isTrialing = user.trialEndsAt && new Date(user.trialEndsAt) > new Date();
-    const trialDaysLeft = isTrialing
+    const isTrialing = user.trialEndsAt !== null && user.trialEndsAt !== undefined && new Date(user.trialEndsAt) > new Date();
+    const trialDaysLeft = isTrialing && user.trialEndsAt
       ? Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
       : 0;
 
@@ -85,7 +85,7 @@ export class BillingService {
         last4: '0000'
       } : undefined,
       trial: {
-        isActive: isTrialing,
+        isActive: !!isTrialing,
         daysLeft: trialDaysLeft
       },
       benefits: {
