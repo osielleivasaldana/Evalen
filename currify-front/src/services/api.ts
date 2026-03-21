@@ -497,6 +497,20 @@ class ApiService {
     return user;
   }
 
+  // Billing methods
+  async getBillingStatus(): Promise<{
+    status: 'active' | 'trialing' | 'canceled' | 'past_due' | 'free';
+    planId: string;
+    planName: string;
+    currentPeriodEnd: string | null;
+    cancelAtPeriodEnd: boolean;
+    paymentMethod?: { brand: string; last4: string };
+    trial: { isActive: boolean; daysLeft: number };
+    benefits: { cvLimit: number; campaignLimit: number; cvUsed: number; activeCampaigns: number };
+  }> {
+    return this.apiCall('/billing/status');
+  }
+
   // Campaign methods
   async createCampaign(campaignData: CreateCampaignRequest): Promise<Campaign> {
     return this.apiCall('/campaigns', {

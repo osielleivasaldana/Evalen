@@ -22,6 +22,9 @@ import CandidateProcessPanel from './processes/CandidateProcessPanel';
 // Admin Components
 import UserManagement from './admin/UserManagement';
 
+// Billing Components
+import BillingPage from './billing/BillingPage';
+
 // Public Components
 import PublicCampaign from './public/PublicCampaign';
 
@@ -191,6 +194,14 @@ const AppRouter: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/billing"
+              element={
+                <ProtectedRoute>
+                  <BillingPage />
                 </ProtectedRoute>
               }
             />

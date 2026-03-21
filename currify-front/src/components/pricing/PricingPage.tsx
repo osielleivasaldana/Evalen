@@ -1,11 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import Navbar from '../layout/NavBar';
 
 const PricingPage: React.FC = () => {
     const [loading, setLoading] = useState(false);
-    // Use window.location for simplicity or specialized hook if available, 
-    // but verifying auth via apiService is safest.
+    const [checkingPlan, setCheckingPlan] = useState(true);
+
+    useEffect(() => {
+        const checkPlanAndRedirect = async () => {
+            try {
+                const profile = await apiService.getProfile();
+                const billing = await apiService.getBillingStatus();
+                
+                // If user has Pro plan (active or trialing), redirect to billing page
+                if (billing.status !== 'free' && billing.planId !== 'free') {
+                    window.location.href = '/dashboard/billing';
+                    return;
+                }
+            } catch (error) {
+                // User not authenticated or error, stay on pricing page
+                console.log('User not authenticated or error checking plan');
+            } finally {
+                setCheckingPlan(false);
+            }
+        };
+        
+        if (apiService.isAuthenticated()) {
+            checkPlanAndRedirect();
+        } else {
+            setCheckingPlan(false);
+        }
+    }, []);
 
     const handleUpgrade = async () => {
         if (!apiService.isAuthenticated()) {
@@ -29,6 +54,17 @@ const PricingPage: React.FC = () => {
             setLoading(false);
         }
     };
+
+    if (checkingPlan) {
+        return (
+            <div className="min-h-screen bg-gray-50 font-sans">
+                <Navbar />
+                <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans">
