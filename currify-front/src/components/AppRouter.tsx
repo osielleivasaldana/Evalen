@@ -29,38 +29,6 @@ import PublicCampaign from './public/PublicCampaign';
 import FileUpload from './FileUpload';
 import CVResults from './CVResults';
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requiresOnboarding?: boolean;
-}
-
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiresOnboarding = true }) => {
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        fontSize: '18px',
-        color: '#666'
-      }}>
-        Cargando Evalen...
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (requiresOnboarding && onboardingCompleted === false) {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  return <>{children}</>;
-};
-
 const PublicCampaignWrapper: React.FC = () => {
   const { publicId } = useParams<{ publicId: string }>();
   if (!publicId) {
@@ -103,6 +71,18 @@ const AppRouter: React.FC = () => {
   const handleLogout = () => {
     apiService.clearToken();
     setIsAuthenticated(false);
+  };
+
+  const ProtectedRoute: React.FC<{ children: React.ReactNode; requiresOnboarding?: boolean }> = ({ children, requiresOnboarding = true }) => {
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
+
+    if (requiresOnboarding && onboardingCompleted === false) {
+      return <Navigate to="/onboarding" replace />;
+    }
+
+    return <>{children}</>;
   };
 
   if (loading) {
