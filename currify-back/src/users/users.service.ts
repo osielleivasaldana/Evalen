@@ -180,6 +180,10 @@ export class UsersService {
       role: updateUserDto.role,
     };
 
+    if (updateUserDto.onboardingCompleted !== undefined) {
+      updateData.onboardingCompleted = updateUserDto.onboardingCompleted;
+    }
+
     if (updateUserDto.password) {
       updateData.password = await bcrypt.hash(updateUserDto.password, 10);
     }
@@ -193,6 +197,7 @@ export class UsersService {
         name: true,
         company: true,
         role: true,
+        onboardingCompleted: true,
         createdAt: true,
         updatedAt: true,
       },
