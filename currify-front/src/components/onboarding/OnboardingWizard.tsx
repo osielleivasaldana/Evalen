@@ -27,25 +27,6 @@ const OnboardingWizard: React.FC = () => {
         };
         loadUser();
     }, []);
-    const [loading, setLoading] = useState(false);
-    const [userName, setUserName] = useState('');
-    const [formData, setFormData] = useState({
-        company: '',
-        companySize: '',
-        role: '', // UI value: 'Dueño', 'Gerente de RRHH', 'Reclutador'
-    });
-
-    React.useEffect(() => {
-        const loadUser = async () => {
-            try {
-                const user = await apiService.getProfile();
-                setUserName(user.name.split(' ')[0]); // First name
-            } catch (e) {
-                console.error(e);
-            }
-        };
-        loadUser();
-    }, []);
 
     const mapRoleToEnum = (uiRole: string) => {
         switch (uiRole) {
