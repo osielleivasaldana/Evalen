@@ -28,6 +28,9 @@ import BillingPage from './billing/BillingPage';
 // Layout Components
 import Navbar from './layout/NavBar';
 
+// Landing Components
+import LandingPage from '../landing/LandingPage';
+
 // Public Components
 import PublicCampaign from './public/PublicCampaign';
 
@@ -154,6 +157,10 @@ const AppRouter: React.FC = () => {
     <Router>
       <Routes>
         {/* Public Routes */}
+        <Route
+          path="/home"
+          element={<LandingPage />}
+        />
         <Route
           path="/apply/:publicId"
           element={<PublicCampaignWrapper />}
