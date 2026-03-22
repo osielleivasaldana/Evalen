@@ -2,6 +2,7 @@ import React from 'react';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import LandingNavbar from './components/LandingNavbar';
 import HeroSection from './components/HeroSection';
+import DemoSection from './components/DemoSection';
 import FeaturesSection from './components/FeaturesSection';
 import HowItWorks from './components/HowItWorks';
 import LandingPricing from './components/LandingPricing';
@@ -14,6 +15,7 @@ const LandingPage: React.FC = () => {
         <LandingNavbar />
         <main>
           <HeroSection />
+          <DemoSection />
           <FeaturesSection />
           <HowItWorks />
           <LandingPricing />
