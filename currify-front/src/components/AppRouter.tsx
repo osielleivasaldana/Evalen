@@ -25,6 +25,9 @@ import UserManagement from './admin/UserManagement';
 // Billing Components
 import BillingPage from './billing/BillingPage';
 
+// Layout Components
+import Navbar from './layout/NavBar';
+
 // Public Components
 import PublicCampaign from './public/PublicCampaign';
 
@@ -86,6 +89,50 @@ const AppRouter: React.FC = () => {
     }
 
     return <>{children}</>;
+  };
+
+  const PricingPageWrapper: React.FC = () => {
+    const [redirectTo, setRedirectTo] = useState<string | null>(null);
+    const [checkingPlan, setCheckingPlan] = useState(true);
+
+    useEffect(() => {
+      const checkPlanAndRedirect = async () => {
+        try {
+          const billing = await apiService.getBillingStatus();
+          if (billing.status !== 'free' && billing.planId !== 'free') {
+            setRedirectTo('/dashboard/billing');
+            return;
+          }
+        } catch (error) {
+          console.log('Error checking plan, staying on pricing page');
+        } finally {
+          setCheckingPlan(false);
+        }
+      };
+
+      if (apiService.isAuthenticated()) {
+        checkPlanAndRedirect();
+      } else {
+        setCheckingPlan(false);
+      }
+    }, []);
+
+    if (checkingPlan) {
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+          <Navbar />
+          <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
+        </div>
+      );
+    }
+
+    if (redirectTo) {
+      return <Navigate to={redirectTo} replace />;
+    }
+
+    return <PricingPage />;
   };
 
   if (loading) {
@@ -205,7 +252,7 @@ const AppRouter: React.FC = () => {
                 </ProtectedRoute>
               }
             />
-            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/pricing" element={<PricingPageWrapper />} />
             <Route
               path="/"
               element={<Navigate to="/dashboard" replace />}
@@ -220,7 +267,7 @@ const AppRouter: React.FC = () => {
             {/* Auth Routes */}
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/onboarding" element={<OnboardingWizard />} />
-            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/pricing" element={<PricingPageWrapper />} />
             <Route path="/login" element={
               <Login onLoginSuccess={handleAuthSuccess} onSwitchToRegister={() => window.location.href = '/register'} />
             } />
