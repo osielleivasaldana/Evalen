@@ -25,6 +25,16 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>Evalen</title>
+    <script>
+      (function() {
+        const stored = localStorage.getItem('evalen-landing-theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = stored || (prefersDark ? 'dark' : 'light');
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
