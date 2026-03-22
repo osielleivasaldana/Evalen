@@ -46,17 +46,11 @@ const HeroSection: React.FC = () => {
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-4xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-sm font-medium mb-10">
-            <span className="mr-2">🚀</span>
-            La nueva era del reclutamiento con IA
-          </div>
-
+        <div className="text-center max-w-5xl mx-auto">
           {/* Carousel Heading */}
-          <div className="min-h-[150px] sm:min-h-[120px] flex items-center justify-center mb-8">
+          <div className="min-h-[180px] sm:min-h-[160px] flex items-center justify-center mb-8">
             <h1 
-              className={`text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight transition-all duration-500 ${
+              className={`text-5xl sm:text-6xl lg:text-[72px] font-extrabold tracking-tight leading-tight transition-all duration-500 ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
             >
