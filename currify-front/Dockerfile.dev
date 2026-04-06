@@ -2,14 +2,13 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Copy package files FIRST (before any source code)
 COPY package*.json ./
 
-# Install dependencies
-# Install dependencies with legacy peer deps to avoid conflicts
+# Install dependencies - these will be preserved in the named volume
 RUN npm install --legacy-peer-deps --no-audit --no-fund
 
-# Copy source code (optional, as volume will override, but good for caching)
+# Copy source code
 COPY . .
 
 # Expose port
@@ -19,8 +18,6 @@ EXPOSE 3000
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # Start development server
-# Start development server
-# Polling disabled to save memory (WSL2 events should work)
 ENV CHOKIDAR_USEPOLLING=false
 ENV WATCHPACK_POLLING=true
 
