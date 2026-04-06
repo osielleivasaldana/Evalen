@@ -30,6 +30,7 @@
     "axios": "^1.12.2",
     "clsx": "^2.1.1",
     "dompurify": "^3.3.0",
+    "lucide-react": "^1.7.0",
     "mapbox-gl": "^3.16.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
