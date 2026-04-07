@@ -12,6 +12,28 @@ export class AuthService {
     private jwtService: JwtService,
   ) { }
 
+  async checkEmail(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        socialProvider: true,
+        password: true,
+      },
+    });
+
+    if (!user) {
+      return { exists: false };
+    }
+
+    const authProvider = user.socialProvider || (user.password ? 'local' : 'local');
+    
+    return {
+      exists: true,
+      authProvider: authProvider as 'local' | 'google',
+    };
+  }
+
   async register(registerDto: RegisterDto) {
     const { email, password, name, company } = registerDto;
 

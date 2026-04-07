@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evalen — Reclutamiento Inteligente con IA</title>
+  <meta name="description" content="Automatiza la extracción de datos de CVs, crea campañas al instante y encuentra al candidato ideal con la magia de la Inteligencia Artificial.">
+  <meta property="og:title" content="Evalen — Reclutamiento Inteligente con IA">
+  <meta property="og:description" content="Automatiza tu selección y enfócate en lo humano. Encuentra al candidato perfecto en segundos.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://evalen.ai">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://evalen.ai">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#EEF2FF',
+              100: '#E0E7FF',
+              200: '#C7D2FE',
+              300: '#A5B4FC',
+              400: '#818CF8',
+              500: '#6366F1',
+              600: '#4F46E5',
+              700: '#4338CA',
+              800: '#3730A3',
+              900: '#312E81',
+              950: '#1E1B4B',
+            }
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.8s ease-out forwards',
+            'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+            'float': 'float 6s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Carousel transitions */
+    .carousel-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .carousel-slide.active {
+      opacity: 1;
+      position: relative;
+    }
+    /* Smooth focus styles */
+    *:focus-visible {
+      outline: 2px solid #4F46E5;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94A3B8;
+      border-radius: 4px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #475569;
+    }
+    /* Gradient text utility */
+    .gradient-text {
+      background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 50%, #DB2777 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    /* Dashboard mockup animations */
+    .mockup-line {
+      animation: shimmer 2s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+    }
+    /* Mobile menu */
+    .mobile-menu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    .mobile-menu.open {
+      max-height: 400px;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-300">
+
+  <!-- Skip to content -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-brand-600 focus:text-white focus:rounded-lg">
+    Saltar al contenido principal
+  </a>
+
+  <!-- ===================== NAVBAR ===================== -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Navegación principal">
+      <div class="flex items-center justify-between h-16 lg:h-18">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-2 group" aria-label="Evalen - Inicio">
+          <svg class="w-8 h-8 text-brand-600 group-hover:text-brand-500 transition-colors" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="8" fill="currentColor" fill-opacity="0.1"/>
+            <path d="M8 16L14 10L20 16L14 22L8 16Z" fill="currentColor"/>
+            <path d="M14 16L20 10L26 16L20 22L14 16Z" fill="currentColor" fill-opacity="0.6"/>
+          </svg>
+          <span class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Evalen</span>
+        </a>
+
+        <!-- Desktop Nav Links -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="#beneficios" class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Beneficios</a>
+          <a href="#como-funciona" class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Cómo funciona</a>
+          <a href="#precios" class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Precios</a>
+        </div>
+
+        <!-- Right side: Dark mode toggle + CTAs -->
+        <div class="flex items-center gap-3">
+          <!-- Dark Mode Toggle -->
+          <button
+            id="dark-mode-toggle"
+            type="button"
+            class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Cambiar modo oscuro/claro"
+          >
+            <!-- Sun icon (shown in dark mode) -->
+            <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="5"/>
+              <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <!-- Moon icon (shown in light mode) -->
+            <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+            </svg>
+          </button>
+
+          <!-- Desktop CTAs -->
+          <div class="hidden sm:flex items-center gap-3">
+            <a href="/login?plan=free" class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:border-brand-400 dark:hover:border-brand-500">
+              Iniciar Sesión
+            </a>
+            <a href="/login?plan=free" class="text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 px-4 py-2 rounded-lg transition-colors shadow-sm shadow-brand-600/25">
+              Comenzar Gratis
+            </a>
+          </div>
+
+          <!-- Mobile menu button -->
+          <button
+            id="mobile-menu-btn"
+            type="button"
+            class="md:hidden p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Abrir menú de navegación"
+            aria-expanded="false"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path id="menu-icon" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div id="mobile-menu" class="mobile-menu md:hidden">
+        <div class="py-4 space-y-3 border-t border-gray-200 dark:border-gray-800">
+          <a href="#beneficios" class="block text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors px-2 py-1">Beneficios</a>
+          <a href="#como-funciona" class="block text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors px-2 py-1">Cómo funciona</a>
+          <a href="#precios" class="block text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors px-2 py-1">Precios</a>
+          <div class="flex flex-col gap-2 pt-3 border-t border-gray-200 dark:border-gray-800">
+            <a href="/login?plan=free" class="text-sm font-medium text-center text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600">Iniciar Sesión</a>
+            <a href="/login?plan=free" class="text-sm font-semibold text-center text-white bg-brand-600 hover:bg-brand-700 px-4 py-2.5 rounded-lg transition-colors">Comenzar Gratis</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ===================== HERO ===================== -->
+    <section class="relative pt-32 pb-20 lg:pt-44 lg:pb-32 overflow-hidden">
+      <!-- Background decoration -->
+      <div class="absolute inset-0 -z-10">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-br from-brand-100/60 via-purple-100/40 to-fuchsia-100/30 dark:from-brand-900/20 dark:via-purple-900/10 dark:to-fuchsia-900/5 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gradient-to-tl from-brand-50/80 to-transparent dark:from-brand-900/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+          <!-- Badge -->
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-50 dark:bg-brand-950/50 border border-brand-200 dark:border-brand-800 mb-8 animate-fade-in">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-600"></span>
+            </span>
+            <span class="text-xs font-semibold text-brand-700 dark:text-brand-300 tracking-wide uppercase">Nuevo — Smart Match con IA</span>
+          </div>
+
+          <!-- H1 with Carousel -->
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
+            <span class="block text-gray-900 dark:text-white">Reclutamiento inteligente</span>
+            <div class="relative h-[1.2em] sm:h-[1.2em] lg:h-[1.2em] mt-2">
+              <div class="carousel-slide active" data-slide="0">
+                <span class="gradient-text">en segundos, no en semanas.</span>
+              </div>
+              <div class="carousel-slide" data-slide="1">
+                <span class="gradient-text">con la magia de la IA.</span>
+              </div>
+              <div class="carousel-slide" data-slide="2">
+                <span class="gradient-text">y enfócate en lo humano.</span>
+              </div>
+            </div>
+          </h1>
+
+          <!-- Subtitle -->
+          <p class="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+            Automatiza la extracción de datos de CVs, crea campañas al instante y encuentra al candidato ideal con la magia de la Inteligencia Artificial. Sin fricción, listo para usar.
+          </p>
+
+          <!-- CTAs -->
+          <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="/login?plan=free" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-all duration-200 shadow-lg shadow-brand-600/25 hover:shadow-xl hover:shadow-brand-600/30 hover:-translate-y-0.5">
+              Solicitar Demo
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+              </svg>
+            </a>
+            <a href="#como-funciona" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 hover:-translate-y-0.5">
+              <svg class="w-5 h-5 text-brand-600 dark:text-brand-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              Ver cómo funciona
+            </a>
+          </div>
+
+          <!-- Carousel indicators -->
+          <div class="flex items-center justify-center gap-2 mt-10">
+            <button class="carousel-dot w-2.5 h-2.5 rounded-full bg-brand-600 transition-all duration-300" data-dot="0" aria-label="Slide 1"></button>
+            <button class="carousel-dot w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-600 transition-all duration-300" data-dot="1" aria-label="Slide 2"></button>
+            <button class="carousel-dot w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-600 transition-all duration-300" data-dot="2" aria-label="Slide 3"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== LOGO CLOUD (Social Proof) ===================== -->
+    <section class="py-12 border-y border-gray-100 dark:border-gray-800/50 bg-gray-50/50 dark:bg-gray-900/30">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <p class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 mb-8 uppercase tracking-wider">Empresas que confían en Evalen</p>
+        <div class="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
+          <!-- TechCorp -->
+          <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="6" fill="currentColor" fill-opacity="0.1"/>
+              <path d="M8 12h16M8 16h12M8 20h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="text-lg font-bold tracking-tight">TechCorp</span>
+          </div>
+          <!-- Innovatech -->
+          <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="6" fill="currentColor" fill-opacity="0.1"/>
+              <circle cx="16" cy="16" r="6" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 10v-3M16 25v-3M10 16H7M25 16h-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span class="text-lg font-bold tracking-tight">Innovatech</span>
+          </div>
+          <!-- FutureLabs -->
+          <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="6" fill="currentColor" fill-opacity="0.1"/>
+              <path d="M10 22V14l6-6 6 6v8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 22v-5h4v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-lg font-bold tracking-tight">FutureLabs</span>
+          </div>
+          <!-- DataPro -->
+          <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="6" fill="currentColor" fill-opacity="0.1"/>
+              <path d="M9 20l4-6 4 4 6-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M23 10v4h-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-lg font-bold tracking-tight">DataPro</span>
+          </div>
+          <!-- CloudSoft -->
+          <div class="flex items-center gap-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+            <svg class="w-8 h-8" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="6" fill="currentColor" fill-opacity="0.1"/>
+              <path d="M10 20a4 4 0 01-.88-7.903A5.5 5.5 0 0120.5 12 4.5 4.5 0 0122 20H10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="text-lg font-bold tracking-tight">CloudSoft</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FEATURES ===================== -->
+    <section id="beneficios" class="py-20 lg:py-28">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="max-w-2xl mx-auto text-center mb-16">
+          <span class="text-sm font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Beneficios</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            Todo lo que necesitas para <span class="gradient-text">reclutar mejor</span>
+          </h2>
+          <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
+            Evalen combina inteligencia artificial con un flujo de trabajo intuitivo para transformar tu proceso de selección.
+          </p>
+        </div>
+
+        <!-- Feature Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <!-- Feature 1: Lectura de CVs con IA -->
+          <div class="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 hover:border-brand-300 dark:hover:border-brand-700 transition-all duration-300 hover:shadow-xl hover:shadow-brand-600/5 hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-brand-100 dark:bg-brand-900/50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-6 h-6 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Lectura de CVs con IA</h3>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+              Olvídate de leer currículums uno por uno. Nuestra IA extrae las habilidades, experiencia y datos clave en tiempo real.
+            </p>
+          </div>
+
+          <!-- Feature 2: Campañas en Automático -->
+          <div class="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 hover:border-brand-300 dark:hover:border-brand-700 transition-all duration-300 hover:shadow-xl hover:shadow-brand-600/5 hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Campañas en Automático</h3>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+              Selecciona el área (Ventas, Tecnología, etc.) y deja que Evalen estructure la campaña por ti.
+            </p>
+          </div>
+
+          <!-- Feature 3: Smart Match -->
+          <div class="group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 hover:border-brand-300 dark:hover:border-brand-700 transition-all duration-300 hover:shadow-xl hover:shadow-brand-600/5 hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-fuchsia-100 dark:bg-fuchsia-900/50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <svg class="w-6 h-6 text-fuchsia-600 dark:text-fuchsia-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">Smart Match</h3>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
+              Algoritmos avanzados que comparan los requerimientos de tu oferta con el perfil del candidato, mostrándote el porcentaje de compatibilidad exacto.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== DEMO / MOCKUP ===================== -->
+    <section class="py-20 lg:py-28 bg-gray-50 dark:bg-gray-900/50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="max-w-2xl mx-auto text-center mb-16">
+          <span class="text-sm font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Vista previa</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            Así se ve <span class="gradient-text">Evalen en acción</span>
+          </h2>
+          <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
+            Sube un CV y obtén resultados de match al instante. Sin complicaciones.
+          </p>
+        </div>
+
+        <!-- Dashboard Mockup -->
+        <div class="max-w-5xl mx-auto">
+          <div class="relative rounded-2xl overflow-hidden shadow-2xl shadow-gray-900/20 dark:shadow-black/40 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <!-- Window Controls -->
+            <div class="flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+              <div class="w-3 h-3 rounded-full bg-red-400"></div>
+              <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+              <div class="w-3 h-3 rounded-full bg-green-400"></div>
+              <div class="flex-1 mx-4">
+                <div class="bg-white dark:bg-gray-700 rounded-md px-3 py-1 text-xs text-gray-400 dark:text-gray-500 text-center max-w-xs mx-auto">app.evalen.ai/dashboard</div>
+              </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div class="flex min-h-[400px] lg:min-h-[500px]">
+              <!-- Sidebar -->
+              <div class="hidden lg:flex flex-col w-52 bg-gray-50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700 p-4 gap-1">
+                <div class="flex items-center gap-2 px-3 py-2 mb-4">
+                  <svg class="w-6 h-6 text-brand-600" viewBox="0 0 32 32" fill="none">
+                    <rect width="32" height="32" rx="8" fill="currentColor" fill-opacity="0.1"/>
+                    <path d="M8 16L14 10L20 16L14 22L8 16Z" fill="currentColor"/>
+                    <path d="M14 16L20 10L26 16L20 22L14 16Z" fill="currentColor" fill-opacity="0.6"/>
+                  </svg>
+                  <span class="text-sm font-bold text-gray-900 dark:text-white">Evalen</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-sm font-medium">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                  Dashboard
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-500 dark:text-gray-400 text-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  Campañas
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-500 dark:text-gray-400 text-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  Candidatos
+                </div>
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-500 dark:text-gray-400 text-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  Reportes
+                </div>
+                <div class="mt-auto flex items-center gap-2 px-3 py-2 rounded-lg text-gray-500 dark:text-gray-400 text-sm">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  Configuración
+                </div>
+              </div>
+
+              <!-- Main Content -->
+              <div class="flex-1 p-4 lg:p-6">
+                <!-- Top bar -->
+                <div class="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">Smart Match Results</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Campaña: Desarrollador Frontend Sr.</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-xs font-medium">
+                      <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      IA Activa
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-brand-600 flex items-center justify-center text-white text-xs font-bold">RH</div>
+                  </div>
+                </div>
+
+                <!-- Upload Zone -->
+                <div class="mb-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-brand-400 dark:hover:border-brand-500 transition-colors bg-gray-50/50 dark:bg-gray-800/30">
+                  <svg class="w-10 h-10 mx-auto text-gray-400 dark:text-gray-500 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                  </svg>
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Arrastra un CV aquí o <span class="text-brand-600 dark:text-brand-400 underline">haz clic para subir</span></p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">PDF, DOCX hasta 10MB</p>
+                </div>
+
+                <!-- Match Results -->
+                <div class="space-y-3">
+                  <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Resultados del Match</p>
+
+                  <!-- Candidate 1 -->
+                  <div class="flex items-center gap-4 p-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">MC</div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">María Castillo</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">React, TypeScript, Next.js · 5 años exp.</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full" style="width: 94%"></div>
+                      </div>
+                      <span class="text-sm font-bold text-green-600 dark:text-green-400">94%</span>
+                    </div>
+                  </div>
+
+                  <!-- Candidate 2 -->
+                  <div class="flex items-center gap-4 p-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">AL</div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">Andrés López</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Vue.js, JavaScript, Tailwind · 3 años exp.</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-brand-400 to-brand-500 rounded-full" style="width: 87%"></div>
+                      </div>
+                      <span class="text-sm font-bold text-brand-600 dark:text-brand-400">87%</span>
+                    </div>
+                  </div>
+
+                  <!-- Candidate 3 -->
+                  <div class="flex items-center gap-4 p-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-brand-300 dark:hover:border-brand-600 transition-colors">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">SR</div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 dark:text-white truncate">Sofía Ramírez</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">Angular, TypeScript, RxJS · 4 años exp.</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <div class="w-16 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full" style="width: 72%"></div>
+                      </div>
+                      <span class="text-sm font-bold text-yellow-600 dark:text-yellow-400">72%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Floating annotation -->
+          <div class="hidden lg:block relative -mt-6 ml-8">
+            <div class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 animate-float">
+              <div class="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/40 flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-gray-900 dark:text-white">Match completado</p>
+                <p class="text-[10px] text-gray-500 dark:text-gray-400">3 candidatos evaluados en 2.4s</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HOW IT WORKS ===================== -->
+    <section id="como-funciona" class="py-20 lg:py-28">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="max-w-2xl mx-auto text-center mb-16">
+          <span class="text-sm font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Cómo funciona</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            Tres pasos para <span class="gradient-text">la magia</span>
+          </h2>
+          <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
+            Sin configuraciones complejas. Sin curva de aprendizaje. Solo resultados.
+          </p>
+        </div>
+
+        <!-- Steps -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 relative">
+          <!-- Connecting line (desktop only) -->
+          <div class="hidden md:block absolute top-16 left-[20%] right-[20%] h-0.5 bg-gradient-to-r from-brand-200 via-purple-200 to-fuchsia-200 dark:from-brand-800 dark:via-purple-800 dark:to-fuchsia-800"></div>
+
+          <!-- Step 1 -->
+          <div class="relative text-center">
+            <div class="relative z-10 w-14 h-14 mx-auto rounded-2xl bg-brand-600 text-white flex items-center justify-center text-xl font-extrabold shadow-lg shadow-brand-600/25 mb-6">
+              1
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">Regístrate y cuéntanos sobre tu empresa</h3>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed max-w-sm mx-auto">
+              Crea tu cuenta en segundos y bríndanos información básica sobre tu empresa y necesidades de reclutamiento.
+            </p>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="relative text-center">
+            <div class="relative z-10 w-14 h-14 mx-auto rounded-2xl bg-purple-600 text-white flex items-center justify-center text-xl font-extrabold shadow-lg shadow-purple-600/25 mb-6">
+              2
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">Arrastra un CV o elige un área de especialidad</h3>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed max-w-sm mx-auto">
+              Sube currículums de candidatos o selecciona el área de trabajo. Nosotros hacemos el resto.
+            </p>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="relative text-center">
+            <div class="relative z-10 w-14 h-14 mx-auto rounded-2xl bg-fuchsia-600 text-white flex items-center justify-center text-xl font-extrabold shadow-lg shadow-fuchsia-600/25 mb-6">
+              3
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-3">¡Comienza la magia!</h3>
+            <p class="text-gray-600 dark:text-gray-400 leading-relaxed max-w-sm mx-auto">
+              Evalen crea la campaña y evalúa al candidato, mostrándote el porcentaje de compatibilidad al instante.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== TESTIMONIALS ===================== -->
+    <section class="py-20 lg:py-28 bg-gray-50 dark:bg-gray-900/50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="max-w-2xl mx-auto text-center mb-16">
+          <span class="text-sm font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Testimonios</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            Lo que dicen nuestros <span class="gradient-text">clientes</span>
+          </h2>
+          <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
+            Reclutadores y directores de RRHH que ya transformaron su proceso con Evalen.
+          </p>
+        </div>
+
+        <!-- Testimonial Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <!-- Testimonial 1 -->
+          <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 hover:shadow-lg transition-shadow duration-300">
+            <!-- Stars -->
+            <div class="flex gap-1 mb-4">
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <blockquote class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+              "Antes de Evalen, mi equipo pasaba <strong class="text-gray-900 dark:text-white">más de 20 horas semanales</strong> solo revisando CVs. Ahora, la IA hace el filtro inicial y nosotros nos enfocamos en las entrevistas. Redujimos el tiempo de contratación un 60%."
+            </blockquote>
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">CV</div>
+              <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">Carolina Vega</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Directora de RRHH · TechCorp México</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Testimonial 2 -->
+          <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 hover:shadow-lg transition-shadow duration-300">
+            <!-- Stars -->
+            <div class="flex gap-1 mb-4">
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <blockquote class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+              "El Smart Match de Evalen es increíblemente preciso. En nuestra última búsqueda para un puesto de DevOps, el candidato con <strong class="text-gray-900 dark:text-white">96% de compatibilidad</strong> resultó ser la mejor contratación del año. Los números no mienten."
+            </blockquote>
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">RM</div>
+              <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">Roberto Mendoza</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Head of Talent Acquisition · Innovatech</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Testimonial 3 -->
+          <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 hover:shadow-lg transition-shadow duration-300">
+            <!-- Stars -->
+            <div class="flex gap-1 mb-4">
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </div>
+            <blockquote class="text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+              "Como CEO de una startup en crecimiento, necesitaba escalar mi equipo rápidamente sin perder calidad. Evalen me permitió <strong class="text-gray-900 dark:text-white">automatizar el 80% del proceso</strong> y enfocarme en lo que realmente importa: conocer a las personas."
+            </blockquote>
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">LP</div>
+              <div>
+                <p class="text-sm font-semibold text-gray-900 dark:text-white">Laura Paredes</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">CEO & Co-Founder · FutureLabs</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PRICING ===================== -->
+    <section id="precios" class="py-20 lg:py-28">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="max-w-2xl mx-auto text-center mb-16">
+          <span class="text-sm font-semibold text-brand-600 dark:text-brand-400 uppercase tracking-wider">Precios</span>
+          <h2 class="mt-3 text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            Planes que escalan <span class="gradient-text">contigo</span>
+          </h2>
+          <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
+            Empieza gratis y crece cuando estés listo. Sin sorpresas, sin letra pequeña.
+          </p>
+        </div>
+
+        <!-- Pricing Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
+          <!-- Starter -->
+          <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 flex flex-col hover:shadow-lg transition-shadow duration-300">
+            <div class="mb-6">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white">Starter</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Ideal para probar la magia.</p>
+            </div>
+            <div class="mb-6">
+              <span class="text-4xl font-extrabold text-gray-900 dark:text-white">$0</span>
+              <span class="text-gray-500 dark:text-gray-400 text-sm">/mes</span>
+            </div>
+            <ul class="space-y-3 mb-8 flex-1">
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">1 Campaña activa</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">15 CVs por mes</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Extracción básica de datos</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Análisis de candidatos</span>
+              </li>
+            </ul>
+            <a href="/login?plan=free" class="block w-full text-center px-6 py-3 text-sm font-semibold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/20 hover:bg-brand-100 dark:hover:bg-brand-900/40 rounded-xl transition-colors border border-brand-200 dark:border-brand-800">
+              Comenzar Gratis
+            </a>
+          </div>
+
+          <!-- EvalenPro (Recommended) -->
+          <div class="relative bg-white dark:bg-gray-900 rounded-2xl border-2 border-brand-500 dark:border-brand-400 p-8 flex flex-col shadow-xl shadow-brand-600/10 hover:shadow-2xl hover:shadow-brand-600/15 transition-shadow duration-300 scale-[1.02] md:scale-105">
+            <!-- Badge -->
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2">
+              <span class="inline-flex items-center gap-1 px-4 py-1.5 rounded-full bg-brand-600 text-white text-xs font-bold uppercase tracking-wider shadow-lg shadow-brand-600/30">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                Recomendado
+              </span>
+            </div>
+
+            <div class="mb-6 mt-2">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white">EvalenPro</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Para equipos de RR.HH. que buscan escalar.</p>
+            </div>
+            <div class="mb-6">
+              <span class="text-4xl font-extrabold text-gray-900 dark:text-white">$49</span>
+              <span class="text-gray-500 dark:text-gray-400 text-sm">/mes</span>
+            </div>
+            <ul class="space-y-3 mb-8 flex-1">
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Campañas ilimitadas</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Procesamiento ilimitado de CVs</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Smart Match avanzado</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Exportación de reportes</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Soporte prioritario</span>
+              </li>
+            </ul>
+            <a href="/login?plan=pro" class="block w-full text-center px-6 py-3 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors shadow-lg shadow-brand-600/25 hover:shadow-xl hover:shadow-brand-600/30">
+              Probar EvalenPro
+            </a>
+          </div>
+
+          <!-- Enterprise -->
+          <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-8 flex flex-col hover:shadow-lg transition-shadow duration-300">
+            <div class="mb-6">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white">Enterprise</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Para grandes corporativos.</p>
+            </div>
+            <div class="mb-6">
+              <span class="text-4xl font-extrabold text-gray-900 dark:text-white">Personalizado</span>
+            </div>
+            <ul class="space-y-3 mb-8 flex-1">
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Todo lo de EvalenPro</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">SSO corporativo</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">API de integración</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Onboarding personalizado</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="text-sm text-gray-700 dark:text-gray-300">SLA garantizado</span>
+              </li>
+            </ul>
+            <a href="/login?plan=enterprise" class="block w-full text-center px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors border border-gray-300 dark:border-gray-700">
+              Contactar Ventas
+            </a>
+          </div>
+        </div>
+
+        <!-- Pricing note -->
+        <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-10">
+          Todos los planes incluyen una <strong class="text-gray-700 dark:text-gray-300">prueba gratuita de 14 días</strong>. Sin tarjeta de crédito requerida.
+        </p>
+      </div>
+    </section>
+
+    <!-- ===================== CTA Banner ===================== -->
+    <section class="py-20 lg:py-28">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-brand-600 via-brand-700 to-purple-700 px-6 py-16 sm:px-12 sm:py-20 lg:px-20 lg:py-24">
+          <!-- Background decoration -->
+          <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-fuchsia-300 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+          </div>
+
+          <div class="relative text-center max-w-2xl mx-auto">
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-4">
+              ¿Listo para transformar tu reclutamiento?
+            </h2>
+            <p class="text-lg text-brand-100 mb-8 max-w-lg mx-auto">
+              Únete a cientos de equipos de RRHH que ya usan Evalen para encontrar al candidato perfecto.
+            </p>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a href="/login?plan=free" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-brand-700 bg-white hover:bg-brand-50 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+                Solicitar Demo
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                </svg>
+              </a>
+              <a href="#precios" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white border-2 border-white/30 hover:border-white/60 rounded-xl transition-all duration-200 hover:-translate-y-0.5">
+                Ver planes y precios
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
+        <!-- Brand -->
+        <div class="col-span-2 md:col-span-1">
+          <a href="/" class="flex items-center gap-2 mb-4">
+            <svg class="w-7 h-7 text-brand-600" viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="currentColor" fill-opacity="0.1"/>
+              <path d="M8 16L14 10L20 16L14 22L8 16Z" fill="currentColor"/>
+              <path d="M14 16L20 10L26 16L20 22L14 16Z" fill="currentColor" fill-opacity="0.6"/>
+            </svg>
+            <span class="text-lg font-bold text-gray-900 dark:text-white">Evalen</span>
+          </a>
+          <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed mb-4">
+            Automatiza tu reclutamiento con inteligencia artificial. Encuentra al candidato ideal en segundos.
+          </p>
+          <!-- Social Icons -->
+          <div class="flex items-center gap-3">
+            <a href="#" class="p-2 rounded-lg text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Twitter">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </a>
+            <a href="#" class="p-2 rounded-lg text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="LinkedIn">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Producto -->
+        <div>
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Producto</h4>
+          <ul class="space-y-3">
+            <li><a href="#beneficios" class="text-sm text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Beneficios</a></li>
+            <li><a href="#precios" class="text-sm text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Precios</a></li>
+            <li><a href="/login?plan=free" class="text-sm text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Registrarse</a></li>
+          </ul>
+        </div>
+
+        <!-- Legal -->
+        <div>
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Legal</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Términos de servicio</a></li>
+            <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Política de privacidad</a></li>
+            <li><a href="#" class="text-sm text-gray-500 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Contacto</a></li>
+          </ul>
+        </div>
+
+        <!-- CTA in Footer -->
+        <div class="col-span-2 md:col-span-1">
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider mb-4">Empieza hoy</h4>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Prueba gratuita de 14 días. Sin tarjeta.</p>
+          <a href="/login?plan=free" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg transition-colors shadow-sm shadow-brand-600/25">
+            Comenzar Gratis
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Bottom bar -->
+      <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-sm text-gray-400 dark:text-gray-500">
+          &copy; <span id="current-year"></span> Evalen. Todos los derechos reservados.
+        </p>
+        <p class="text-xs text-gray-400 dark:text-gray-500">
+          Hecho con <span class="text-brand-500">&hearts;</span> para equipos de RRHH
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================== JAVASCRIPT ===================== -->
+  <script>
+    // ===== Dark Mode Toggle =====
+    (function() {
+      const html = document.documentElement;
+      const toggle = document.getElementById('dark-mode-toggle');
+
+      // Check localStorage or system preference
+      const stored = localStorage.getItem('evalen-theme');
+      if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        html.classList.add('dark');
+      }
+
+      toggle.addEventListener('click', function() {
+        html.classList.toggle('dark');
+        localStorage.setItem('evalen-theme', html.classList.contains('dark') ? 'dark' : 'light');
+      });
+    })();
+
+    // ===== Hero Carousel =====
+    (function() {
+      const slides = document.querySelectorAll('.carousel-slide');
+      const dots = document.querySelectorAll('.carousel-dot');
+      let current = 0;
+      const total = slides.length;
+      const interval = 4000; // 4 seconds
+
+      function goToSlide(index) {
+        slides[current].classList.remove('active');
+        dots[current].classList.remove('bg-brand-600');
+        dots[current].classList.add('bg-gray-300', 'dark:bg-gray-600');
+
+        current = index;
+
+        slides[current].classList.add('active');
+        dots[current].classList.remove('bg-gray-300', 'dark:bg-gray-600');
+        dots[current].classList.add('bg-brand-600');
+      }
+
+      function nextSlide() {
+        goToSlide((current + 1) % total);
+      }
+
+      // Auto-rotate
+      let timer = setInterval(nextSlide, interval);
+
+      // Dot click handlers
+      dots.forEach(function(dot) {
+        dot.addEventListener('click', function() {
+          clearInterval(timer);
+          goToSlide(parseInt(this.dataset.dot));
+          timer = setInterval(nextSlide, interval);
+        });
+      });
+    })();
+
+    // ===== Mobile Menu Toggle =====
+    (function() {
+      const btn = document.getElementById('mobile-menu-btn');
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('menu-icon');
+      let isOpen = false;
+
+      btn.addEventListener('click', function() {
+        isOpen = !isOpen;
+        menu.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen);
+
+        if (isOpen) {
+          icon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+        } else {
+          icon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+        }
+      });
+
+      // Close menu when clicking a link
+      menu.querySelectorAll('a').forEach(function(link) {
+        link.addEventListener('click', function() {
+          isOpen = false;
+          menu.classList.remove('open');
+          btn.setAttribute('aria-expanded', false);
+          icon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+        });
+      });
+    })();
+
+    // ===== Current Year =====
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    // ===== Scroll animations (Intersection Observer) =====
+    (function() {
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+
+      const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in-up');
+            entry.target.style.opacity = '1';
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      // Observe feature cards, testimonial cards, pricing cards, steps
+      document.querySelectorAll('.group, #beneficios .grid > div, section .grid > div, #como-funciona .grid > div').forEach(function(el) {
+        el.style.opacity = '0';
+        observer.observe(el);
+      });
+    })();
+  </script>
+
+</body>
+</html>

@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import { BriefcaseIcon, UserGroupIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../../contexts/AuthContext';
 
 const OnboardingWizard: React.FC = () => {
     const navigate = useNavigate();
+    const { user, setUser } = useAuth();
     const [loading, setLoading] = useState(false);
     const [userName, setUserName] = useState('');
     const [formData, setFormData] = useState({
@@ -16,9 +18,9 @@ const OnboardingWizard: React.FC = () => {
     useEffect(() => {
         const loadUser = async () => {
             try {
-                const user = await apiService.getProfile();
-                setUserName(user.name.split(' ')[0]);
-                if (user.onboardingCompleted) {
+                const profile = await apiService.getProfile();
+                setUserName(profile.name.split(' ')[0]);
+                if (profile.onboardingCompleted) {
                     navigate('/dashboard', { replace: true });
                 }
             } catch (e) {
@@ -26,7 +28,7 @@ const OnboardingWizard: React.FC = () => {
             }
         };
         loadUser();
-    }, []);
+    }, [navigate]);
 
     const mapRoleToEnum = (uiRole: string) => {
         switch (uiRole) {
@@ -42,18 +44,26 @@ const OnboardingWizard: React.FC = () => {
     const handleSubmit = async () => {
         setLoading(true);
         try {
-            const user = await apiService.getProfile(); // Refresh to be safe
-            await apiService.updateUser(user.id, {
+            const profile = await apiService.getProfile();
+            await apiService.updateUser(profile.id, {
                 company: formData.company,
                 companySize: formData.companySize,
-                // We don't have a specific jobTitle field yet, so we map to system role.
-                // ideally we would save the specific job title in a metadata field if needed later.
                 role: mapRoleToEnum(formData.role),
                 onboardingCompleted: true
             });
-            // Redirect to Pricing as requested
+
+            // Update AuthContext directly — no reload needed
+            if (user) {
+                setUser({
+                    ...user,
+                    company: formData.company,
+                    role: mapRoleToEnum(formData.role),
+                    onboardingCompleted: true,
+                });
+            }
+
+            // Redirect to Pricing
             navigate('/pricing');
-            window.location.reload();
         } catch (error) {
             console.error('Onboarding failed', error);
             alert('Error saving profile. Please try again.');
@@ -97,7 +107,7 @@ const OnboardingWizard: React.FC = () => {
                                 placeholder="Ej: Evalen Tech"
                                 value={formData.company}
                                 onChange={(e) => handleChange('company', e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder-gray-400"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder-gray-400 text-gray-900"
                             />
                         </div>
                     </div>

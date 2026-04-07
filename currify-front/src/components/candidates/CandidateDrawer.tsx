@@ -16,9 +16,11 @@ import {
     ClipboardIcon,
     ChevronDownIcon,
     EyeIcon,
-    ArrowUturnLeftIcon
+    ArrowUturnLeftIcon,
+    ArrowDownTrayIcon
 } from '@heroicons/react/24/outline';
 import { Candidate, Campaign, StageInstance } from '../../services/api';
+import { apiService } from '../../services/api';
 
 // Extend Candidate to match Dashboard usage (which might have campaignTitle etc)
 export interface CandidateWithCampaign extends Candidate {
@@ -53,6 +55,7 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
 }) => {
     const [activeTab, setActiveTab] = useState<'resumen' | 'experiencia'>('resumen');
     const [showResultPopover, setShowResultPopover] = useState(false);
+    const [downloading, setDownloading] = useState(false);
 
     // DEBUG LOG
     useEffect(() => {
@@ -95,6 +98,29 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
         return cv?.titular_profesional?.titular ||
             cv?.experiencia_laboral?.[0]?.cargo ||
             'Candidato';
+    };
+
+    const handleDownloadCV = async () => {
+        // Support both direct documentId and documents array fallback
+        const docId = candidate?.documentId || candidate?.documents?.[0]?.id;
+        if (!docId) return;
+        try {
+            setDownloading(true);
+            const blob = await apiService.downloadDocument(docId);
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `CV_${candidate.name || 'candidato'}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(link);
+        } catch (err: any) {
+            console.error('Error downloading CV:', err);
+            alert('No se pudo descargar el CV. El archivo puede no estar disponible.');
+        } finally {
+            setDownloading(false);
+        }
     };
 
     const score = calculateScore(candidate);
@@ -227,14 +253,14 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                                             window.open(`https://wa.me/${candidate.phone?.replace(/\D/g, '')}?text=${message}`, '_blank');
                                         }} className="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-600 transition-all group">
                                             <ChatBubbleLeftEllipsisIcon className="w-6 h-6 mb-2 text-slate-400 group-hover:text-emerald-500" />
-                                            <span className="text-xs font-bold">WhatsApp Web</span>
+                                            <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-600">WhatsApp Web</span>
                                         </button>
                                         <button onClick={() => {
                                             const firstName = candidate.name?.split(' ')[0] || '';
                                             window.location.href = `mailto:${candidate.email}?subject=Postulación a ${campaign?.title}&body=Hola ${firstName},...`;
                                         }} className="flex flex-col items-center justify-center p-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all group">
                                             <EnvelopeIcon className="w-6 h-6 mb-2 text-slate-400 group-hover:text-blue-500" />
-                                            <span className="text-xs font-bold">Enviar Email</span>
+                                            <span className="text-xs font-bold text-slate-700 group-hover:text-blue-600">Enviar Email</span>
                                         </button>
                                     </div>
                                 </div>
@@ -297,6 +323,22 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 {/* Footer Actions */}
                 <div className="p-6 border-t border-slate-100 bg-white/80 backdrop-blur-sm sticky bottom-0 z-20">
                     <div className="flex flex-col gap-3 relative">
+                        {/* Download CV Button */}
+                        {(candidate?.documentId || candidate?.documents?.[0]?.id) && (
+                            <button
+                                onClick={handleDownloadCV}
+                                disabled={downloading}
+                                className="w-full py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {downloading ? (
+                                    <div className="w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin" />
+                                ) : (
+                                    <ArrowDownTrayIcon className="w-5 h-5 text-slate-400" />
+                                )}
+                                {downloading ? 'Descargando...' : 'Descargar CV'}
+                            </button>
+                        )}
+
                         <button
                             onClick={() => onViewAIAnalysis(candidate)}
                             className="w-full py-3.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2 group"

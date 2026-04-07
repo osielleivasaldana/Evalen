@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 
 // Auth Components
-import AuthContainer from './auth/AuthContainer';
 import ActivateAccount from './auth/ActivateAccount';
 import AuthCallback from './auth/AuthCallback';
-import Login from './auth/Login';
-import Register from './auth/Register';
+import EvalenAuth from './auth/EvalenAuth';
 import OnboardingWizard from './onboarding/OnboardingWizard';
 import PricingPage from './pricing/PricingPage';
 
@@ -25,11 +24,18 @@ import UserManagement from './admin/UserManagement';
 // Billing Components
 import BillingPage from './billing/BillingPage';
 
+// Checkout Components
+import CheckoutPage from './checkout/CheckoutPage';
+
 // Layout Components
 import Navbar from './layout/NavBar';
 
 // Landing Components
 import LandingPage from '../landing/LandingPage';
+import ErrorBoundary from './common/ErrorBoundary';
+
+// UI Demo (Playground/Showcase)
+import UIDemo from './uidemo/UIDemo';
 
 // Public Components
 import PublicCampaign from './public/PublicCampaign';
@@ -47,39 +53,17 @@ const PublicCampaignWrapper: React.FC = () => {
 };
 
 const AppRouter: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    try {
-      if (apiService.isAuthenticated()) {
-        const profile = await apiService.getProfile();
-        setOnboardingCompleted(profile.onboardingCompleted ?? false);
-        setIsAuthenticated(true);
-      } else {
-        setOnboardingCompleted(false);
-      }
-    } catch (error) {
-      apiService.clearToken();
-      setIsAuthenticated(false);
-      setOnboardingCompleted(false);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAuthSuccess = () => {
-    setIsAuthenticated(true);
-  };
+  const { isAuthenticated, user, loading, logout, checkAuth } = useAuth();
 
   const handleLogout = () => {
-    apiService.clearToken();
-    setIsAuthenticated(false);
+    logout();
+  };
+
+  const LandingPageWrapper: React.FC = () => {
+    if (isAuthenticated) {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return <LandingPage />;
   };
 
   const ProtectedRoute: React.FC<{ children: React.ReactNode; requiresOnboarding?: boolean }> = ({ children, requiresOnboarding = true }) => {
@@ -87,7 +71,7 @@ const AppRouter: React.FC = () => {
       return <Navigate to="/login" replace />;
     }
 
-    if (requiresOnboarding && onboardingCompleted === false) {
+    if (requiresOnboarding && user?.onboardingCompleted === false) {
       return <Navigate to="/onboarding" replace />;
     }
 
@@ -103,7 +87,7 @@ const AppRouter: React.FC = () => {
         try {
           const billing = await apiService.getBillingStatus();
           if (billing.status !== 'free' && billing.planId !== 'free') {
-            setRedirectTo('/dashboard/billing');
+            setRedirectTo('/billing');
             return;
           }
         } catch (error) {
@@ -113,12 +97,12 @@ const AppRouter: React.FC = () => {
         }
       };
 
-      if (apiService.isAuthenticated()) {
+      if (isAuthenticated) {
         checkPlanAndRedirect();
       } else {
         setCheckingPlan(false);
       }
-    }, []);
+    }, [isAuthenticated]);
 
     if (checkingPlan) {
       return (
@@ -156,11 +140,14 @@ const AppRouter: React.FC = () => {
   return (
     <Router>
       <Routes>
+        {/* Landing Page - Public (moved from /home) */}
+        <Route path="/" element={
+          <ErrorBoundary>
+            <LandingPageWrapper />
+          </ErrorBoundary>
+        } />
+        
         {/* Public Routes */}
-        <Route
-          path="/home"
-          element={<LandingPage />}
-        />
         <Route
           path="/apply/:publicId"
           element={<PublicCampaignWrapper />}
@@ -170,11 +157,17 @@ const AppRouter: React.FC = () => {
           element={<ActivateAccount />}
         />
 
-        {/* Legacy Routes (for backward compatibility) */}
-        <Route
-          path="/legacy"
-          element={<LegacyApp />}
-        />
+        {/* UI Demo / Playground (Public) */}
+        <Route path="/ui-demo" element={<UIDemo />} />
+
+        {/* Auth Routes - Public */}
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/login" element={
+          <EvalenAuth />
+        } />
+        {/* /register deprecated → redirect to login with enterprise plan */}
+        <Route path="/register" element={<Navigate to="/login?plan=enterprise" replace />} />
+        <Route path="/pricing" element={<PricingPageWrapper />} />
 
         {/* Protected Routes */}
         {isAuthenticated ? (
@@ -252,41 +245,25 @@ const AppRouter: React.FC = () => {
               }
             />
             <Route
-              path="/dashboard/billing"
+              path="/billing"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requiresOnboarding={false}>
                   <BillingPage />
                 </ProtectedRoute>
               }
             />
-            <Route path="/pricing" element={<PricingPageWrapper />} />
             <Route
-              path="/"
-              element={<Navigate to="/dashboard" replace />}
-            />
-            <Route
-              path="/login"
-              element={<Navigate to="/dashboard" replace />}
+              path="/checkout"
+              element={
+                <ProtectedRoute requiresOnboarding={false}>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              }
             />
           </>
         ) : (
           <>
-            {/* Auth Routes */}
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/onboarding" element={<OnboardingWizard />} />
-            <Route path="/pricing" element={<PricingPageWrapper />} />
-            <Route path="/login" element={
-              <Login onLoginSuccess={handleAuthSuccess} onSwitchToRegister={() => window.location.href = '/register'} />
-            } />
-            <Route path="/register" element={
-              <AuthContainer>
-                <Register onRegisterSuccess={handleAuthSuccess} onSwitchToLogin={() => window.location.href = '/login'} />
-              </AuthContainer>
-            } />
-            <Route
-              path="/"
-              element={<Navigate to="/login" replace />}
-            />
+            {/* Redirect to landing for all other routes when not authenticated */}
           </>
         )}
 

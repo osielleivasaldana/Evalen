@@ -239,4 +239,29 @@ export class UsersService {
       },
     });
   }
+
+  async updateCompany(userId: string, companyName: string) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        company: companyName,
+        onboardingCompleted: true,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        company: true,
+        role: true,
+        onboardingCompleted: true,
+        plan: true,
+        cvCredits: true,
+        campaignLimit: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return user;
+  }
 }

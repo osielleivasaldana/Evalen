@@ -470,8 +470,29 @@ class ApiService {
     return data;
   }
 
-  initiateGoogleLogin() {
-    window.location.href = `${API_BASE_URL}/auth/google`;
+  initiateGoogleLogin(plan?: string) {
+    let stateParam = '';
+    if (plan) {
+      const csrf = Math.random().toString(36).substring(2);
+      const state = btoa(JSON.stringify({ plan, csrf }));
+      stateParam = `&state=${state}`;
+    }
+    window.location.href = `${API_BASE_URL}/auth/google?state=${stateParam}`;
+  }
+
+  async checkEmail(email: string): Promise<{ exists: boolean; authProvider?: 'local' | 'google' }> {
+    const response = await fetch(`${API_BASE_URL}/auth/check-email?email=${encodeURIComponent(email)}`);
+    if (!response.ok) {
+      throw new Error('Failed to check email');
+    }
+    return response.json();
+  }
+
+  async updateCompany(companyName: string): Promise<UserProfile> {
+    return this.apiCall('/users/me/company', {
+      method: 'PATCH',
+      body: JSON.stringify({ companyName })
+    });
   }
 
   async activateAccount(token: string, password: string): Promise<AuthResponse> {

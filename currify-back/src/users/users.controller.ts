@@ -11,6 +11,11 @@ import { Roles } from '../common/decorators/roles.decorator';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Patch('me/company')
+  updateCompany(@Body() body: { companyName: string }, @Request() req: any) {
+    return this.usersService.updateCompany(req.user.id, body.companyName);
+  }
+
   @Post()
   @Roles('ADMIN', 'RECRUITER')
   create(@Body() createUserDto: CreateUserDto, @Request() req: any) {

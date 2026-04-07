@@ -139,9 +139,9 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
             </div>
           ) : (
             <div
-              onClick={() => window.location.href = '/pricing'}
+              onClick={() => window.location.href = '/checkout'}
               className="hidden md:flex items-center gap-2 mr-4 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full shadow-sm cursor-pointer transition-all hover:bg-indigo-50 hover:shadow-md hover:border-indigo-200 group"
-              title="Haz clic para obtener más créditos"
+              title="Mejora a PRO para más créditos"
             >
               <span className={`font-bold animate-pulse group-hover:scale-110 transition-transform ${remainingCredits > 0 ? 'text-emerald-500' : 'text-red-500'}`}>⚡</span>
               <span className={`text-xs font-bold transition-colors ${remainingCredits > 0 ? 'text-slate-600' : 'text-red-500'}`}>
@@ -153,7 +153,7 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
           {/* Upgrade Button - Visible for Free Plan */}
           {userProfile?.plan?.toUpperCase() !== 'PRO' && (
             <button
-              onClick={() => window.location.href = '/pricing'}
+              onClick={() => window.location.href = '/checkout'}
               className="hidden md:flex items-center gap-2 mr-4 px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all text-sm animate-pulse-slow"
             >
               🚀 Subir a PRO

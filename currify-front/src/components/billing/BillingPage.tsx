@@ -278,9 +278,9 @@ const BillingPage: React.FC = () => {
                 
                 <button
                   className="w-full px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-                  onClick={() => alert('Portal de facturación en desarrollo')}
+                  onClick={() => window.location.href = '/pricing'}
                 >
-                  Gestionar Suscripción
+                  Cambiar Plan
                 </button>
               </div>
             </div>

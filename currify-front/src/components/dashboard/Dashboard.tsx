@@ -35,6 +35,12 @@ import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import Layout from '../layout/Layout';
 import DashboardActivation from './DashboardActivation';
 import DashboardUploadModal from './DashboardUploadModal';
+import { StatCard } from '../ui/stat-card';
+import { GlassCard } from '../ui/glass-card';
+import { AuroraBackground } from '../ui/aurora-background';
+import { GradientHeader } from '../ui/gradient-header';
+import { ScoreCircle } from '../ui/score-circle';
+import { cn } from '../../lib/utils';
 import { apiService, Campaign, CampaignStats, UserProfile, Candidate as ApiCandidate } from '../../services/api';
 
 interface DashboardProps {
@@ -406,7 +412,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <div className="mb-8">
           <div className="flex justify-between items-start mb-2">
             <div>
-              <h1 className="text-4xl font-extrabold mb-1 tracking-tight">
+              <h1 className="text-4xl font-extrabold mb-1 tracking-tight text-gray-900">
                 ¡Hola, {user?.name}! 👋
               </h1>
               <p className="text-lg text-gray-600">
@@ -427,54 +433,35 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
-            <div className="relative p-6">
-              <div className="bg-white bg-opacity-20 backdrop-blur-md w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                <BriefcaseIcon className="w-7 h-7" />
-              </div>
-              <p className="text-3xl font-extrabold mb-1">{stats?.totalCampaigns || 0}</p>
-              <p className="text-sm font-medium opacity-90">Total Campañas</p>
-            </div>
-          </div>
-
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
-            <div className="relative p-6">
-              <div className="bg-white bg-opacity-20 backdrop-blur-md w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                <ArrowTrendingUpIcon className="w-7 h-7" />
-              </div>
-              <p className="text-3xl font-extrabold mb-1">{stats?.activeCampaigns || 0}</p>
-              <p className="text-sm font-medium opacity-90">Campañas Activas</p>
-            </div>
-          </div>
-
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 text-white">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
-            <div className="relative p-6">
-              <div className="bg-white bg-opacity-20 backdrop-blur-md w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                <UserGroupIcon className="w-7 h-7" />
-              </div>
-              <p className="text-3xl font-extrabold mb-1">{stats?.totalCandidates || 0}</p>
-              <p className="text-sm font-medium opacity-90">Total Candidatos</p>
-            </div>
-          </div>
-
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-pink-400 to-yellow-400 text-white">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
-            <div className="relative p-6">
-              <div className="bg-white bg-opacity-20 backdrop-blur-md w-12 h-12 rounded-xl flex items-center justify-center mb-4">
-                <UserPlusIcon className="w-7 h-7" />
-              </div>
-              <p className="text-3xl font-extrabold mb-1">{stats?.recentApplications || 0}</p>
-              <p className="text-sm font-medium opacity-90">Nuevos esta semana</p>
-            </div>
-          </div>
+          <StatCard
+            gradient="stat-1"
+            icon={<BriefcaseIcon className="w-7 h-7" />}
+            value={stats?.totalCampaigns || 0}
+            label="Total Campañas"
+          />
+          <StatCard
+            gradient="stat-2"
+            icon={<ArrowTrendingUpIcon className="w-7 h-7" />}
+            value={stats?.activeCampaigns || 0}
+            label="Campañas Activas"
+          />
+          <StatCard
+            gradient="stat-3"
+            icon={<UserGroupIcon className="w-7 h-7" />}
+            value={stats?.totalCandidates || 0}
+            label="Total Candidatos"
+          />
+          <StatCard
+            gradient="stat-4"
+            icon={<UserPlusIcon className="w-7 h-7" />}
+            value={stats?.recentApplications || 0}
+            label="Nuevos esta semana"
+          />
         </div>
 
         {/* Campaigns Section */}
         <div id="campaigns-section" className="bg-white rounded-2xl border border-gray-200 mb-8">
-          <div className="p-6 bg-gradient-to-r from-indigo-500 to-purple-600 text-white flex justify-between items-center rounded-t-2xl">
+          <GradientHeader>
             <div>
               <h2 className="text-2xl font-bold mb-1">Mis Campañas</h2>
               <p className="text-sm opacity-90">
@@ -491,7 +478,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 Nueva Campaña
               </button>
             )}
-          </div>
+          </GradientHeader>
 
           {campaigns.length === 0 ? (
             <div className="rounded-b-2xl overflow-hidden">
@@ -650,12 +637,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         {/* Top Talent Discovery Section - Only visible if there are campaigns */}
         <div className="grid gap-6 grid-cols-1">
           {campaigns.length > 0 && (
-            <div className="bg-gradient-to-r from-violet-50 via-indigo-50 to-blue-50 rounded-2xl border border-indigo-100 overflow-hidden shadow-lg shadow-indigo-100/50 relative">
-              {/* Background Effects (Aurora Boreal Suave) */}
-              <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
-              <div className="absolute -top-24 -right-24 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl pointer-events-none"></div>
-              <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none"></div>
-
+            <AuroraBackground variant="talent">
               <div className="p-8 border-b border-indigo-50 relative z-10 flex justify-between items-center">
                 <div>
                   <h2 className="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
@@ -723,15 +705,16 @@ const Dashboard: React.FC<DashboardProps> = ({
                   style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                 >
                   {candidates.map((candidate) => (
-                    <div
+                    <GlassCard
                       key={candidate.id}
+                      variant="candidate"
+                      className={cn(
+                        "group relative w-[280px] flex-shrink-0 p-5 cursor-pointer snap-center",
+                        "hover:bg-white hover:border-indigo-300 hover:shadow-xl hover:-translate-y-1",
+                        "transition-all duration-300",
+                        selectedCandidate?.id === candidate.id && 'ring-2 ring-indigo-500 bg-white scale-105 shadow-xl'
+                      )}
                       onClick={() => handleCandidateClick(candidate)}
-                      className={`
-                           group relative w-[280px] flex-shrink-0 bg-white/80 backdrop-blur-md rounded-2xl border border-white p-5
-                           hover:bg-white hover:border-indigo-300 hover:shadow-xl hover:-translate-y-1
-                           transition-all duration-300 cursor-pointer shadow-sm snap-center
-                           ${selectedCandidate?.id === candidate.id ? 'ring-2 ring-indigo-500 bg-white scale-105 shadow-xl' : ''}
-                        `}
                     >
                       <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
@@ -742,28 +725,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                         </p>
                       </div>
 
-                      {/* Score Badge */}
+                      {/* Score Circle */}
                       <div className="absolute top-4 right-4 animate-float">
-                        <div className="relative w-12 h-12 flex items-center justify-center">
-                          <svg className="w-full h-full transform -rotate-90">
-                            <circle cx="24" cy="24" r="20" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-indigo-100" />
-                            <circle
-                              cx="24" cy="24" r="20"
-                              stroke={
-                                (candidate.scoring?.overallScore || 0) >= 80 ? '#10b981' :
-                                  (candidate.scoring?.overallScore || 0) >= 60 ? '#f59e0b' : '#f43f5e'
-                              }
-                              strokeWidth="4"
-                              fill="transparent"
-                              strokeDasharray={125.6}
-                              strokeDashoffset={125.6 - ((candidate.scoring?.overallScore || 0) / 100 * 125.6)}
-                              className="transition-all duration-1000 ease-out"
-                            />
-                          </svg>
-                          <span className="absolute text-xs font-bold text-slate-700">
-                            {Math.round(candidate.scoring?.overallScore || 0)}%
-                          </span>
-                        </div>
+                        <ScoreCircle score={candidate.scoring?.overallScore || 0} size="md" />
                       </div>
 
                       {/* Avatar & Info */}
@@ -798,11 +762,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                         <EyeIcon className="w-4 h-4" />
                         Ver Perfil Completo
                       </button>
-                    </div>
+                    </GlassCard>
                   ))}
                 </div>
               )}
-            </div>
+            </AuroraBackground>
           )}   {/* Candidate Details (Sticky Preview) - HIDDEN/REMOVED */}
           {selectedCandidate && false && (
             <div className="bg-white rounded-2xl border border-gray-200 p-6 sticky top-4 h-fit shadow-xl animate-fade-in-right">
@@ -899,9 +863,9 @@ const Dashboard: React.FC<DashboardProps> = ({
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 animate-modal-in">
+            <div className="relative bg-white rounded-2xl shadow-modal max-w-md w-full mx-4 animate-fade-in-up">
               {/* Header */}
-              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-t-2xl p-6 text-white">
+              <GradientHeader variant="warning" className="rounded-t-2xl">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
                     <PauseIcon className="w-6 h-6" />
@@ -911,7 +875,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <p className="text-sm text-yellow-100">Confirma esta acción</p>
                   </div>
                 </div>
-              </div>
+              </GradientHeader>
 
               {/* Body */}
               <div className="p-6">

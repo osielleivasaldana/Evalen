@@ -24,6 +24,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY package*.json ./
 COPY scripts ./scripts
+COPY healthcheck.js ./healthcheck.js
 
 # Generar Prisma Client en el contenedor de runtime
 RUN npx prisma generate

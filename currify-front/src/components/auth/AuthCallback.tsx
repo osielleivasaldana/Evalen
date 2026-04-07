@@ -1,38 +1,53 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const AuthCallback: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { setUser, checkAuth } = useAuth();
 
     useEffect(() => {
         const handleCallback = async () => {
             const params = new URLSearchParams(location.search);
             const token = params.get('token');
             const isNew = params.get('new') === 'true';
+            const state = params.get('state');
+
+            if (state) {
+                try {
+                    const stateData = JSON.parse(atob(state));
+                    if (stateData.plan) {
+                        sessionStorage.setItem('selectedPlan', stateData.plan);
+                    }
+                } catch (e) {
+                    console.error('Error parsing OAuth state', e);
+                }
+            }
 
             if (token) {
-                // Manually store token (since we don't have loginWithToken exposed yet, or we'll use a public method)
-                // Ideally, apiService should have a method for this.
-                // Assuming apiService.setToken(token) exists or we access localStorage directly if apiService allows.
-                // Use apiService.setToken to update both the instance and localStorage
                 apiService.setToken(token);
 
-                // Trigger a profile fetch to ensure state is synced
                 try {
-                    await apiService.getProfile();
-                    // Redirect based on 'new' flag
+                    const profile = await apiService.getProfile();
+                    setUser(profile);
+
+                    const selectedPlan = sessionStorage.getItem('selectedPlan');
+                    
                     if (isNew) {
-                        // TODO: Create/Redirect to Onboarding Wizard
-                        navigate('/onboarding');
+                        if (selectedPlan === 'pro') {
+                            navigate('/checkout');
+                        } else {
+                            navigate('/onboarding');
+                        }
                     } else {
-                        navigate('/dashboard');
+                        if (selectedPlan === 'pro') {
+                            navigate('/checkout');
+                        } else {
+                            navigate('/dashboard');
+                        }
                     }
-                    // Force a reload or auth state update if AppRouter doesn't detect it automatically (AppRouter checks on mount)
-                    // Better approach: Call a prop passed from AppRouter or Context (AuthenticationContext) if available.
-                    // For now, reload is a brute-force safe way, but navigate should work if AppRouter re-checks or we update state higher up.
-                    window.location.reload();
                 } catch (error) {
                     console.error('Error fetching profile with new token', error);
                     navigate('/login?error=auth_failed');
@@ -43,7 +58,7 @@ const AuthCallback: React.FC = () => {
         };
 
         handleCallback();
-    }, [location, navigate]);
+    }, [location, navigate, setUser]);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-50">
