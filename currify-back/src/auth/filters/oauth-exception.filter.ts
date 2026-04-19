@@ -103,7 +103,7 @@ export class OAuthExceptionFilter implements ExceptionFilter {
     // 5. Generic fallback
     return {
       code: 'oauth_error',
-      message: 'Authentication failed. Please try again.',
+      message: `Authentication failed: ${message}`,
     };
   }
 }
