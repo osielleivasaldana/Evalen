@@ -16,6 +16,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         const clientSecret = configService.get<string>('GOOGLE_CLIENT_SECRET');
         const callbackURL = configService.get<string>('GOOGLE_CALLBACK_URL') || 'http://localhost:3001/api/auth/google/callback';
 
+        const logger = new Logger('GoogleStrategyInit');
+        logger.log(`Initializing Google Strategy with ID: ${clientID?.substring(0, 10)}...`);
+        logger.log(`Secret starts with: ${clientSecret?.substring(0, 8)}...`);
+        logger.log(`Callback URL: ${callbackURL}`);
+
         if (!clientID || clientID === 'dummy-client-id' || !clientSecret || clientSecret === 'dummy-client-secret') {
             Logger.warn(
                 '[GoogleStrategy] GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET is not configured. ' +
