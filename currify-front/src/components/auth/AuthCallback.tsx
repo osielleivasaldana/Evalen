@@ -14,6 +14,13 @@ const AuthCallback: React.FC = () => {
             const token = params.get('token');
             const isNew = params.get('new') === 'true';
             const state = params.get('state');
+            const backendError = params.get('error');
+
+            if (backendError) {
+                console.error('Backend reported OAuth error:', backendError);
+                navigate(`/login?error=${backendError}&message=${encodeURIComponent(params.get('message') || '')}`);
+                return;
+            }
 
             if (state) {
                 try {
@@ -53,6 +60,7 @@ const AuthCallback: React.FC = () => {
                     navigate('/login?error=auth_failed');
                 }
             } else {
+                console.warn('No token found in callback URL');
                 navigate('/login?error=no_token');
             }
         };
