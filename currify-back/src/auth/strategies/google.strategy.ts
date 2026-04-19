@@ -41,6 +41,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     ): Promise<any> {
         try {
             const { name, emails, photos, id } = profile;
+            
+            this.logger.log(`[GoogleStrategy] Received profile for email: ${emails?.[0]?.value}`);
+
             const user = {
                 email: emails?.[0]?.value,
                 firstName: name?.givenName,
@@ -50,15 +53,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
                 googleId: id,
             };
 
-            if (!user.email) {
-                this.logger.error('Google profile did not return an email address');
-                return done(new UnauthorizedException('Google account does not have an email'), false);
-            }
-
-            const payload = await this.authService.validateOAuthLogin(user, 'google');
-            done(null, payload);
+            const result = await this.authService.validateOAuthLogin(user, 'google');
+            done(null, result);
         } catch (error) {
-            this.logger.error(`Google OAuth validation failed: ${error.message}`, error.stack);
+            this.logger.error(`[GoogleStrategy] Validation failed for Google user: ${error.message}`);
+            // Forward the error to the filter instead of just calling done(error, false) 
+            // to ensure it reaches our custom OAuthExceptionFilter
             done(error, false);
         }
     }

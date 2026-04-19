@@ -3,6 +3,7 @@ import {
   Catch,
   ArgumentsHost,
   UnauthorizedException,
+  HttpException,
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -10,31 +11,34 @@ import { Response } from 'express';
 /**
  * Catches OAuth-related exceptions thrown by AuthGuard('google')
  * and redirects to the frontend with user-friendly error parameters.
- *
- * This filter enables the use of @UseGuards(AuthGuard('google'))
- * while still providing graceful error handling via redirect.
  */
-@Catch(UnauthorizedException)
+@Catch()
 export class OAuthExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(OAuthExceptionFilter.name);
 
-  catch(exception: UnauthorizedException, host: ArgumentsHost) {
+  catch(exception: any, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
 
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-    const exceptionResponse = exception.getResponse();
-    const statusCode = exception.getStatus();
-    const message =
-      typeof exceptionResponse === 'string'
-        ? exceptionResponse
-        : (exceptionResponse as any)?.message || 'Authentication failed';
+    let statusCode = 500;
+    let message = 'Internal server error';
+
+    if (exception instanceof HttpException) {
+      statusCode = exception.getStatus();
+      const exceptionResponse = exception.getResponse();
+      message =
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : (exceptionResponse as any)?.message || exception.message;
+    } else if (exception instanceof Error) {
+      message = exception.message;
+    }
 
     this.logger.error(
-      `OAuth exception [${statusCode}]: ${message}`,
-      exception.stack,
+      `OAuth unexpected error [${statusCode}]: ${message}`,
+      exception instanceof Error ? exception.stack : undefined,
     );
 
     const errorInfo = this.mapOAuthError(message, statusCode);
