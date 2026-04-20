@@ -556,27 +556,28 @@ TABLA DE EVALUACIÓN (RÚBRICA MAESTRA):
 - Roles: {rubric.experience.key_roles}
 - Skills: {rubric.skills.mandatory_skills}
 
-PUNTAJES FINALES OBLIGATORIOS (Ya calculados por Matriz, NO LOS ALTERES BAJO NINGUNA CIRCUNSTANCIA):
+EVALUACIÓN CUANTITATIVA BASE (Calculada por el Motor de Reglas):
 - Educación: {baseline_scores.get('education')}
 - Experiencia: {baseline_scores.get('experience')}
 - Skills: {baseline_scores.get('skills_match')}
 """
-        return f"""Eres un auditor de reclutamiento estrictamente regido por matemáticas. 
+        return f"""Eres un Analista Senior de Reclutamiento. Tu tarea es proporcionar una evaluación cualitativa rica y detallada del candidato frente a un puesto de trabajo.
 
 {checklist_text}
 
-Genera el JSON de evaluación final siguiendo la estructura estándar. Sé breve y directo en los razonamientos.
+Tu objetivo principal es interpretar los puntajes cuantitativos provistos arriba y complementarlos con un análisis cualitativo humano profundo. 
+Genera el JSON de evaluación final siguiendo la métrica y estructura solicitada.
 
-INSTRUCCIONES CRÍTICAS INQUEBRANTABLES:
-1. Analiza cada dimensión según los criterios proporcionados en la rúbrica.
-2. TIENES PROHIBIDO ALTERAR LOS PUNTAJES MATEMÁTICOS OBLIGATORIOS calculados en el bloque anterior. Tu único trabajo para "Educación", "Experiencia" y "Skills" es justificar en texto el puntaje ya dado (ej. si Educación es 40, justifica por qué falló el matching semántico del título, no le subas a 100 por tu cuenta).
-3. Para cada dimensión, proporciona un razonamiento claro y profesional respaldando el número.
-   - Si un puntaje es bajo (ej: Cultural Fit 50), explica qué información faltaría para subirlo.
-4. Genera strengths, gaps y summary.
+INSTRUCCIONES CRÍTICAS:
+1. Para las dimensiones de "Educación", "Experiencia" y "Skills", el motor de reglas ya calculó un puntaje numérico preciso. Tu trabajo es aceptar ese score base y redactar el razonamiento (reasoning) explicando los matices de por qué el motor de reglas asignó ese puntaje (ej. "Aunque tiene 5 años de experiencia, el score de 60 refleja que los roles previos no alinean directamente con la rúbrica").
+2. No debes contradecir matemáticamente los puntajes base. Usa los puntajes provistos textualmente en el JSON final para las 3 variables duras, y aporta de tu sabiduría para calcular "Cultural Fit", "Logistics" (Ubicación), y "Career Trajectory".
+3. Proporciona en cada dimensión un razonamiento claro, profesional y constructivo. Si un puntaje es bajo, explica objetivamente qué gap existe según la rúbrica.
+4. Genera listas accionables y reales de `strengths` y `gaps`.
+5. CRÍTICO: NO incluyas el puntaje de compatibilidad total (ej. "68%") dentro de la redacción del campo `summary`. Ese dato se calcula por separado y tu mención numérica en el texto suele causar contradicciones. Limítate a la descripción cualitativa.
 
 IMPORTANTE - FORMATO JSON:
-- NO envuelvas el JSON en una clave "audit".
-- El JSON debe empezar con {{ "breakdown": ... }}
+- Devuelve estricta y ÚNICAMENTE un JSON válido, sin Markdown extra ni envoltorios "audit".
+- El JSON debe empezar directamente con la llave principal.
 
 FORMATO DE SALIDA (JSON válido):
 
@@ -610,7 +611,7 @@ FORMATO DE SALIDA (JSON válido):
   }},
   "strengths": ["Fuerte stack técnico", "Buena comunicación"],
   "gaps": ["Falta inglés avanzado"],
-  "summary": "Candidato sólido con 75% de compatibilidad..."
+  "summary": "Candidato con sólida formación en TI, con gran potencial para adaptarse al stack requerido mediante un plan de capacitación específico..."
 }}
 ```
 """

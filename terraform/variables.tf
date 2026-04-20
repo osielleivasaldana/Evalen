@@ -47,3 +47,9 @@ variable "stripe_price_id_pro" {
   type        = string
   default     = ""
 }
+
+variable "gcs_cv_bucket_name" {
+  description = "Nombre del bucket GCS para almacenar CVs"
+  type        = string
+  default     = ""
+}

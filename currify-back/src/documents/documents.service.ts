@@ -4,8 +4,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ScoringService } from '../scoring/scoring.service';
 import { UploadDocumentDto } from './dto/upload-document.dto';
 import { ProcessingStatus } from '@prisma/client';
+import { StorageService } from '../storage/storage.service';
 import * as path from 'path';
-import * as fs from 'fs';
 import axios from 'axios';
 import FormData = require('form-data');
 
@@ -17,6 +17,7 @@ export class DocumentsService {
     private prisma: PrismaService,
     private scoringService: ScoringService,
     private configService: ConfigService,
+    private storageService: StorageService,
   ) {
     this.coreServiceUrl = this.configService.get<string>('SCORING_SERVICE_URL') || 'http://currify-core:8000';
   }
@@ -39,17 +40,6 @@ export class DocumentsService {
       throw new BadRequestException('Campaign is not active');
     }
 
-    const timestamp = Date.now();
-    const fileName = `${timestamp}_${file.originalname}`;
-    const uploadsDir = path.join(process.cwd(), 'uploads');
-
-    // Ensure uploads directory exists
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
-    const filePath = path.join(uploadsDir, fileName);
-
     try {
       // 1. Check if user has credits
       const user = await this.prisma.user.findUnique({
@@ -65,7 +55,7 @@ export class DocumentsService {
         throw new ForbiddenException('Has usado todos tus créditos de evaluación. Mejora tu plan para continuar.');
       }
 
-      fs.writeFileSync(filePath, file.buffer);
+      const uploadResult = await this.storageService.uploadCandidateDocument(campaignPublicId, file);
 
       // Decrement credit immediately (safe decrement)
       await this.prisma.user.update({
@@ -94,9 +84,9 @@ export class DocumentsService {
 
       const document = await this.prisma.document.create({
         data: {
-          originalName: file.originalname,
-          fileName,
-          filePath,
+          originalName: uploadResult.originalName,
+          fileName: uploadResult.fileName,
+          filePath: uploadResult.filePath,
           mimeType: file.mimetype,
           fileSize: file.size,
           candidateId: candidate.id,
@@ -230,15 +220,13 @@ export class DocumentsService {
     structuredData: any;
   }> {
     try {
-      if (!fs.existsSync(filePath)) {
-        throw new Error('File not found');
-      }
+      const fileInfo = await this.storageService.getReadStreamAndSize(filePath);
 
       // Get fresh token from core service
       const token = await this.getCoreServiceToken();
 
       const formData = new FormData();
-      formData.append('file', fs.createReadStream(filePath));
+      formData.append('file', fileInfo.stream, { knownLength: fileInfo.size, filename: path.basename(filePath) });
 
       const response = await axios.post(`${this.coreServiceUrl}/resume/extract`, formData, {
         headers: {
@@ -340,14 +328,15 @@ export class DocumentsService {
   async downloadDocument(documentId: string) {
     const document = await this.getDocument(documentId);
 
-    if (!fs.existsSync(document.filePath)) {
-      throw new NotFoundException('File not found on disk');
+    let fileBuffer: Buffer;
+    try {
+      fileBuffer = await this.storageService.getFileBuffer(document.filePath);
+    } catch (error) {
+       throw new NotFoundException('File not found in storage');
     }
 
-    const file = fs.readFileSync(document.filePath);
-
     return {
-      buffer: file,
+      buffer: fileBuffer,
       filename: document.originalName,
       mimeType: document.mimeType
     };
@@ -369,8 +358,11 @@ export class DocumentsService {
       throw new NotFoundException('Document not found');
     }
 
-    if (!fs.existsSync(document.filePath)) {
-      throw new NotFoundException('File not found on disk');
+    try {
+       // Validate that we can read it before throwing it to the background
+       await this.storageService.getReadStreamAndSize(document.filePath);
+    } catch (e) {
+       throw new NotFoundException('File not found in storage');
     }
 
     // Reset status to PROCESSING

@@ -6,6 +6,7 @@ variable "google_client_id_secret_id" {}
 variable "google_client_secret_secret_id" {}
 variable "stripe_secret_key_secret_id" {}
 variable "stripe_price_id_pro_secret_id" {}
+variable "cv_bucket_name" {}
 
 # ===============================================
 # Service Account para Cloud Run
@@ -20,6 +21,13 @@ resource "google_project_iam_member" "secret_accessor" {
   project = var.project_id
   role    = "roles/secretmanager.secretAccessor"
   member  = "serviceAccount:${google_service_account.cloudrun_sa.email}"
+}
+
+# Otorgar permisos a la SA para leer/escribir en el bucket de GCS
+resource "google_storage_bucket_iam_member" "bucket_accessor" {
+  bucket = var.cv_bucket_name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.cloudrun_sa.email}"
 }
 
 # ===============================================
@@ -208,6 +216,16 @@ resource "google_cloud_run_v2_service" "backend" {
       env {
         name  = "JWT_SECRET"
         value = "evalen-jwt-secreto-temporal-123"
+      }
+      
+      env {
+        name  = "STORAGE_TYPE"
+        value = "gcs"
+      }
+      
+      env {
+        name  = "GCS_BUCKET_NAME"
+        value = var.cv_bucket_name
       }
       
       env {

@@ -1424,7 +1424,67 @@ Evita duplicar si es redundante, pero ante la duda, EXTRAE.
             return self._create_empty_extraction()
             
         # Fusionar resultados
-        return self._merge_chunk_results(chunk_results)
+        merged = self._merge_chunk_results(chunk_results)
+        return await self._reduce_experiences_with_llm(merged)
+
+    async def _reduce_experiences_with_llm(self, merged_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Usa el LLM para deduplicar inteligentemente y unificar las experiencias
+        y formaciones que pudieron quedar divididas entre chunks.
+        """
+        exps = merged_data.get("experiencia_laboral", [])
+        edus = merged_data.get("formacion_academica", [])
+        
+        if not exps and not edus:
+            return merged_data
+            
+        import json
+        data_to_reduce = {}
+        if exps: data_to_reduce["experiencia_laboral"] = exps
+        if edus: data_to_reduce["formacion_academica"] = edus
+        
+        prompt = """
+<system_role>
+Eres un experto en integración de datos (Data Reducer). Tu tarea es fusionar fragmentos redundantes.
+</system_role>
+
+<instructions>
+Se te entregarán listas de 'experiencia_laboral' y 'formacion_academica' recopiladas al fragmentar un CV largo.
+Al particionar el CV, un mismo rol o escuela pudo dividirse en dos entradas (ej: la empresa en la entidad 1, y parte de la descripción en la entidad 2; o el mismo rol aparece dos veces).
+Tu tarea es DE-DUPLICAR y FUSIONAR la información.
+1. NO inventes ni resumas datos. Combina la información (ej. fusionando bullet points de responsabilidades) si pertenecen genuinamente a la misma empresa/institución y cargo.
+2. Mantén la estructura rígida de arrays JSON que recibirás.
+3. Si algo está duplicado exactamente, elimina el duplicado.
+4. Devuelve el JSON con las mismas llaves provistas ('experiencia_laboral', 'formacion_academica'), pero unificado limpiamente.
+</instructions>
+"""
+        try:
+            logger.info("🔪 Iniciando LLM Reducer para limpiar duplicados de chunks...")
+            result = await self.llm_service.call_agent(
+                prompt=prompt,
+                input_data=json.dumps(data_to_reduce, ensure_ascii=False),
+                stage_name="chunk_reduce",
+                temperature=0.0
+            )
+            
+            if result:
+                parsed = None
+                if isinstance(result, str):
+                    parsed = self.llm_service._extract_json_from_response(result, stage="chunk_reduce")
+                elif isinstance(result, dict):
+                    parsed = result
+                    
+                if parsed and isinstance(parsed, dict):
+                    if "experiencia_laboral" in parsed and isinstance(parsed["experiencia_laboral"], list):
+                        merged_data["experiencia_laboral"] = parsed["experiencia_laboral"]
+                    if "formacion_academica" in parsed and isinstance(parsed["formacion_academica"], list):
+                        merged_data["formacion_academica"] = parsed["formacion_academica"]
+                    logger.info(f"✅ Reducción LLM exitosa: {len(parsed.get('experiencia_laboral', []))} experiencias, {len(parsed.get('formacion_academica', []))} educaciones resultantes.")
+
+        except Exception as e:
+            logger.error(f"❌ Error en Reducción LLM (fallback a heurística base): {e}")
+            
+        return merged_data
 
     def _create_intelligent_chunks(self, text: str) -> List[str]:
         """

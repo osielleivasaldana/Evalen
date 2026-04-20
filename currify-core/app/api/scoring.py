@@ -4,6 +4,7 @@ Endpoints for candidate-job matching evaluation
 """
 
 import logging
+import hashlib
 from typing import Dict, Any
 from fastapi import APIRouter, HTTPException, status
 from app.models.scoring import (
@@ -21,6 +22,9 @@ from app.core.job_parsing_prompts import get_job_parsing_prompt
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/scoring", tags=["scoring"])
+
+# Simple in-memory cache for job parsing to prevent redundant LLM calls
+_job_parsing_cache = {}
 
 
 @router.post(
@@ -140,6 +144,11 @@ async def parse_job_description(request: JobParsingRequest):
 REQUISITOS:
 {request.requirements if request.requirements else 'No especificados'}
 """
+        # 1. Check Cache
+        job_hash = hashlib.md5(input_text.encode()).hexdigest()
+        if job_hash in _job_parsing_cache:
+            logger.info("♻️ Returning cached job parsing result")
+            return _job_parsing_cache[job_hash]
 
         # Call LLM for parsing
         logger.info("Calling LLM for job description parsing")
@@ -160,7 +169,9 @@ REQUISITOS:
         # Parse response into Pydantic model
         try:
             parsed_data = ParsedJobData(**result)
-            logger.info("Job description parsed successfully")
+            # Store in cache
+            _job_parsing_cache[job_hash] = parsed_data
+            logger.info("Job description parsed successfully and cached")
             return parsed_data
 
         except Exception as e:

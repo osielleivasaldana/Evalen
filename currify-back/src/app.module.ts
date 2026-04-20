@@ -14,6 +14,7 @@ import { UsersModule } from './users/users.module';
 import { PaymentsModule } from './payments/payments.module';
 import { BillingModule } from './billing/billing.module';
 import { HealthModule } from './health/health.module';
+import { StorageModule } from './storage/storage.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { HealthModule } from './health/health.module';
     PaymentsModule,
     BillingModule,
     HealthModule,
+    StorageModule,
   ],
   controllers: [],
   providers: [],

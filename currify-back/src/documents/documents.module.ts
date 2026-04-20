@@ -3,9 +3,10 @@ import { DocumentsService } from './documents.service';
 import { DocumentsController } from './documents.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ScoringModule } from '../scoring/scoring.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
-  imports: [PrismaModule, ScoringModule],
+  imports: [PrismaModule, ScoringModule, StorageModule],
   controllers: [DocumentsController],
   providers: [DocumentsService],
   exports: [DocumentsService],

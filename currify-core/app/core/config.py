@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     # General LLM settings
     max_tokens: int = 2048
     timeout_seconds: float = 60.0
+    llm_concurrency_limit: int = 5
     
     # Security
     api_secret_key: str = "evalen-secreto-temporal-123"

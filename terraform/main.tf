@@ -15,7 +15,8 @@ module "project_services" {
     "artifactregistry.googleapis.com", # Para almacenar imágenes Docker
     "cloudbuild.googleapis.com",       # (Opcional) Si en el futuro usamos Cloud Build
     "iam.googleapis.com",              # Gestión de identidades
-    "compute.googleapis.com"           # Redes y conectividad
+    "compute.googleapis.com",          # Redes y conectividad
+    "storage.googleapis.com"           # Para almacenar CVs en GCS
   ]
 }
 
@@ -29,7 +30,20 @@ resource "google_artifact_registry_repository" "currify_repo" {
   depends_on    = [module.project_services]
 }
 
-# 3. Módulo Secret Manager (IAM y valores de secretos)
+# 3. Cloud Storage Bucket para CVs
+resource "google_storage_bucket" "cv_bucket" {
+  name          = var.gcs_cv_bucket_name != "" ? var.gcs_cv_bucket_name : "${var.project_id}-currify-cvs"
+  location      = var.region
+  force_destroy = false # IMPORTANTE: falso para no borrar accidentalmente CVs en destructions
+  
+  uniform_bucket_level_access = true
+  
+  # Por ahora, retención permanente sin lifecycle_rule. Podemos agregar después si lo necesitan.
+  
+  depends_on = [module.project_services]
+}
+
+# 4. Módulo Secret Manager (IAM y valores de secretos)
 module "secrets" {
   source     = "./modules/secrets"
   project_id = var.project_id
@@ -42,7 +56,7 @@ module "secrets" {
   depends_on = [module.project_services]
 }
 
-# 4. Módulo Compute (Cloud Run)
+# 5. Módulo Compute (Cloud Run)
 module "compute" {
   source     = "./modules/compute"
   project_id = var.project_id
@@ -55,6 +69,9 @@ module "compute" {
   google_client_secret_secret_id = module.secrets.google_client_secret_secret_id
   stripe_secret_key_secret_id    = module.secrets.stripe_secret_key_secret_id
   stripe_price_id_pro_secret_id  = module.secrets.stripe_price_id_pro_secret_id
+  
+  # Bucket reference
+  cv_bucket_name                 = google_storage_bucket.cv_bucket.name
   
   # Dependemos de que el repositorio exista
   depends_on = [google_artifact_registry_repository.currify_repo, module.secrets]
