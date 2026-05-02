@@ -49,6 +49,7 @@ interface UserProfile {
   updatedAt: string;
   plan?: string;
   cvCredits?: number;
+  smartFillCredits?: number;
   campaignLimit?: number;
   activeCampaignsCount?: number;
   onboardingCompleted?: boolean;
@@ -161,6 +162,28 @@ interface CampaignStats {
   activeCampaigns: number;
   totalCandidates: number;
   recentApplications: number;
+}
+
+export interface SmartFillRequest {
+  jobTitle: string;
+  additionalContext?: string;
+  language?: string;
+}
+
+export interface SmartFillResponse {
+  fields: {
+    title: string;
+    description: string;
+    requirements: string[];
+    modality: string;
+    duration: string;
+    salary_range?: { min: number; max: number; currency: string };
+  };
+  suggested_rubric_weights: {
+    technical_skills: number;
+    experience: number;
+    education: number;
+  };
 }
 
 // Document and CV interfaces
@@ -571,6 +594,13 @@ class ApiService {
 
   async getCampaignStats(): Promise<CampaignStats> {
     return this.apiCall('/campaigns/stats');
+  }
+
+  async generateCampaignDraft(data: SmartFillRequest): Promise<SmartFillResponse> {
+    return this.apiCall('/campaigns/generate-draft', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 
   // Document upload methods

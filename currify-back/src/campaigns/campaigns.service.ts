@@ -1,16 +1,26 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
+import { ConfigService } from '@nestjs/config';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
+import { SmartFillDto } from './dto/smart-fill.dto';
 import { CampaignStatus } from '@prisma/client';
+import axios from 'axios';
 
 @Injectable()
 export class CampaignsService {
+  private readonly coreServiceUrl: string;
+  private tokenCache: string | null = null;
+  private tokenExpiry: number = 0;
+
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
-  ) { }
+    private configService: ConfigService,
+  ) { 
+    this.coreServiceUrl = this.configService.get<string>('SCORING_SERVICE_URL') || 'http://currify-core:8000';
+  }
 
   async create(userId: string, createCampaignDto: CreateCampaignDto) {
     const { stageTemplates, ...campaignData } = createCampaignDto;
@@ -469,5 +479,76 @@ export class CampaignsService {
     }
 
     return campaign.stageTemplates;
+  }
+
+  private async getCoreServiceToken(): Promise<string> {
+    const now = Date.now();
+    if (this.tokenCache && now < this.tokenExpiry) {
+      return this.tokenCache;
+    }
+
+    try {
+      const response = await axios.post(`${this.coreServiceUrl}/auth/login`, {
+        username: 'kinich',
+        password: 'kinich!'
+      }, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const token = response.data.access_token as string;
+      this.tokenCache = token;
+      this.tokenExpiry = now + (50 * 60 * 1000); // 50 mins
+      return token;
+    } catch (error) {
+      console.error('Error getting token from core service:', error);
+      throw new Error('Failed to authenticate with core service');
+    }
+  }
+
+  async generateDraft(userId: string, smartFillDto: SmartFillDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { smartFillCredits: true, plan: true }
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.smartFillCredits <= 0 && user.plan !== 'PRO') {
+      throw new ForbiddenException('Has usado todos tus créditos de Smart Fill. Mejora a PRO para uso ilimitado o recarga tu saldo.');
+    }
+
+    try {
+      const token = await this.getCoreServiceToken();
+
+      const response = await axios.post(
+        `${this.coreServiceUrl}/api/smart-fill`,
+        smartFillDto,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          timeout: 60000 // 60s
+        }
+      );
+
+      // Decrement credit if not PRO
+      if (user.plan !== 'PRO') {
+        await this.prisma.user.update({
+          where: { id: userId },
+          data: { smartFillCredits: { decrement: 1 } }
+        });
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('[SMART_FILL] Error connecting to core service:', error?.response?.data || error.message);
+      throw new BadRequestException('Failed to generate draft via AI');
+    }
   }
 }

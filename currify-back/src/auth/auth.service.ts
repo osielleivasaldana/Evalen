@@ -68,6 +68,7 @@ export class AuthService {
         role: true,
         createdAt: true,
         cvCredits: true,
+        smartFillCredits: true,
         campaignLimit: true,
         plan: true,
       },
@@ -82,6 +83,7 @@ export class AuthService {
       company: user.company,
       plan: user.plan,
       cvCredits: user.cvCredits,
+      smartFillCredits: user.smartFillCredits,
       campaignLimit: user.campaignLimit
     };
     const token = this.jwtService.sign(payload);
@@ -120,6 +122,7 @@ export class AuthService {
       company: user.company,
       plan: user.plan,
       cvCredits: user.cvCredits,
+      smartFillCredits: user.smartFillCredits,
       campaignLimit: user.campaignLimit
     };
     const token = this.jwtService.sign(payload);
@@ -133,6 +136,7 @@ export class AuthService {
         role: user.role,
         plan: user.plan,
         cvCredits: user.cvCredits,
+        smartFillCredits: user.smartFillCredits,
         campaignLimit: user.campaignLimit,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
@@ -152,6 +156,7 @@ export class AuthService {
         role: true,
         plan: true,
         cvCredits: true,
+        smartFillCredits: true,
         campaignLimit: true,
         onboardingCompleted: true,
         createdAt: true,
@@ -268,6 +273,7 @@ export class AuthService {
         onboardingPending: !user.company, // Flag for frontend redirection
         plan: user.plan,
         cvCredits: user.cvCredits,
+        smartFillCredits: user.smartFillCredits,
         campaignLimit: user.campaignLimit
       };
 

@@ -87,13 +87,16 @@ async def extract_resume(
             except json.JSONDecodeError:
                 raise HTTPException(status_code=400, detail="Configuración JSON inválida")
 
-        logger.info(f"Processing CV extraction for file: {file.filename}")
+        # Generar Trace ID único para auditoría (especialmente para detectar data leakage)
+        request_id = extraction_config.get("request_id") or str(uuid.uuid4())[:8]
+        logger.info(f"[{request_id}] Processing CV extraction for file: {file.filename}")
 
         # Procesar extracción
         result = await extraction_service.extract_from_file(
             file_content=file_content,
             filename=file.filename,
-            config=extraction_config
+            config=extraction_config,
+            request_id=request_id
         )
 
         logger.info(f"CV extraction completed for {file.filename} with confidence {result.confianza_general:.3f}")
@@ -121,9 +124,10 @@ async def extract_from_text(
     - Útil cuando ya tienes el texto extraído y solo necesitas el procesamiento
     """
     try:
-        logger.info(f"Processing text extraction for file: {extraction_request.nombre_archivo}")
+        request_id = str(uuid.uuid4())[:8]
+        logger.info(f"[{request_id}] Processing text extraction for file: {extraction_request.nombre_archivo}")
 
-        result = await extraction_service.extract_from_text(extraction_request)
+        result = await extraction_service.extract_from_text(extraction_request, request_id=request_id)
 
         logger.info(f"Text extraction completed with confidence {result.confianza_general:.3f}")
 
@@ -152,13 +156,15 @@ async def extract_from_text_v2(
     Usa esta versión para máxima extracción de datos.
     """
     try:
-        logger.info(f"🚀 V2 Processing for file: {extraction_request.nombre_archivo}")
+        # Generar request_id único para trazabilidad
+        request_id = str(uuid.uuid4())[:8]
+        logger.info(f"[{request_id}] 🚀 V2 Processing for file: {extraction_request.nombre_archivo}")
 
         # Crear servicio V2 con técnicas avanzadas garantizadas
         llm_service = LLMService()
         extraction_service_v2 = ResumeExtractionServiceV2(llm_service)
 
-        result = await extraction_service_v2.extract_from_text(extraction_request)
+        result = await extraction_service_v2.extract_from_text(extraction_request, request_id=request_id)
 
         logger.info(f"🎯 V2 extraction completed - {len(result.datos_cv.formacion_academica)} academic + {len(result.datos_cv.experiencia_laboral)} experience")
 

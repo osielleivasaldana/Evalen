@@ -101,6 +101,7 @@ model User {
   plan               PlanTier      @default(FREE)
   trialEndsAt        DateTime?
   cvCredits          Int           @default(3)
+  smartFillCredits   Int           @default(3)
   campaignLimit      Int           @default(1)
   
   // Stripe Integration

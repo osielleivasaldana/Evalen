@@ -35,6 +35,7 @@ import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import Layout from '../layout/Layout';
 import DashboardActivation from './DashboardActivation';
 import DashboardUploadModal from './DashboardUploadModal';
+import CampaignCard from '../campaigns/shared/CampaignCard';
 import { StatCard } from '../ui/stat-card';
 import { GlassCard } from '../ui/glass-card';
 import { AuroraBackground } from '../ui/aurora-background';
@@ -490,145 +491,20 @@ const Dashboard: React.FC<DashboardProps> = ({
           ) : (
             <div className="divide-y divide-gray-200">
               {campaigns.map((campaign) => (
-                <div
+                <CampaignCard
                   key={campaign.id}
-                  className="p-6 hover:bg-gray-50 transition-colors group last:rounded-b-2xl"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${campaign.status === 'ACTIVE' ? 'bg-green-100' : 'bg-gray-200'
-                      }`}>
-                      <BriefcaseIcon className={`w-7 h-7 ${campaign.status === 'ACTIVE' ? 'text-green-600' : 'text-gray-500'
-                        }`} />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3
-                          onClick={() => onNavigateToCampaign(campaign.id)}
-                          className="text-lg font-semibold text-gray-900 cursor-pointer hover:text-indigo-600"
-                        >
-                          {campaign.title}
-                        </h3>
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
-                          <CheckCircleSolid className="w-3 h-3" />
-                          {getStatusLabel(campaign.status)}
-                        </span>
-                      </div>
-                      <div
-                        className="text-sm text-gray-600 mb-3 line-clamp-2 prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: campaign.description }}
-                      />
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span className="flex items-center gap-1.5">
-                          <UserGroupIcon className="w-4 h-4" />
-                          {campaign._count?.candidates || 0} candidatos
-                        </span>
-                        <span>•</span>
-                        <span>Creada el {formatDate(campaign.createdAt)}</span>
-                        <button
-                          onClick={() => handleCopyLink(campaign.publicId)}
-                          className="ml-auto flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 font-medium"
-                        >
-                          <ClipboardDocumentIcon className="w-4 h-4" />
-                          Copiar enlace
-                        </button>
-                        <button
-                          onClick={() => window.open(`/apply/${campaign.publicId}`, '_blank')}
-                          className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 font-medium"
-                        >
-                          <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-                          Abrir
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handleToggleCampaignStatus(campaign.id, campaign.status)}
-                        className={`p-2 rounded-lg transition-colors ${campaign.status === 'ACTIVE'
-                          ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100'
-                          : 'bg-green-50 text-green-600 hover:bg-green-100'
-                          }`}
-                        title={campaign.status === 'ACTIVE' ? 'Pausar campaña' : 'Activar campaña'}
-                      >
-                        {campaign.status === 'ACTIVE' ? (
-                          <PauseIcon className="w-5 h-5" />
-                        ) : (
-                          <PlayIcon className="w-5 h-5" />
-                        )}
-                      </button>
-
-                      <Menu as="div" className="relative">
-                        <Menu.Button className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                          <EllipsisVerticalIcon className="w-5 h-5 text-gray-600" />
-                        </Menu.Button>
-                        <Transition
-                          enter="transition ease-out duration-100"
-                          enterFrom="transform opacity-0 scale-95"
-                          enterTo="transform opacity-100 scale-100"
-                          leave="transition ease-in duration-75"
-                          leaveFrom="transform opacity-100 scale-100"
-                          leaveTo="transform opacity-0 scale-95"
-                        >
-                          <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
-                            <div className="py-1">
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    onClick={() => onNavigateToCampaign(campaign.id)}
-                                    className={`${active ? 'bg-gray-100' : ''
-                                      } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
-                                  >
-                                    <EyeIcon className="w-5 h-5" />
-                                    Ver candidatos
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    onClick={() => onEditCampaign(campaign.id)}
-                                    className={`${active ? 'bg-gray-100' : ''
-                                      } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
-                                  >
-                                    <PencilIcon className="w-5 h-5" />
-                                    Editar campaña
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    onClick={() => handleCopyLink(campaign.publicId)}
-                                    className={`${active ? 'bg-gray-100' : ''
-                                      } flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700`}
-                                  >
-                                    <ShareIcon className="w-5 h-5" />
-                                    Copiar enlace
-                                  </button>
-                                )}
-                              </Menu.Item>
-                              <div className="border-t border-gray-100" />
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    onClick={() => handleDeleteCampaign(campaign.id)}
-                                    disabled={campaign._count && campaign._count.candidates > 0}
-                                    className={`${active ? 'bg-red-50' : ''
-                                      } flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 disabled:opacity-50 disabled:cursor-not-allowed`}
-                                  >
-                                    <TrashIcon className="w-5 h-5" />
-                                    Eliminar
-                                  </button>
-                                )}
-                              </Menu.Item>
-                            </div>
-                          </Menu.Items>
-                        </Transition>
-                      </Menu>
-                    </div>
-                  </div>
-                </div>
+                  id={campaign.id}
+                  publicId={campaign.publicId}
+                  title={campaign.title}
+                  description={campaign.description}
+                  status={campaign.status}
+                  candidatesCount={campaign._count?.candidates || 0}
+                  createdAt={campaign.createdAt}
+                  onEdit={onEditCampaign}
+                  onDelete={handleDeleteCampaign}
+                  onCopyLink={handleCopyLink}
+                  onToggleStatus={handleToggleCampaignStatus}
+                />
               ))}
             </div>
           )}

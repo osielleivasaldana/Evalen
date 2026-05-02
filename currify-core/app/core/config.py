@@ -20,9 +20,9 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.1-70b-versatile"
 
     # General LLM settings
-    max_tokens: int = 2048
-    timeout_seconds: float = 60.0
-    llm_concurrency_limit: int = 5
+    max_tokens: int = 4096
+    timeout_seconds: float = 120.0
+    llm_concurrency_limit: int = 2
     
     # Security
     api_secret_key: str = "evalen-secreto-temporal-123"

@@ -5,6 +5,8 @@ import Layout from '../layout/Layout';
 import RichTextEditor from '../common/RichTextEditor';
 import FullScreenEditorModal from '../common/FullScreenEditorModal';
 import LocationAutocomplete from '../common/LocationAutocomplete';
+import SmartFillButton from './SmartFillButton';
+import { SparklesIcon } from '@heroicons/react/24/solid';
 import { CURRENCIES } from '../../constants/currencies';
 import { formatNumber, parseNumber, formatInputNumber } from '../../utils/formatters';
 import DOMPurify from 'dompurify';
@@ -78,6 +80,9 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
   const [loading, setLoading] = useState(true); // Start as loading while checking permissions
   const [permissionError, setPermissionError] = useState<string | null>(null);
   const [createdCampaign, setCreatedCampaign] = useState<Campaign | null>(null);
+
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [smartFillContext, setSmartFillContext] = useState('');
 
   // Modal states for fullscreen editing
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
@@ -236,6 +241,60 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
     }
   };
 
+  const handleSmartFill = async () => {
+    if (!formData.title?.trim()) {
+      setErrors({ title: 'Ingresa un título para usar Smart Fill' });
+      return;
+    }
+
+    setIsGenerating(true);
+    setErrors({});
+    try {
+      const response = await apiService.generateCampaignDraft({
+        jobTitle: formData.title,
+        additionalContext: smartFillContext,
+        language: 'es'
+      });
+
+      // Mapear Remote -> REMOTE, etc.
+      const mapModality = (mod: string) => {
+        if (!mod) return undefined;
+        const upper = mod.toUpperCase();
+        if (upper.includes('REMOTE') || upper.includes('REMOTA')) return 'REMOTE';
+        if (upper.includes('HYBRID') || upper.includes('HIBRID')) return 'HYBRID';
+        return 'ON_SITE';
+      };
+
+      const mapDuration = (dur: string) => {
+        if (!dur) return undefined;
+        const upper = dur.toUpperCase();
+        if (upper.includes('FIXED')) return 'FIXED_TERM';
+        if (upper.includes('PROJECT')) return 'PROJECT';
+        return 'INDEFINITE';
+      };
+
+      // Hydrate form
+      setFormData(prev => ({
+        ...prev,
+        description: response.fields.description || prev.description,
+        requirements: response.fields.requirements ? `<ul>${response.fields.requirements.map(r => `<li>${r}</li>`).join('')}</ul>` : prev.requirements,
+        modality: mapModality(response.fields.modality) || prev.modality,
+        duration: mapDuration(response.fields.duration) || prev.duration,
+        salary: response.fields.salary_range?.min || prev.salary,
+        currency: (response.fields.salary_range?.currency as any) || prev.currency,
+      }));
+
+      const profile = await apiService.getProfile();
+      setCurrentUser(profile);
+      
+      setCurrentStep(2); // Auto advance to show results
+    } catch (err: any) {
+      setErrors({ submit: err.message || 'Error al generar la campaña con IA' });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   // Show success page after campaign creation
   if (createdCampaign) {
     return (
@@ -363,12 +422,46 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                     value={formData.title || ''}
                     onChange={handleInputChange}
                     placeholder="Ej: Desarrollador Full Stack Senior"
-                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all ${errors.title ? 'border-red-500' : 'border-gray-300'
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-900 bg-white ${errors.title ? 'border-red-500' : 'border-gray-300'
                       }`}
                   />
                   {errors.title && (
                     <p className="mt-1 text-sm text-red-600">{errors.title}</p>
                   )}
+                </div>
+
+                {/* AI Assistant Section */}
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6 my-6 shadow-sm">
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-purple-900 mb-1 flex items-center gap-2">
+                        <SparklesIcon className="w-5 h-5 text-purple-600" />
+                        Smart Fill Asistente
+                      </h3>
+                      <p className="text-sm text-purple-700 mb-4">
+                        Ahorra tiempo. Ingresa el título y deja que la IA complete tu oferta laboral. 
+                        Créditos disponibles: <strong className="text-indigo-700">{currentUser?.smartFillCredits ?? 0}</strong>
+                      </p>
+                      
+                      <div>
+                        <input
+                          type="text"
+                          value={smartFillContext}
+                          onChange={(e) => setSmartFillContext(e.target.value)}
+                          placeholder="Contexto adicional (Opcional) Ej: 100% remoto, Next.js..."
+                          className="w-full px-4 py-2 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none text-sm text-gray-900 bg-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-end">
+                      <SmartFillButton 
+                        onClick={handleSmartFill} 
+                        isGenerating={isGenerating} 
+                        disabled={!formData.title?.trim() || ((currentUser?.smartFillCredits ?? 0) <= 0 && currentUser?.plan !== 'PRO')}
+                      />
+                      {errors.submit && <p className="text-red-500 text-xs mt-2 w-48 text-right">{errors.submit}</p>}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Location with Autocomplete */}
@@ -398,7 +491,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                       name="workType"
                       value={formData.workType || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${errors.workType ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white text-gray-900 ${errors.workType ? 'border-red-500' : 'border-gray-300'
                         }`}
                     >
                       <option value="">Seleccionar...</option>
@@ -421,7 +514,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                       name="modality"
                       value={formData.modality || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${errors.modality ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white text-gray-900 ${errors.modality ? 'border-red-500' : 'border-gray-300'
                         }`}
                     >
                       <option value="">Seleccionar...</option>
@@ -444,7 +537,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                       name="duration"
                       value={formData.duration || ''}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white ${errors.duration ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white text-gray-900 ${errors.duration ? 'border-red-500' : 'border-gray-300'
                         }`}
                     >
                       <option value="">Seleccionar...</option>
@@ -589,7 +682,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                         name="currency"
                         value={formData.currency || 'CLP'}
                         onChange={handleInputChange}
-                        className="w-64 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white"
+                        className="w-64 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white text-gray-900"
                       >
                         {CURRENCIES.map(currency => (
                           <option key={currency.code} value={currency.code}>
@@ -614,7 +707,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                           } as any);
                         }}
                         placeholder="Ej: 2.000.000"
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all text-gray-900 bg-white"
                       />
                     </div>
                   </div>
@@ -796,7 +889,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                                 });
                               }}
                               placeholder="ej: Entrevista técnica, Prueba coding..."
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${errors[`stage_${index}_name`] ? 'border-red-500' : 'border-gray-300'
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white ${errors[`stage_${index}_name`] ? 'border-red-500' : 'border-gray-300'
                                 }`}
                             />
                             {errors[`stage_${index}_name`] && (
@@ -820,7 +913,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                               }}
                               placeholder="Qué se espera evaluar en esta etapa..."
                               rows={2}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white"
                             />
                           </div>
 
@@ -838,7 +931,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                                   stageTemplates: newStages
                                 });
                               }}
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${errors[`stage_${index}_responsible`] ? 'border-red-500' : 'border-gray-300'
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-gray-900 bg-white ${errors[`stage_${index}_responsible`] ? 'border-red-500' : 'border-gray-300'
                                 }`}
                             >
                               <option value="">Selecciona un responsable...</option>
