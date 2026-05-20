@@ -67,6 +67,7 @@ enum StageStatus {
 }
 
 enum UserRole {
+  OWNER
   ADMIN
   RECRUITER
   TECHNICAL_REVIEWER
@@ -331,3 +332,19 @@ model Notification {
   @@map("notifications")
   @@index([userId, read])
 }
+
+model LlmUsageLog {
+  id               String   @id @default(cuid())
+  model            String
+  action           String   // e.g. "cv_parsing", "candidate_scoring", "smart_fill"
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  costUsd          Decimal  @db.Decimal(10, 6)
+  company          String?
+  userId           String?
+  createdAt        DateTime @default(now())
+
+  @@map("llm_usage_logs")
+}
+

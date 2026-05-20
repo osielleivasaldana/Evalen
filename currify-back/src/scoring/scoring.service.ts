@@ -86,6 +86,12 @@ export class ScoringService {
           requirements: true,
           conditions: true,
           updatedAt: true,
+          userId: true,
+          user: {
+            select: {
+              company: true,
+            },
+          },
         },
       });
 
@@ -117,6 +123,25 @@ export class ScoringService {
       });
 
       const parsedData = response.data;
+
+      const promptTokens = parseInt(response.headers['x-llm-prompt-tokens'] || response.headers['X-LLM-Prompt-Tokens'] || '0', 10);
+      const completionTokens = parseInt(response.headers['x-llm-completion-tokens'] || response.headers['X-LLM-Completion-Tokens'] || '0', 10);
+      const model = response.headers['x-llm-model'] || response.headers['X-LLM-Model'] || 'unknown';
+
+      if (promptTokens > 0 || completionTokens > 0) {
+        await this.prisma.llmUsageLog.create({
+          data: {
+            userId: campaign.userId,
+            company: campaign.user?.company || null,
+            action: 'JOB_PARSING',
+            model: model,
+            promptTokens: promptTokens,
+            completionTokens: completionTokens,
+            totalTokens: promptTokens + completionTokens,
+            costUsd: (promptTokens + completionTokens) * 0.00001,
+          },
+        }).catch((err: any) => this.logger.error('Error logging LLM usage for job parsing', err));
+      }
 
       // Guardar parsed data en la campaña
       await this.prisma.campaign.update({
@@ -203,11 +228,19 @@ export class ScoringService {
    */
   async evaluateCandidate(candidateId: string): Promise<any> {
     try {
-      // Obtener candidato con su CV estructurado
+      // Obtener candidato con su CV estructurado y detalles del usuario/compañía
       const candidate = await this.prisma.candidate.findUnique({
         where: { id: candidateId },
         include: {
-          campaign: true,
+          campaign: {
+            include: {
+              user: {
+                select: {
+                  company: true,
+                },
+              },
+            },
+          },
           scoring: true,
         },
       });
@@ -256,6 +289,25 @@ export class ScoringService {
 
       this.logger.debug(`Scoring service responded for candidate ${candidateId}`);
       const scoringResult = response.data;
+
+      const promptTokens = parseInt(response.headers['x-llm-prompt-tokens'] || response.headers['X-LLM-Prompt-Tokens'] || '0', 10);
+      const completionTokens = parseInt(response.headers['x-llm-completion-tokens'] || response.headers['X-LLM-Completion-Tokens'] || '0', 10);
+      const model = response.headers['x-llm-model'] || response.headers['X-LLM-Model'] || 'unknown';
+
+      if (promptTokens > 0 || completionTokens > 0) {
+        await this.prisma.llmUsageLog.create({
+          data: {
+            userId: candidate.campaign.userId,
+            company: candidate.campaign.user?.company || null,
+            action: 'CANDIDATE_EVALUATION',
+            model: model,
+            promptTokens: promptTokens,
+            completionTokens: completionTokens,
+            totalTokens: promptTokens + completionTokens,
+            costUsd: (promptTokens + completionTokens) * 0.00001,
+          },
+        }).catch((err: any) => this.logger.error('Error logging LLM usage for candidate evaluation', err));
+      }
 
       // Guardar scoring en la base de datos
       const savedScoring = await this.prisma.candidateScoring.create({

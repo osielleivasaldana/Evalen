@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { apiService, CreateCampaignRequest, Campaign, StageTemplateInput, UserProfile } from '../../services/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { apiService, CreateCampaignRequest, Campaign, StageTemplateInput, UserProfile, SmartFillResponse } from '../../services/api';
 import CampaignCreated from './CampaignCreated';
+import SmartFillPreviewModal from './SmartFillPreviewModal';
 import Layout from '../layout/Layout';
 import RichTextEditor from '../common/RichTextEditor';
 import FullScreenEditorModal from '../common/FullScreenEditorModal';
@@ -24,7 +25,8 @@ import {
   CheckIcon,
   UserGroupIcon,
   PlusIcon,
-  TrashIcon
+  TrashIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 
 interface CreateCampaignProps {
@@ -83,6 +85,16 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [smartFillContext, setSmartFillContext] = useState('');
+
+  // Smart Fill Preview Modal states
+  const [smartFillResponse, setSmartFillResponse] = useState<SmartFillResponse | null>(null);
+  const [smartFillModalOpen, setSmartFillModalOpen] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
+
+  // AI Hydrated wizard states
+  const [aiHydratedSteps, setAiHydratedSteps] = useState<number[]>([]);
+  const [showAiBanner, setShowAiBanner] = useState(false);
+  const prevStepRef = useRef<number>(currentStep);
 
   // Modal states for fullscreen editing
   const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
@@ -256,44 +268,146 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
         language: 'es'
       });
 
-      // Mapear Remote -> REMOTE, etc.
-      const mapModality = (mod: string) => {
-        if (!mod) return undefined;
-        const upper = mod.toUpperCase();
-        if (upper.includes('REMOTE') || upper.includes('REMOTA')) return 'REMOTE';
-        if (upper.includes('HYBRID') || upper.includes('HIBRID')) return 'HYBRID';
-        return 'ON_SITE';
-      };
-
-      const mapDuration = (dur: string) => {
-        if (!dur) return undefined;
-        const upper = dur.toUpperCase();
-        if (upper.includes('FIXED')) return 'FIXED_TERM';
-        if (upper.includes('PROJECT')) return 'PROJECT';
-        return 'INDEFINITE';
-      };
-
-      // Hydrate form
-      setFormData(prev => ({
-        ...prev,
-        description: response.fields.description || prev.description,
-        requirements: response.fields.requirements ? `<ul>${response.fields.requirements.map(r => `<li>${r}</li>`).join('')}</ul>` : prev.requirements,
-        modality: mapModality(response.fields.modality) || prev.modality,
-        duration: mapDuration(response.fields.duration) || prev.duration,
-        salary: response.fields.salary_range?.min || prev.salary,
-        currency: (response.fields.salary_range?.currency as any) || prev.currency,
-      }));
+      setSmartFillResponse(response);
+      setSmartFillModalOpen(true);
 
       const profile = await apiService.getProfile();
       setCurrentUser(profile);
-      
-      setCurrentStep(2); // Auto advance to show results
     } catch (err: any) {
       setErrors({ submit: err.message || 'Error al generar la campaña con IA' });
     } finally {
       setIsGenerating(false);
     }
   };
+
+  const handleApplySmartFill = async () => {
+    if (!smartFillResponse) return;
+    setIsApplying(true);
+
+    const mapModalityText = (mod: string) => {
+      const upper = mod?.toUpperCase() || '';
+      if (upper.includes('REMOTE') || upper.includes('REMOTA')) return 'Remoto';
+      if (upper.includes('HYBRID') || upper.includes('HIBRID')) return 'Híbrido';
+      return 'Presencial';
+    };
+
+    const mapDurationText = (dur: string) => {
+      const upper = dur?.toUpperCase() || '';
+      if (upper.includes('FIXED')) return 'Plazo Fijo';
+      if (upper.includes('PROJECT')) return 'Por Proyecto';
+      return 'Indefinido';
+    };
+
+    const mapModality = (mod: string) => {
+      if (!mod) return undefined;
+      const upper = mod.toUpperCase();
+      if (upper.includes('REMOTE') || upper.includes('REMOTA')) return 'REMOTE';
+      if (upper.includes('HYBRID') || upper.includes('HIBRID')) return 'HYBRID';
+      return 'ON_SITE';
+    };
+
+    const mapDuration = (dur: string) => {
+      if (!dur) return undefined;
+      const upper = dur.toUpperCase();
+      if (upper.includes('FIXED')) return 'FIXED_TERM';
+      if (upper.includes('PROJECT')) return 'PROJECT';
+      return 'INDEFINITE';
+    };
+
+    const titleText = smartFillResponse.fields.title || '';
+    const modalityText = mapModalityText(smartFillResponse.fields.modality);
+    const durationText = mapDurationText(smartFillResponse.fields.duration);
+
+    let conditionsDraft = `<p><strong>Detalles de contratación para el puesto de ${DOMPurify.sanitize(titleText)}:</strong></p><ul>`;
+    conditionsDraft += `<li><strong>Tipo de contrato:</strong> ${DOMPurify.sanitize(durationText)}</li>`;
+    conditionsDraft += `<li><strong>Modalidad de trabajo:</strong> ${DOMPurify.sanitize(modalityText)}</li>`;
+    
+    if (smartFillResponse.fields.salary_range?.min) {
+      const formattedSalary = new Intl.NumberFormat('es-CL').format(smartFillResponse.fields.salary_range.min);
+      const currencyCode = smartFillResponse.fields.salary_range.currency || 'CLP';
+      conditionsDraft += `<li><strong>Renta ofrecida:</strong> ${DOMPurify.sanitize(currencyCode)} $${formattedSalary} líquidos</li>`;
+    }
+
+    conditionsDraft += `</ul><p><strong>Beneficios sugeridos:</strong></p><ul>`;
+    conditionsDraft += `<li>Oportunidades de crecimiento y desarrollo profesional.</li>`;
+    conditionsDraft += `<li>Excelente clima laboral y cultura de trabajo colaborativa.</li>`;
+    conditionsDraft += `<li>Equipamiento de trabajo proporcionado por la empresa.</li>`;
+    conditionsDraft += `</ul>`;
+
+    const detectStageCategory = (title: string): 'it' | 'sales' | 'general' => {
+      const upper = (title || '').toUpperCase();
+      
+      const techKeywords = [
+        'DESARROLLADOR', 'DEVELOPER', 'INGENIERO', 'SOFTWARE', 'PROGRAMADOR', 
+        'IT', 'TECH', 'QA', 'FRONTEND', 'BACKEND', 'FULL STACK', 'FULLSTACK',
+        'SISTEMAS', 'COMPUTACION', 'INFORMÁTICA', 'INFORMATICA', 'DEVOPS', 
+        'TECNOLOGIA', 'TECNOLOGÍA', 'SCRUM', 'PRODUCT OWNER', 'DATA', 'PYTHON', 
+        'NODE', 'REACT', 'ANGULAR', 'VUE', 'JAVA', 'NET', 'C#', 'CLOUD'
+      ];
+      
+      const salesKeywords = [
+        'VENDEDOR', 'VENTAS', 'COMERCIAL', 'SALES', 'EJECUTIVO', 'KEY ACCOUNT', 
+        'KAM', 'ACCOUNT EXECUTIVE', 'NEGOCIACION', 'NEGOCIACIÓN', 'MARKETING',
+        'PROMOTOR', 'RETAIL', 'STORE', 'BUSINESS DEVELOPMENT', 'BDE'
+      ];
+
+      if (techKeywords.some(kw => upper.includes(kw))) {
+        return 'it';
+      }
+      
+      if (salesKeywords.some(kw => upper.includes(kw))) {
+        return 'sales';
+      }
+
+      return 'general';
+    };
+
+    const category = detectStageCategory(titleText);
+    const selectedTemplate = STAGE_TEMPLATES.find(t => t.id === category) || STAGE_TEMPLATES[0];
+    const autoStages = selectedTemplate.stages.map((stage, idx) => ({
+      name: stage.name,
+      description: stage.description,
+      responsibleId: currentUser?.id || '',
+      order: idx + 1
+    }));
+
+    setFormData(prev => ({
+      ...prev,
+      description: smartFillResponse.fields.description || prev.description,
+      requirements: smartFillResponse.fields.requirements
+        ? `<ul>${smartFillResponse.fields.requirements.map(r => `<li>${DOMPurify.sanitize(r)}</li>`).join('')}</ul>`
+        : prev.requirements,
+      modality: mapModality(smartFillResponse.fields.modality) || prev.modality,
+      duration: mapDuration(smartFillResponse.fields.duration) || prev.duration,
+      salary: smartFillResponse.fields.salary_range?.min || prev.salary,
+      currency: (smartFillResponse.fields.salary_range?.currency as any) || prev.currency,
+      conditions: conditionsDraft,
+      stageTemplates: autoStages,
+    }));
+
+    setSmartFillModalOpen(false);
+    setSmartFillResponse(null);
+    setAiHydratedSteps([1, 2, 3, 4]);
+    setShowAiBanner(true);
+    setCurrentStep(2); // Auto advance to show results
+    setIsApplying(false);
+  };
+
+  const handleDiscardSmartFill = () => {
+    setSmartFillModalOpen(false);
+    setSmartFillResponse(null);
+  };
+
+  // Remove a step from the AI hydrated list when the user leaves/reviews it
+  useEffect(() => {
+    const prevStep = prevStepRef.current;
+    if (prevStep !== currentStep) {
+      if (aiHydratedSteps.includes(prevStep)) {
+        setAiHydratedSteps(prev => prev.filter(s => s !== prevStep));
+      }
+      prevStepRef.current = currentStep;
+    }
+  }, [currentStep, aiHydratedSteps]);
 
   // Show success page after campaign creation
   if (createdCampaign) {
@@ -356,33 +470,46 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
           </div>
 
           {/* Progress Indicator */}
-          <div className="bg-white shadow-xl px-8 py-6 border-b">
+          <div className="bg-white shadow-xl px-8 py-6 border-b text-gray-900">
             <div className="flex items-center justify-between">
               {STEPS.map((step, index) => {
                 const Icon = step.icon;
                 const isActive = currentStep === step.number;
                 const isCompleted = currentStep > step.number;
+                const isAiHydrated = aiHydratedSteps.includes(step.number);
 
                 return (
                   <React.Fragment key={step.number}>
                     <div className="flex flex-col items-center flex-1">
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${isCompleted
-                          ? 'bg-green-500 text-white'
-                          : isActive
-                            ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-110'
-                            : 'bg-gray-200 text-gray-400'
-                          }`}
+                        className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                          isAiHydrated
+                            ? 'bg-purple-100 border border-purple-400 text-purple-600 animate-pulse'
+                            : isCompleted
+                              ? 'bg-green-500 text-white'
+                              : isActive
+                                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-110'
+                                : 'bg-gray-200 text-gray-400'
+                        }`}
                       >
-                        {isCompleted ? (
+                        {isAiHydrated ? (
+                          <SparklesIcon className="w-6 h-6 text-purple-600" />
+                        ) : isCompleted ? (
                           <CheckIcon className="w-6 h-6" />
                         ) : (
                           <Icon className="w-6 h-6" />
                         )}
                       </div>
                       <span
-                        className={`text-xs font-medium text-center ${isActive ? 'text-purple-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
-                          }`}
+                        className={`text-xs font-medium text-center ${
+                          isAiHydrated
+                            ? 'text-purple-600 font-semibold'
+                            : isActive
+                              ? 'text-purple-600'
+                              : isCompleted
+                                ? 'text-green-600'
+                                : 'text-gray-400'
+                        }`}
                       >
                         {step.title}
                       </span>
@@ -390,8 +517,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                     {index < STEPS.length - 1 && (
                       <div className="flex-1 h-1 mx-2 mb-8">
                         <div
-                          className={`h-full rounded transition-all duration-300 ${currentStep > step.number ? 'bg-green-500' : 'bg-gray-200'
-                            }`}
+                          className={`h-full rounded transition-all duration-300 ${currentStep > step.number ? 'bg-green-500' : 'bg-gray-200'}`}
                         />
                       </div>
                     )}
@@ -402,7 +528,29 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
           </div>
 
           {/* Form Content */}
-          <div className="bg-white shadow-xl rounded-b-2xl p-8">
+          <div className="bg-white shadow-xl rounded-b-2xl p-8 text-gray-900">
+            {/* AI Hydration Banner */}
+            {showAiBanner && (
+              <div className="mb-6 bg-gradient-to-r from-purple-500/10 via-indigo-500/10 to-pink-500/10 border border-purple-200/50 rounded-xl p-4 flex items-center justify-between gap-4 animate-fade-in shadow-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl flex-shrink-0">✨</span>
+                  <div>
+                    <h4 className="font-bold text-indigo-900 text-sm">Borrador de Smart Fill Aplicado</h4>
+                    <p className="text-gray-600 text-xs mt-0.5 leading-relaxed">
+                      La IA completó los borradores en los Pasos 1, 2, 3 y 4. Por favor, navega por los pasos para confirmar y personalizar los detalles.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAiBanner(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 rounded-lg hover:bg-gray-100/50 flex-shrink-0"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+
             {/* Step 1: Información Básica */}
             {currentStep === 1 && (
               <div className="space-y-6 animate-fade-in">
@@ -986,21 +1134,36 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                             <BriefcaseIcon className="w-4 h-4" />
                             Tipo:
                           </span>
-                          <p className="text-gray-900 mt-1">{formData.workType}</p>
+                          <p className="text-gray-900 mt-1">
+                            {formData.workType === 'FULL_TIME' && 'Full Time'}
+                            {formData.workType === 'PART_TIME' && 'Part Time'}
+                            {formData.workType === 'INTERNSHIP' && 'Práctica'}
+                            {!['FULL_TIME', 'PART_TIME', 'INTERNSHIP'].includes(formData.workType || '') && (formData.workType || 'No especificado')}
+                          </p>
                         </div>
                         <div>
                           <span className="font-semibold text-gray-700 flex items-center gap-1">
                             <HomeIcon className="w-4 h-4" />
                             Modalidad:
                           </span>
-                          <p className="text-gray-900 mt-1">{formData.modality}</p>
+                          <p className="text-gray-900 mt-1">
+                            {formData.modality === 'REMOTE' && 'Remoto'}
+                            {formData.modality === 'HYBRID' && 'Híbrido'}
+                            {formData.modality === 'ON_SITE' && 'Presencial'}
+                            {!['REMOTE', 'HYBRID', 'ON_SITE'].includes(formData.modality || '') && (formData.modality || 'No especificado')}
+                          </p>
                         </div>
                         <div>
                           <span className="font-semibold text-gray-700 flex items-center gap-1">
                             <ClockIcon className="w-4 h-4" />
                             Duración:
                           </span>
-                          <p className="text-gray-900 mt-1">{formData.duration}</p>
+                          <p className="text-gray-900 mt-1">
+                            {formData.duration === 'INDEFINITE' && 'Indefinido'}
+                            {formData.duration === 'FIXED_TERM' && 'Plazo Fijo'}
+                            {formData.duration === 'PROJECT' && 'Proyecto'}
+                            {!['INDEFINITE', 'FIXED_TERM', 'PROJECT'].includes(formData.duration || '') && (formData.duration || 'No especificado')}
+                          </p>
                         </div>
                       </div>
                       {formData.inclusionPosition && (
@@ -1197,6 +1360,14 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
         }}
         title="Condiciones y Beneficios"
         placeholder="Incluye información sobre beneficios, modalidad de trabajo, horarios, vacaciones, etc..."
+      />
+
+      <SmartFillPreviewModal
+        isOpen={smartFillModalOpen}
+        response={smartFillResponse}
+        onApply={handleApplySmartFill}
+        onDiscard={handleDiscardSmartFill}
+        isApplying={isApplying}
       />
     </Layout>
   );

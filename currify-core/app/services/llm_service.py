@@ -3,8 +3,11 @@ import logging
 import time
 import asyncio
 import random
+import contextvars
 from typing import Optional, Dict, Any, List
 from app.core.config import settings
+
+token_usage_var = contextvars.ContextVar("token_usage_var", default=None)
 
 # Import providers conditionally
 try:
@@ -32,6 +35,7 @@ class LLMService:
     def __init__(self):
         self.provider = settings.llm_provider.lower()
         self.api_key = settings.current_api_key
+        self.last_usage = None
 
         if not self.api_key:
             raise ValueError(f"API key is required for provider: {self.provider}")
@@ -95,6 +99,51 @@ class LLMService:
             logger.error(f"Error generating embedding: {e}")
             return []
 
+    def _save_usage(self, response: Any, model: str):
+        """Helper to parse and save token usage metrics"""
+        try:
+            if not response:
+                return
+            
+            prompt_tokens = 0
+            completion_tokens = 0
+            total_tokens = 0
+            
+            # Google Gemini usage format
+            if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                usage = response.usage_metadata
+                prompt_tokens = getattr(usage, 'prompt_token_count', 0)
+                completion_tokens = getattr(usage, 'candidates_token_count', 0)
+                total_tokens = getattr(usage, 'total_token_count', 0)
+            
+            # OpenAI / Groq / Instructor usage format
+            elif hasattr(response, 'usage') and response.usage:
+                usage = response.usage
+                # Anthropic uses input_tokens and output_tokens
+                if hasattr(usage, 'input_tokens'):
+                    prompt_tokens = getattr(usage, 'input_tokens', 0)
+                    completion_tokens = getattr(usage, 'output_tokens', 0)
+                    total_tokens = prompt_tokens + completion_tokens
+                else:
+                    prompt_tokens = getattr(usage, 'prompt_tokens', 0)
+                    completion_tokens = getattr(usage, 'completion_tokens', 0)
+                    total_tokens = getattr(usage, 'total_tokens', 0)
+            
+            if total_tokens > 0 or prompt_tokens > 0:
+                self.last_usage = {
+                    "prompt_tokens": prompt_tokens,
+                    "completion_tokens": completion_tokens,
+                    "total_tokens": total_tokens if total_tokens > 0 else (prompt_tokens + completion_tokens),
+                    "model": model
+                }
+                logger.info(f"Captured token usage: {self.last_usage}")
+                
+                accumulator = token_usage_var.get()
+                if accumulator is not None:
+                    accumulator.append(self.last_usage)
+        except Exception as e:
+            logger.warning(f"Failed to capture token usage: {e}")
+
     async def call_agent_structured(
         self, prompt: str, input_data: str, response_model: Any, stage_name: str = "structured_extraction", request_id: str = "unknown"
     ) -> Optional[Any]:
@@ -124,13 +173,29 @@ class LLMService:
 
             # Native instructor call
             messages = [{"role": "system", "content": prompt}, {"role": "user", "content": secure_prompt}]
-            return await self.client.chat.completions.create(
-                model=settings.current_model,
-                response_model=response_model,
-                messages=messages,
-                temperature=0.0,
-                max_tokens=2048
-            )
+            
+            # Using create_with_completion to capture token usage
+            if hasattr(self.client.chat.completions, 'create_with_completion'):
+                obj, completion = await self.client.chat.completions.create_with_completion(
+                    model=settings.current_model,
+                    response_model=response_model,
+                    messages=messages,
+                    temperature=0.0,
+                    max_tokens=2048
+                )
+                self._save_usage(completion, settings.current_model)
+                return obj
+            else:
+                response = await self.client.chat.completions.create(
+                    model=settings.current_model,
+                    response_model=response_model,
+                    messages=messages,
+                    temperature=0.0,
+                    max_tokens=2048
+                )
+                if hasattr(response, '_raw_response'):
+                    self._save_usage(response._raw_response, settings.current_model)
+                return response
 
         return await self._execute_with_backoff(_execute, stage_name, request_id=request_id)
 
@@ -195,6 +260,7 @@ class LLMService:
                      messages=messages,
                      timeout=settings.timeout_seconds
                  )
+                 self._save_usage(response, settings.current_model)
                  return response.content[0].text.strip()
 
              elif self.provider in ["openai", "groq"]:
@@ -210,6 +276,7 @@ class LLMService:
                      max_tokens=settings.max_tokens,
                      timeout=settings.timeout_seconds
                  )
+                 self._save_usage(response, settings.current_model)
                  return response.choices[0].message.content.strip()
 
              return None
@@ -233,6 +300,7 @@ class LLMService:
             messages=[{"role": "user", "content": prompt}],
             timeout=settings.timeout_seconds
         )
+        self._save_usage(response, settings.current_model)
         return response.content[0].text.strip() if response.content else None
 
     async def _call_openai_api(self, prompt: str, temperature: float) -> Optional[str]:
@@ -243,11 +311,13 @@ class LLMService:
             messages=[{"role": "user", "content": prompt}],
             timeout=settings.timeout_seconds
         )
+        self._save_usage(response, settings.current_model)
         return response.choices[0].message.content.strip() if response.choices else None
 
     async def _call_google_api(self, prompt: str, temperature: float) -> Optional[str]:
         config = genai.types.GenerationConfig(max_output_tokens=settings.max_tokens, temperature=temperature, response_mime_type="application/json")
         response = await self.client.generate_content_async(prompt, generation_config=config)
+        self._save_usage(response, settings.google_model)
         return response.text.strip() if response.text else None
 
     async def _call_groq_api(self, prompt: str, temperature: float) -> Optional[str]:
@@ -258,6 +328,7 @@ class LLMService:
             messages=[{"role": "user", "content": prompt}],
             timeout=settings.timeout_seconds
         )
+        self._save_usage(response, settings.current_model)
         return response.choices[0].message.content.strip() if response.choices else None
     
     def _extract_json_from_response(self, response_text: str, stage: str = "unknown") -> Optional[Any]:

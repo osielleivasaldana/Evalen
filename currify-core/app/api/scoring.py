@@ -6,7 +6,7 @@ Endpoints for candidate-job matching evaluation
 import logging
 import hashlib
 from typing import Dict, Any
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Response
 from app.models.scoring import (
     ScoringRequest,
     ScoringResponse,
@@ -16,7 +16,7 @@ from app.models.scoring import (
     CompleteJobData
 )
 from app.services.scoring_service import ScoringService
-from app.services.llm_service import LLMService
+from app.services.llm_service import LLMService, token_usage_var
 from app.core.job_parsing_prompts import get_job_parsing_prompt
 
 logger = logging.getLogger(__name__)
@@ -55,12 +55,14 @@ _job_parsing_cache = {}
     - **Career Trajectory (5%)**: Career growth and stability
     """
 )
-async def evaluate_candidate_job_fit(request: ScoringRequest):
+async def evaluate_candidate_job_fit(request: ScoringRequest, response: Response):
     """
     Evaluate how well a candidate matches a job position
 
     Returns detailed scoring analysis with breakdown by dimension
     """
+    token_usage_list = []
+    token = token_usage_var.set(token_usage_list)
     try:
         logger.info("Received scoring evaluation request")
 
@@ -87,6 +89,17 @@ async def evaluate_candidate_job_fit(request: ScoringRequest):
             )
 
         logger.info(f"Scoring evaluation completed: {result.overall_score:.1f}/100")
+
+        # Set custom usage headers if logs accumulated
+        if token_usage_list:
+            total_prompt = sum(u.get("prompt_tokens", 0) for u in token_usage_list)
+            total_completion = sum(u.get("completion_tokens", 0) for u in token_usage_list)
+            models = list(set(u.get("model", "unknown") for u in token_usage_list))
+            response.headers["X-LLM-Prompt-Tokens"] = str(total_prompt)
+            response.headers["X-LLM-Completion-Tokens"] = str(total_completion)
+            response.headers["X-LLM-Model"] = ",".join(models)
+            logger.info(f"🚀 Attached usage headers: prompt={total_prompt}, completion={total_completion}, models={models}")
+
         return result
 
     except HTTPException:
@@ -97,6 +110,8 @@ async def evaluate_candidate_job_fit(request: ScoringRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error inesperado durante la evaluación: {str(e)}"
         )
+    finally:
+        token_usage_var.reset(token)
 
 
 @router.post(
@@ -125,12 +140,14 @@ async def evaluate_candidate_job_fit(request: ScoringRequest):
     and send to `/scoring/evaluate`
     """
 )
-async def parse_job_description(request: JobParsingRequest):
+async def parse_job_description(request: JobParsingRequest, response: Response):
     """
     Parse job description text into structured format using LLM
 
     Returns structured job data ready to be combined with campaign metadata
     """
+    token_usage_list = []
+    token = token_usage_var.set(token_usage_list)
     try:
         logger.info("Received job parsing request")
 
@@ -172,6 +189,17 @@ REQUISITOS:
             # Store in cache
             _job_parsing_cache[job_hash] = parsed_data
             logger.info("Job description parsed successfully and cached")
+
+            # Set custom usage headers if logs accumulated
+            if token_usage_list:
+                total_prompt = sum(u.get("prompt_tokens", 0) for u in token_usage_list)
+                total_completion = sum(u.get("completion_tokens", 0) for u in token_usage_list)
+                models = list(set(u.get("model", "unknown") for u in token_usage_list))
+                response.headers["X-LLM-Prompt-Tokens"] = str(total_prompt)
+                response.headers["X-LLM-Completion-Tokens"] = str(total_completion)
+                response.headers["X-LLM-Model"] = ",".join(models)
+                logger.info(f"🚀 Attached usage headers: prompt={total_prompt}, completion={total_completion}, models={models}")
+
             return parsed_data
 
         except Exception as e:
@@ -190,6 +218,8 @@ REQUISITOS:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error inesperado durante el parsing: {str(e)}"
         )
+    finally:
+        token_usage_var.reset(token)
 
 
 @router.post(

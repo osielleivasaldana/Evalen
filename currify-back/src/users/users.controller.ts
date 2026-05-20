@@ -17,37 +17,37 @@ export class UsersController {
   }
 
   @Post()
-  @Roles('ADMIN', 'RECRUITER')
+  @Roles('OWNER', 'ADMIN', 'RECRUITER')
   create(@Body() createUserDto: CreateUserDto, @Request() req: any) {
     return this.usersService.create(createUserDto, req.user.id);
   }
 
   @Get()
-  @Roles('ADMIN', 'RECRUITER')
+  @Roles('OWNER', 'ADMIN', 'RECRUITER')
   findAll(@Request() req: any) {
     return this.usersService.findAll(req.user.company);
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'RECRUITER')
+  @Roles('OWNER', 'ADMIN', 'RECRUITER')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'RECRUITER')
+  @Roles('OWNER', 'ADMIN', 'RECRUITER')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Request() req: any) {
     return this.usersService.update(id, updateUserDto, req.user.id, req.user.role);
   }
 
   @Delete(':id')
-  @Roles('ADMIN', 'RECRUITER')
+  @Roles('OWNER', 'ADMIN', 'RECRUITER')
   remove(@Param('id') id: string, @Request() req: any) {
     return this.usersService.remove(id, req.user.id);
   }
 
   @Get('by-company/:company')
-  @Roles('ADMIN', 'RECRUITER')
+  @Roles('OWNER', 'ADMIN', 'RECRUITER')
   findByCompany(@Param('company') company: string) {
     return this.usersService.findByCompany(company);
   }

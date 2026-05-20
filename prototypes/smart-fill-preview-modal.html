@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Fill Preview Modal — Prototipo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* Scrollbar sutil */
+    .scrollable-content::-webkit-scrollbar { width: 6px; }
+    .scrollable-content::-webkit-scrollbar-track { background: transparent; }
+    .scrollable-content::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+    /* Animaciones */
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100%); } }
+
+    .modal-enter { animation: fadeIn 0.25s ease-out; }
+    .modal-exit  { animation: fadeOut 0.2s ease-in forwards; }
+    .toast-enter { animation: toastIn 0.3s ease-out; }
+    .toast-exit  { animation: toastOut 0.3s ease-in forwards; }
+
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center font-sans antialiased">
+
+  <!-- ============ BOTÓN DE LANZAMIENTO (simula trigger en CreateCampaign) ============ -->
+  <div class="text-center">
+    <button
+      id="openModalBtn"
+      class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+    >
+      ✨ Abrir Smart Fill Preview
+    </button>
+    <p class="mt-3 text-sm text-gray-500">Simula el modal tras la generación con IA</p>
+  </div>
+
+  <!-- ============ TOAST CONTENEDOR ============ -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-[60] flex flex-col gap-2"></div>
+
+  <!-- ============ OVERLAY + MODAL ============ -->
+  <div
+    id="modalOverlay"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden"
+    aria-hidden="true"
+  >
+    <div
+      id="modalContainer"
+      class="modal-enter bg-white rounded-2xl shadow-2xl w-full mx-4 md:mx-auto md:max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitle"
+      onclick="event.stopPropagation()"
+    >
+      <!-- ===== HEADER — sticky top-0, z-10, gradient ===== -->
+      <div class="sticky top-0 z-10 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-2xl px-6 py-5 md:px-6 md:py-5">
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3 min-w-0">
+            <span class="text-2xl flex-shrink-0">✨</span>
+            <div class="min-w-0">
+              <h2 id="modalTitle" class="text-lg md:text-xl font-bold leading-tight truncate">
+                Vista Previa: Smart Fill Asistente
+              </h2>
+              <p class="text-sm text-white/80 mt-0.5 truncate">
+                Revisa el borrador generado por IA antes de aplicarlo
+              </p>
+            </div>
+          </div>
+          <button
+            id="closeBtn"
+            class="flex-shrink-0 text-white/80 hover:text-white transition-colors p-1 -mr-1 -mt-1 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50"
+            aria-label="Cerrar modal"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ===== SCROLLABLE CONTENT ===== -->
+      <div class="scrollable-content flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-5">
+
+        <!-- ===== INFO GENERAL ===== -->
+        <section>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Información General
+          </h3>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 md:p-6">
+            <h4 id="jobTitle" class="text-gray-900 font-bold text-lg md:text-xl mb-3">
+              Desarrollador Full Stack Senior
+            </h4>
+            <div class="flex flex-wrap gap-x-6 gap-y-2 text-gray-700 text-sm md:text-base">
+              <span class="flex items-center gap-2">
+                <span class="flex-shrink-0">🏠</span>
+                <span id="modalityText">Remoto</span>
+              </span>
+              <span class="flex items-center gap-2">
+                <span class="flex-shrink-0">⏱</span>
+                <span id="durationText">Indefinido</span>
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== DESCRIPCIÓN ===== -->
+        <section>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Descripción del Puesto
+          </h3>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 md:p-6">
+            <p id="descriptionText" class="text-gray-800 text-sm md:text-base leading-relaxed">
+              Buscamos un ingeniero apasionado por la escalabilidad y el desarrollo de productos digitales. Serás responsable de diseñar, construir y mantener sistemas robustos usando tecnologías modernas como NestJS, React y AWS. Trabajarás con un equipo multidisciplinario en un ambiente ágil y dinámico, donde tu opinión importa y puedes impactar directamente en la arquitectura del producto. Valoramos la autonomía, la comunicación clara y el compromiso con la calidad del código.
+            </p>
+            <button
+              id="toggleDescriptionBtn"
+              class="mt-3 text-indigo-600 hover:text-indigo-700 font-medium text-sm focus:outline-none focus:underline"
+            >
+              Ver texto completo ▾
+            </button>
+          </div>
+        </section>
+
+        <!-- ===== REQUISITOS ===== -->
+        <section>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Requisitos
+          </h3>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 md:p-6">
+            <ul id="requirementsList" class="space-y-2 text-gray-800 text-sm md:text-base">
+              <!-- Inyectado por JS -->
+            </ul>
+          </div>
+        </section>
+
+        <!-- ===== SALARIO ===== -->
+        <section>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Salario
+          </h3>
+          <div id="salaryCard" class="bg-green-50 border border-green-200 rounded-xl p-4 md:p-6">
+            <div id="salaryContent" class="flex items-center gap-3">
+              <span class="text-xl flex-shrink-0">💰</span>
+              <span id="salaryText" class="text-gray-900 font-bold text-base md:text-lg">
+                $3.500.000 – $5.000.000 CLP
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== RÚBRICA SUGERIDA ===== -->
+        <section>
+          <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            Pesos de Rúbrica Sugeridos
+          </h3>
+          <div class="bg-white border border-gray-200 rounded-xl p-4 md:p-6 space-y-4">
+            <!-- Técnica -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-sm font-medium text-gray-700">Habilidades Técnicas</span>
+                <span class="text-sm font-bold text-gray-900" id="rubricTechValue">60%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div id="rubricTechBar" class="bg-indigo-600 h-full rounded-full transition-all duration-500" style="width: 60%;"></div>
+              </div>
+            </div>
+            <!-- Experiencia -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-sm font-medium text-gray-700">Experiencia</span>
+                <span class="text-sm font-bold text-gray-900" id="rubricExpValue">30%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div id="rubricExpBar" class="bg-purple-600 h-full rounded-full transition-all duration-500" style="width: 30%;"></div>
+              </div>
+            </div>
+            <!-- Educación -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-sm font-medium text-gray-700">Educación</span>
+                <span class="text-sm font-bold text-gray-900" id="rubricEduValue">10%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div id="rubricEduBar" class="bg-indigo-300 h-full rounded-full transition-all duration-500" style="width: 10%;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===== FOOTER — sticky bottom-0, z-10, border-t ===== -->
+      <div class="sticky bottom-0 z-10 bg-white border-t border-gray-200 px-4 md:px-6 py-4 flex items-center justify-between gap-3 rounded-b-2xl">
+        <button
+          id="discardBtn"
+          class="px-5 py-2.5 bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium rounded-lg transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Descartar
+        </button>
+        <button
+          id="applyBtn"
+          class="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-lg shadow-lg hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl transition-all duration-200 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed disabled:shadow-none disabled:hover:from-gray-400 disabled:hover:to-gray-400"
+        >
+          Aplicar a la campaña
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TOGGLE DE ESTADOS (debug bar) ============ -->
+  <div class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-white border border-gray-300 rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 z-[60]">
+    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Debug</span>
+    <button
+      id="toggleSalaryBtn"
+      class="px-3 py-1.5 text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-lg hover:bg-yellow-200 transition-colors"
+    >
+      🪙 Toggle Salario
+    </button>
+    <span id="salaryStatus" class="text-xs text-gray-500 font-medium">Con salario</span>
+  </div>
+
+
+  <!-- ============ JAVASCRIPT — toda la lógica inline ============ -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ===== MOCK DATA =====
+      var mockData = {
+        hasSalary: true,
+        response: {
+          fields: {
+            title: 'Desarrollador Full Stack Senior',
+            description: 'Buscamos un ingeniero apasionado por la escalabilidad y el desarrollo de productos digitales. Serás responsable de diseñar, construir y mantener sistemas robustos usando tecnologías modernas como NestJS, React y AWS. Trabajarás con un equipo multidisciplinario en un ambiente ágil y dinámico, donde tu opinión importa y puedes impactar directamente en la arquitectura del producto. Valoramos la autonomía, la comunicación clara y el compromiso con la calidad del código.',
+            requirements: [
+              '5+ años de experiencia en Node.js',
+              'Experiencia comprobable con React o Next.js',
+              'Arquitectura de Microservicios',
+              'Inglés intermedio (lectura técnica)'
+            ],
+            modality: 'Remoto',
+            duration: 'Indefinido',
+            salary_range: { min: 3500000, max: 5000000, currency: 'CLP' }
+          },
+          suggested_rubric_weights: {
+            technical_skills: 60,
+            experience: 30,
+            education: 10
+          }
+        }
+      };
+
+      // ===== DOM refs =====
+      var overlay       = document.getElementById('modalOverlay');
+      var container     = document.getElementById('modalContainer');
+      var openBtn       = document.getElementById('openModalBtn');
+      var closeBtn      = document.getElementById('closeBtn');
+      var discardBtn    = document.getElementById('discardBtn');
+      var applyBtn      = document.getElementById('applyBtn');
+
+      var jobTitleEl    = document.getElementById('jobTitle');
+      var modalityEl    = document.getElementById('modalityText');
+      var durationEl    = document.getElementById('durationText');
+      var descEl        = document.getElementById('descriptionText');
+      var toggleDescBtn = document.getElementById('toggleDescriptionBtn');
+      var reqListEl     = document.getElementById('requirementsList');
+      var salaryText    = document.getElementById('salaryText');
+      var salaryCard    = document.getElementById('salaryCard');
+      var salaryContent = document.getElementById('salaryContent');
+
+      var rubricTechBar   = document.getElementById('rubricTechBar');
+      var rubricExpBar    = document.getElementById('rubricExpBar');
+      var rubricEduBar    = document.getElementById('rubricEduBar');
+      var rubricTechValue = document.getElementById('rubricTechValue');
+      var rubricExpValue  = document.getElementById('rubricExpValue');
+      var rubricEduValue  = document.getElementById('rubricEduValue');
+
+      var toggleSalaryBtn = document.getElementById('toggleSalaryBtn');
+      var salaryStatus    = document.getElementById('salaryStatus');
+
+      var toastContainer  = document.getElementById('toastContainer');
+
+      // ===== State =====
+      var isOpen = false;
+      var isDescriptionExpanded = false;
+      var isApplying = false;
+      var currentHasSalary = true;
+
+      var DESCRIPTION_TRUNCATE_LENGTH = 200;
+
+      // ===== Helpers =====
+      function formatCurrency(amount, currency) {
+        if (amount == null) return null;
+        return '$' + Number(amount).toLocaleString('es-CL') + ' ' + (currency || '');
+      }
+
+      function truncateText(text, maxLen) {
+        if (!text) return '';
+        if (text.length <= maxLen) return text;
+        return text.slice(0, maxLen) + '…';
+      }
+
+      // ===== Render =====
+      function renderModal(data) {
+        var r = data.response;
+        if (!r) return;
+
+        // Información General
+        jobTitleEl.textContent = r.fields.title || 'Sin título';
+        modalityEl.textContent = r.fields.modality || 'No especificado';
+        durationEl.textContent = r.fields.duration || 'No especificado';
+
+        // Descripción — siempre resetea a truncada
+        isDescriptionExpanded = false;
+        renderDescription(r.fields.description);
+
+        // Requisitos
+        reqListEl.innerHTML = '';
+        if (r.fields.requirements && r.fields.requirements.length > 0) {
+          r.fields.requirements.forEach(function(req) {
+            var li = document.createElement('li');
+            li.className = 'flex items-start gap-2';
+            li.innerHTML = '<span class="text-indigo-500 flex-shrink-0 mt-0.5">●</span><span>' + escapeHtml(req) + '</span>';
+            reqListEl.appendChild(li);
+          });
+        } else {
+          reqListEl.innerHTML =
+            '<li class="text-gray-400 italic">No se generaron requisitos</li>';
+        }
+
+        // Salario
+        renderSalary(data.hasSalary, r.fields.salary_range);
+
+        // Rúbrica
+        renderRubric(r.suggested_rubric_weights);
+      }
+
+      function renderDescription(fullText) {
+        if (!fullText) {
+          descEl.textContent = 'Sin descripción';
+          toggleDescBtn.classList.add('hidden');
+          return;
+        }
+
+        if (fullText.length > DESCRIPTION_TRUNCATE_LENGTH) {
+          toggleDescBtn.classList.remove('hidden');
+          if (isDescriptionExpanded) {
+            descEl.textContent = fullText;
+            toggleDescBtn.textContent = 'Ver menos ▴';
+          } else {
+            descEl.textContent = truncateText(fullText, DESCRIPTION_TRUNCATE_LENGTH);
+            toggleDescBtn.textContent = 'Ver texto completo ▾';
+          }
+        } else {
+          descEl.textContent = fullText;
+          toggleDescBtn.classList.add('hidden');
+        }
+      }
+
+      function renderSalary(hasSalary, salaryRange) {
+        if (hasSalary && salaryRange && salaryRange.min != null) {
+          var minStr = formatCurrency(salaryRange.min, salaryRange.currency);
+          var maxStr = formatCurrency(salaryRange.max, salaryRange.currency);
+          salaryText.textContent = minStr + ' – ' + maxStr;
+          salaryCard.className = 'bg-green-50 border border-green-200 rounded-xl p-4 md:p-6';
+          salaryContent.className = 'flex items-center gap-3';
+        } else {
+          salaryText.textContent = 'No especificado';
+          salaryCard.className = 'bg-white border border-gray-200 rounded-xl p-4 md:p-6';
+          salaryContent.className = 'flex items-center gap-3';
+          salaryText.className = 'text-gray-400 italic font-normal text-base md:text-lg';
+          return;
+        }
+        salaryText.className = 'text-gray-900 font-bold text-base md:text-lg';
+      }
+
+      function renderRubric(weights) {
+        if (!weights) return;
+        var tech = weights.technical_skills || 0;
+        var exp  = weights.experience || 0;
+        var edu  = weights.education || 0;
+
+        rubricTechBar.style.width = tech + '%';
+        rubricExpBar.style.width  = exp + '%';
+        rubricEduBar.style.width  = edu + '%';
+
+        rubricTechValue.textContent = tech + '%';
+        rubricExpValue.textContent  = exp + '%';
+        rubricEduValue.textContent  = edu + '%';
+      }
+
+      function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+      }
+
+      // ===== Modal open / close =====
+      function openModal() {
+        isOpen = true;
+        overlay.classList.remove('hidden');
+        container.classList.remove('modal-exit');
+        container.classList.add('modal-enter');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        // Reset applying state
+        isApplying = false;
+        setApplyingState(false);
+        renderModal(mockData);
+      }
+
+      function closeModal() {
+        isOpen = false;
+        container.classList.remove('modal-enter');
+        container.classList.add('modal-exit');
+        overlay.setAttribute('aria-hidden', 'true');
+        setTimeout(function() {
+          overlay.classList.add('hidden');
+          document.body.style.overflow = '';
+        }, 200);
+      }
+
+      // ===== Applying state =====
+      function setApplyingState(applying) {
+        isApplying = applying;
+        if (applying) {
+          applyBtn.innerHTML = '<span class="spinner"></span> Aplicando…';
+          applyBtn.disabled = true;
+          discardBtn.disabled = true;
+        } else {
+          applyBtn.innerHTML = 'Aplicar a la campaña';
+          applyBtn.disabled = false;
+          discardBtn.disabled = false;
+        }
+      }
+
+      // ===== Toast =====
+      function showToast(message, type) {
+        var colors = type === 'success'
+          ? 'bg-green-600 text-white'
+          : 'bg-red-600 text-white';
+
+        var toast = document.createElement('div');
+        toast.className = 'toast-enter flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-sm font-medium ' + colors;
+        toast.innerHTML = (type === 'success' ? '✅' : '❌') + ' ' + escapeHtml(message);
+
+        toastContainer.appendChild(toast);
+
+        setTimeout(function() {
+          toast.className = 'toast-exit flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg text-sm font-medium ' + colors;
+          setTimeout(function() {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+          }, 300);
+        }, 3000);
+      }
+
+      // ===== Event Listeners =====
+
+      // Open
+      openBtn.addEventListener('click', openModal);
+
+      // Close [×]
+      closeBtn.addEventListener('click', closeModal);
+
+      // Click overlay (fuera del modal) → NO cierra
+      overlay.addEventListener('click', function(e) {
+        // No hacemos nada — comportamiento de decisión, no cierra
+      });
+
+      // ESC key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isOpen) {
+          closeModal();
+        }
+      });
+
+      // Descartar
+      discardBtn.addEventListener('click', function() {
+        if (isApplying) return;
+        closeModal();
+      });
+
+      // Aplicar
+      applyBtn.addEventListener('click', function() {
+        if (isApplying) return;
+
+        // Simula el proceso de 2 segundos
+        setApplyingState(true);
+
+        setTimeout(function() {
+          setApplyingState(false);
+          showToast('¡Campaña generada con éxito! Revisa el paso 2', 'success');
+          closeModal();
+        }, 2000);
+      });
+
+      // Toggle descripción
+      toggleDescBtn.addEventListener('click', function() {
+        isDescriptionExpanded = !isDescriptionExpanded;
+        renderDescription(mockData.response.fields.description);
+      });
+
+      // Toggle salary (debug)
+      toggleSalaryBtn.addEventListener('click', function() {
+        currentHasSalary = !currentHasSalary;
+        mockData.hasSalary = currentHasSalary;
+        salaryStatus.textContent = currentHasSalary ? 'Con salario' : 'Sin salario';
+
+        // Re-render just salary section
+        renderSalary(currentHasSalary, mockData.response.fields.salary_range);
+      });
+
+      // ===== Init: render initial state =====
+      renderModal(mockData);
+    })();
+  </script>
+
+</body>
+</html>

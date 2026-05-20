@@ -349,7 +349,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
           </div>
 
           {/* Progress Indicator */}
-          <div className="bg-white shadow-xl px-8 py-6 border-b">
+          <div className="bg-white shadow-xl px-8 py-6 border-b text-gray-900">
             <div className="flex items-center justify-between">
               {STEPS.map((step, index) => {
                 const Icon = step.icon;
@@ -395,7 +395,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
           </div>
 
           {/* Form Content */}
-          <div className="bg-white shadow-xl rounded-b-2xl p-8">
+          <div className="bg-white shadow-xl rounded-b-2xl p-8 text-gray-900">
             {/* Step 1: Información Básica */}
             {currentStep === 1 && (
               <div className="space-y-6 animate-fade-in">
@@ -641,7 +641,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                         name="currency"
                         value={formData.currency || 'CLP'}
                         onChange={handleInputChange}
-                        className="w-64 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white"
+                        className="w-64 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white text-gray-900"
                       >
                         {CURRENCIES.map(currency => (
                           <option key={currency.code} value={currency.code}>
@@ -666,7 +666,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                           } as any);
                         }}
                         placeholder="Ej: 2.000.000"
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all bg-white text-gray-900"
                       />
                     </div>
                   </div>
@@ -911,21 +911,36 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                             <BriefcaseIcon className="w-4 h-4" />
                             Tipo:
                           </span>
-                          <p className="text-gray-900 mt-1">{formData.workType}</p>
+                          <p className="text-gray-900 mt-1">
+                            {formData.workType === 'FULL_TIME' && 'Full Time'}
+                            {formData.workType === 'PART_TIME' && 'Part Time'}
+                            {formData.workType === 'INTERNSHIP' && 'Práctica'}
+                            {!['FULL_TIME', 'PART_TIME', 'INTERNSHIP'].includes(formData.workType || '') && (formData.workType || 'No especificado')}
+                          </p>
                         </div>
                         <div>
                           <span className="font-semibold text-gray-700 flex items-center gap-1">
                             <HomeIcon className="w-4 h-4" />
                             Modalidad:
                           </span>
-                          <p className="text-gray-900 mt-1">{formData.modality}</p>
+                          <p className="text-gray-900 mt-1">
+                            {formData.modality === 'REMOTE' && 'Remoto'}
+                            {formData.modality === 'HYBRID' && 'Híbrido'}
+                            {formData.modality === 'ON_SITE' && 'Presencial'}
+                            {!['REMOTE', 'HYBRID', 'ON_SITE'].includes(formData.modality || '') && (formData.modality || 'No especificado')}
+                          </p>
                         </div>
                         <div>
                           <span className="font-semibold text-gray-700 flex items-center gap-1">
                             <ClockIcon className="w-4 h-4" />
                             Duración:
                           </span>
-                          <p className="text-gray-900 mt-1">{formData.duration}</p>
+                          <p className="text-gray-900 mt-1">
+                            {formData.duration === 'INDEFINITE' && 'Indefinido'}
+                            {formData.duration === 'FIXED_TERM' && 'Plazo Fijo'}
+                            {formData.duration === 'PROJECT' && 'Proyecto'}
+                            {!['INDEFINITE', 'FIXED_TERM', 'PROJECT'].includes(formData.duration || '') && (formData.duration || 'No especificado')}
+                          </p>
                         </div>
                       </div>
                       {formData.inclusionPosition && (

@@ -67,6 +67,35 @@ const BillingPage: React.FC = () => {
     return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
+  const handleChangePlan = async () => {
+    if (!billingData) return;
+
+    if (billingData.planId === 'free') {
+      window.location.href = '/pricing';
+      return;
+    }
+
+    const confirmReset = window.confirm(
+      '¿Deseas restablecer tu cuenta al Plan Gratis de forma instantánea para realizar pruebas?'
+    );
+
+    if (confirmReset) {
+      setLoading(true);
+      try {
+        await apiService.resetToFree();
+        const profile = await apiService.getProfile(); // refreshes local session
+        const billing = await apiService.getBillingStatus();
+        setBillingData(billing);
+        alert('Tu plan ha sido restablecido a Gratis exitosamente.');
+      } catch (error) {
+        console.error('Error resetting to free plan', error);
+        alert('Error al restablecer el plan. Intenta nuevamente.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -98,7 +127,7 @@ const BillingPage: React.FC = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             {billingData.trial.isActive 
-              ? `¡Bienvenido a tu prueba de Evalen Pro, ${userName}!`
+              ? `¡Te damos la bienvenida a tu prueba de Evalen Pro, ${userName}!`
               : `¡Disfrutando tu Plan Pro, ${userName}!`
             }
           </h1>
@@ -278,7 +307,7 @@ const BillingPage: React.FC = () => {
                 
                 <button
                   className="w-full px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
-                  onClick={() => window.location.href = '/pricing'}
+                  onClick={handleChangePlan}
                 >
                   Cambiar Plan
                 </button>
