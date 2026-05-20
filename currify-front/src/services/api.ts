@@ -6,6 +6,7 @@ const getBaseUrl = (port: number) => {
 };
 
 const getApiUrl = (envUrl: string | undefined, port: number) => {
+  console.log('[DEBUG getApiUrl] Input envUrl:', envUrl, 'Port:', port);
   // Always respect the environment variable if provided (crucial for Cloud Run / Production)
   if (envUrl) {
     return envUrl;
@@ -13,11 +14,15 @@ const getApiUrl = (envUrl: string | undefined, port: number) => {
 
   // Fallback for local development
   const currentHostname = window.location.hostname;
-  return `http://${currentHostname}:${port}`;
+  const fallback = `http://${currentHostname}:${port}`;
+  console.log('[DEBUG getApiUrl] Fallback calculated:', fallback);
+  return fallback;
 };
 
 const API_BASE_URL = getApiUrl(process.env.REACT_APP_API_URL, 3001).replace(/\/+$/, '');
+console.log('[DEBUG API_BASE_URL] Final resolved API_BASE_URL:', API_BASE_URL);
 const CV_PROCESSING_URL = getApiUrl(process.env.REACT_APP_SCORING_SERVICE_URL, 8001);
+
 
 // Auth interfaces
 interface RegisterRequest {
