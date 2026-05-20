@@ -79,7 +79,7 @@ jobs:
           gcloud run deploy currify-backend \
             --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
             --region ${{ env.REGION }} \
-            --set-env-vars "^|^ALLOWED_ORIGINS=https://currify-frontend-4yfulzoska-uc.a.run.app,http://localhost:3000|PAYMENT_GATEWAY=mercadopago|MERCADOPAGO_ACCESS_TOKEN=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}" \
+            --update-env-vars "^|^ALLOWED_ORIGINS=https://currify-frontend-4yfulzoska-uc.a.run.app,http://localhost:3000|PAYMENT_GATEWAY=mercadopago|MERCADOPAGO_ACCESS_TOKEN=${{ secrets.MERCADOPAGO_ACCESS_TOKEN }}" \
             --quiet
 
       - name: Deploy Frontend
