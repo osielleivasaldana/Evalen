@@ -49,6 +49,7 @@ interface UserProfile {
   updatedAt: string;
   plan?: string;
   cvCredits?: number;
+  smartFillCredits?: number;
   campaignLimit?: number;
   activeCampaignsCount?: number;
   onboardingCompleted?: boolean;
@@ -161,6 +162,28 @@ interface CampaignStats {
   activeCampaigns: number;
   totalCandidates: number;
   recentApplications: number;
+}
+
+export interface SmartFillRequest {
+  jobTitle: string;
+  additionalContext?: string;
+  language?: string;
+}
+
+export interface SmartFillResponse {
+  fields: {
+    title: string;
+    description: string;
+    requirements: string[];
+    modality: string;
+    duration: string;
+    salary_range?: { min: number; max: number; currency: string };
+  };
+  suggested_rubric_weights: {
+    technical_skills: number;
+    experience: number;
+    education: number;
+  };
 }
 
 // Document and CV interfaces
@@ -471,13 +494,13 @@ class ApiService {
   }
 
   initiateGoogleLogin(plan?: string) {
-    let stateParam = '';
+    let queryString = '';
     if (plan) {
       const csrf = Math.random().toString(36).substring(2);
       const state = btoa(JSON.stringify({ plan, csrf }));
-      stateParam = `&state=${state}`;
+      queryString = `?state=${encodeURIComponent(state)}`;
     }
-    window.location.href = `${API_BASE_URL}/auth/google?state=${stateParam}`;
+    window.location.href = `${API_BASE_URL}/auth/google${queryString}`;
   }
 
   async checkEmail(email: string): Promise<{ exists: boolean; authProvider?: 'local' | 'google' }> {
@@ -518,7 +541,6 @@ class ApiService {
     return user;
   }
 
-  // Billing methods
   async getBillingStatus(): Promise<{
     status: 'active' | 'trialing' | 'canceled' | 'past_due' | 'free';
     planId: string;
@@ -530,6 +552,12 @@ class ApiService {
     benefits: { cvLimit: number; campaignLimit: number; cvUsed: number; activeCampaigns: number };
   }> {
     return this.apiCall('/billing/status');
+  }
+
+  async resetToFree(): Promise<any> {
+    return this.apiCall('/billing/reset-to-free', {
+      method: 'POST',
+    });
   }
 
   // Campaign methods
@@ -571,6 +599,13 @@ class ApiService {
 
   async getCampaignStats(): Promise<CampaignStats> {
     return this.apiCall('/campaigns/stats');
+  }
+
+  async generateCampaignDraft(data: SmartFillRequest): Promise<SmartFillResponse> {
+    return this.apiCall('/campaigns/generate-draft', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 
   // Document upload methods
@@ -802,6 +837,35 @@ class ApiService {
 
   async getUsersByCompany(company: string): Promise<User[]> {
     return this.apiCall(`/users/by-company/${encodeURIComponent(company)}`);
+  }
+
+  // Owner management methods (OWNER only)
+  async getOwnerDashboardSummary(): Promise<any> {
+    return this.apiCall('/owner/dashboard-summary');
+  }
+
+  async getOwnerLlmStats(): Promise<any> {
+    return this.apiCall('/owner/llm-stats');
+  }
+
+  async getOwnerUsers(): Promise<any[]> {
+    return this.apiCall('/owner/users');
+  }
+
+  async updateOwnerUserPlan(
+    userId: string,
+    data: {
+      plan?: string;
+      cvCredits?: number;
+      smartFillCredits?: number;
+      campaignLimit?: number;
+      isActive?: boolean;
+    }
+  ): Promise<any> {
+    return this.apiCall(`/owner/users/${userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
   }
 
   // Token management

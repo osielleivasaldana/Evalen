@@ -37,14 +37,14 @@ class ResumeExtractionServiceV2:
         self.prompts = ResumeExtractionPrompts()
         self.validators = ResumeValidators()
 
-    async def extract_from_text(self, request: ResumeExtractionRequest) -> ResumeExtractionResponse:
+    async def extract_from_text(self, request: ResumeExtractionRequest, request_id: str = "unknown") -> ResumeExtractionResponse:
         """
         Extracción GARANTIZADA con técnicas avanzadas SIEMPRE activadas
         """
         start_time = time.time()
 
         try:
-            logger.info("🚀 INICIANDO EXTRACCIÓN V2 CON TÉCNICAS AVANZADAS GARANTIZADAS")
+            logger.info(f"[{request_id}] 🚀 INICIANDO EXTRACCIÓN V2 CON TÉCNICAS AVANZADAS GARANTIZADAS")
 
             # 1. Análisis de documento
             analysis = self.document_analyzer.analyze_document(request.archivo_contenido)
@@ -61,7 +61,8 @@ class ResumeExtractionServiceV2:
             logger.info("⚡ Ejecutando extracción básica inicial...")
             basic_extraction = await self._execute_basic_extraction(
                 request.archivo_contenido,
-                profile_detection['profile_type']
+                profile_detection['profile_type'],
+                request_id=request_id
             )
 
             # 4. TÉCNICAS AVANZADAS - SIEMPRE EJECUTADAS
@@ -69,7 +70,8 @@ class ResumeExtractionServiceV2:
             advanced_extractions = await self._execute_advanced_techniques(
                 request.archivo_contenido,
                 analysis_hints,
-                basic_extraction
+                basic_extraction,
+                request_id=request_id
             )
 
             # 5. Fusión inteligente de todas las extracciones
@@ -117,6 +119,7 @@ class ResumeExtractionServiceV2:
                 confianza_general=1.0,  # Máxima confianza con técnicas avanzadas
                 advertencias=[],
                 campos_faltantes=self._identify_missing_fields(resume_data),
+                request_id=request_id,
                 tiempo_procesamiento=processing_time,
                 timestamp=datetime.now().isoformat()
             )
@@ -132,7 +135,7 @@ class ResumeExtractionServiceV2:
             traceback.print_exc()
             return self._create_error_response(str(e), time.time() - start_time)
 
-    async def _execute_basic_extraction(self, cv_text: str, profile_type: str) -> Dict[str, Any]:
+    async def _execute_basic_extraction(self, cv_text: str, profile_type: str, request_id: str = "unknown") -> Dict[str, Any]:
         """Extracción básica usando prompts estándar"""
         try:
             main_prompt = self.prompts.get_main_extraction_prompt()
@@ -141,7 +144,8 @@ class ResumeExtractionServiceV2:
                 prompt=main_prompt,
                 input_data=cv_text,
                 stage_name=f"basic_extraction_{profile_type}",
-                temperature=0.0
+                temperature=0.0,
+                request_id=request_id
             )
 
             if result and isinstance(result, dict):
@@ -155,7 +159,7 @@ class ResumeExtractionServiceV2:
             logger.error(f"Error en extracción básica: {e}")
             return self._create_empty_extraction_structure()
 
-    async def _execute_advanced_techniques(self, cv_text: str, analysis_hints: Dict, basic_extraction: Dict) -> Dict[str, Any]:
+    async def _execute_advanced_techniques(self, cv_text: str, analysis_hints: Dict, basic_extraction: Dict, request_id: str = "unknown") -> Dict[str, Any]:
         """
         Ejecuta TODAS las técnicas avanzadas - GARANTIZADO
         """
@@ -169,7 +173,8 @@ class ResumeExtractionServiceV2:
                 prompt=cot_prompt,
                 input_data=cv_text,
                 stage_name="advanced_cot",
-                temperature=0.0
+                temperature=0.0,
+                request_id=request_id
             )
             if cot_result:
                 advanced_results["cot_extraction"] = cot_result
@@ -182,7 +187,8 @@ class ResumeExtractionServiceV2:
                 prompt=education_prompt,
                 input_data=cv_text,
                 stage_name="advanced_education",
-                temperature=0.0
+                temperature=0.0,
+                request_id=request_id
             )
             if education_result:
                 advanced_results["decomp_education"] = education_result
@@ -194,7 +200,8 @@ class ResumeExtractionServiceV2:
                 prompt=experience_prompt,
                 input_data=cv_text,
                 stage_name="advanced_experience",
-                temperature=0.0
+                temperature=0.0,
+                request_id=request_id
             )
             if experience_result:
                 advanced_results["decomp_experience"] = experience_result
@@ -207,7 +214,8 @@ class ResumeExtractionServiceV2:
                 prompt=comprehensive_prompt,
                 input_data=cv_text,
                 stage_name="advanced_comprehensive",
-                temperature=0.0
+                temperature=0.0,
+                request_id=request_id
             )
             if comprehensive_result:
                 advanced_results["comprehensive_extraction"] = comprehensive_result
@@ -221,7 +229,8 @@ class ResumeExtractionServiceV2:
                     prompt=correction_prompt,
                     input_data=cv_text,
                     stage_name="advanced_correction",
-                    temperature=0.0
+                    temperature=0.0,
+                    request_id=request_id
                 )
                 if correction_result:
                     advanced_results["self_correction"] = correction_result
@@ -344,13 +353,14 @@ class ResumeExtractionServiceV2:
 
         return missing
 
-    def _create_error_response(self, error_msg: str, processing_time: float) -> ResumeExtractionResponse:
+    def _create_error_response(self, error_msg: str, processing_time: float, request_id: str = "unknown") -> ResumeExtractionResponse:
         """Crea respuesta de error"""
         return ResumeExtractionResponse(
             datos_cv=self._create_empty_resume_data(),
             confianza_general=0.0,
             advertencias=[f"Error en procesamiento: {error_msg}"],
             campos_faltantes=["todos"],
+            request_id=request_id,
             tiempo_procesamiento=processing_time,
             timestamp=datetime.now().isoformat()
         )

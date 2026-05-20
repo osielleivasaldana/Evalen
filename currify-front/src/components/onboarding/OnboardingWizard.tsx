@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-import { BriefcaseIcon, UserGroupIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 
 const OnboardingWizard: React.FC = () => {
@@ -12,7 +11,6 @@ const OnboardingWizard: React.FC = () => {
     const [formData, setFormData] = useState({
         company: '',
         companySize: '',
-        role: '',
     });
 
     useEffect(() => {
@@ -30,17 +28,6 @@ const OnboardingWizard: React.FC = () => {
         loadUser();
     }, [navigate]);
 
-    const mapRoleToEnum = (uiRole: string) => {
-        switch (uiRole) {
-            case 'Dueño':
-            case 'Gerente de RRHH':
-                return 'ADMIN';
-            case 'Reclutador':
-            default:
-                return 'RECRUITER';
-        }
-    };
-
     const handleSubmit = async () => {
         setLoading(true);
         try {
@@ -48,7 +35,6 @@ const OnboardingWizard: React.FC = () => {
             await apiService.updateUser(profile.id, {
                 company: formData.company,
                 companySize: formData.companySize,
-                role: mapRoleToEnum(formData.role),
                 onboardingCompleted: true
             });
 
@@ -57,7 +43,6 @@ const OnboardingWizard: React.FC = () => {
                 setUser({
                     ...user,
                     company: formData.company,
-                    role: mapRoleToEnum(formData.role),
                     onboardingCompleted: true,
                 });
             }
@@ -76,7 +61,7 @@ const OnboardingWizard: React.FC = () => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    const isValid = formData.company && formData.companySize && formData.role;
+    const isValid = formData.company && formData.companySize;
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden font-jakarta">
@@ -90,7 +75,7 @@ const OnboardingWizard: React.FC = () => {
 
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        ¡Bienvenido, {userName}!
+                        ¡Te damos la bienvenida, {userName}!
                     </h1>
                     <p className="text-gray-500 text-lg">
                         Ayúdanos a configurar tu espacio de trabajo.
@@ -126,33 +111,6 @@ const OnboardingWizard: React.FC = () => {
                                         }`}
                                 >
                                     {size}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Campo 3: Rol */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Tu Rol</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            {[
-                                { id: 'Dueño', label: 'CEO / Dueño', icon: BriefcaseIcon },
-                                { id: 'Gerente de RRHH', label: 'Gerente RRHH', icon: UserGroupIcon },
-                                { id: 'Reclutador', label: 'Reclutador', icon: MagnifyingGlassIcon },
-                            ].map((roleOption) => (
-                                <button
-                                    key={roleOption.id}
-                                    onClick={() => handleChange('role', roleOption.id)}
-                                    className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all h-28 group ${formData.role === roleOption.id
-                                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700 shadow-sm'
-                                        : 'border-gray-100 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    <roleOption.icon className={`w-8 h-8 mb-2 ${formData.role === roleOption.id ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-600'
-                                        }`} />
-                                    <span className="text-sm font-semibold text-center leading-tight">
-                                        {roleOption.label}
-                                    </span>
                                 </button>
                             ))}
                         </div>

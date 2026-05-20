@@ -670,6 +670,7 @@ class ResumeExtractionResponse(BaseModel):
     confianza_general: float = Field(..., description="Nivel de confianza general de la extracción (0.0-1.0)")
     advertencias: List[str] = Field(default=[], description="Advertencias durante el procesamiento")
     campos_faltantes: List[str] = Field(default=[], description="Campos obligatorios no encontrados")
+    request_id: Optional[str] = Field(None, description="Identificador único de la petición para trazabilidad")
     tiempo_procesamiento: float = Field(..., description="Tiempo de procesamiento en segundos")
     timestamp: datetime = Field(default_factory=datetime.now, description="Momento de procesamiento")
 

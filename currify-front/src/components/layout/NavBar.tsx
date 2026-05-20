@@ -62,6 +62,8 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
     }] : []),
     // ADMIN and RECRUITER can manage users
     ...(userRole === 'ADMIN' || userRole === 'RECRUITER' ? [{ label: 'Gestionar Usuarios', icon: UsersIcon, href: '/admin/users' }] : []),
+    // OWNER can manage entire system
+    ...(userRole === 'OWNER' ? [{ label: 'Panel Propietario', icon: Squares2X2Icon, href: '/owner/dashboard' }] : []),
   ];
 
   // Credits Logic
@@ -119,7 +121,7 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
 
           {/* Credits Badge - Limit (Free) or Status (Plus/Pro) */}
           {/* Credits Badge - Limit (Free) or Status (Plus/Pro) */}
-          {userProfile?.plan?.toUpperCase() === 'PRO' ? (
+          {userRole !== 'OWNER' && (userProfile?.plan?.toUpperCase() === 'PRO' ? (
             <div
               onClick={() => window.location.href = '/pricing'}
               className="hidden md:flex items-baseline mr-6 cursor-pointer hover:scale-105 transition-transform select-none group"
@@ -148,10 +150,10 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
                 {usedCredits}/{maxCredits} Usados
               </span>
             </div>
-          )}
+          ))}
 
           {/* Upgrade Button - Visible for Free Plan */}
-          {userProfile?.plan?.toUpperCase() !== 'PRO' && (
+          {userRole !== 'OWNER' && userProfile?.plan?.toUpperCase() !== 'PRO' && (
             <button
               onClick={() => window.location.href = '/checkout'}
               className="hidden md:flex items-center gap-2 mr-4 px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all text-sm animate-pulse-slow"

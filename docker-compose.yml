@@ -29,7 +29,7 @@ services:
     container_name: currify-core
     environment:
       # LLM Provider Configuration
-      - LLM_PROVIDER=google
+      - LLM_PROVIDER=${LLM_PROVIDER}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
@@ -118,6 +118,9 @@ services:
       # Stripe
       - STRIPE_SECRET_KEY=dummy
       - STRIPE_PRICE_ID_PRO=${STRIPE_PRICE_ID_PRO}
+      # Payments Gateway
+      - PAYMENT_GATEWAY=${PAYMENT_GATEWAY}
+      - MERCADOPAGO_ACCESS_TOKEN=${MERCADOPAGO_ACCESS_TOKEN}
     ports:
       - "3001:3001"
 
@@ -155,7 +158,7 @@ services:
     depends_on:
       - currify-backend
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000" ]
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3000" ]
       interval: 30s
       timeout: 10s
       retries: 3

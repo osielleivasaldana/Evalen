@@ -12,6 +12,7 @@ import {
 import { CampaignsService } from './campaigns.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
+import { SmartFillDto } from './dto/smart-fill.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -25,6 +26,13 @@ export class CampaignsController {
   @Post()
   create(@Request() req: any, @Body() createCampaignDto: CreateCampaignDto) {
     return this.campaignsService.create(req.user.id, createCampaignDto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'RECRUITER')
+  @Post('generate-draft')
+  generateDraft(@Request() req: any, @Body() smartFillDto: SmartFillDto) {
+    return this.campaignsService.generateDraft(req.user.id, smartFillDto);
   }
 
   @UseGuards(JwtAuthGuard)

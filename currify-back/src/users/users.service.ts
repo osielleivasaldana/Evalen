@@ -27,7 +27,12 @@ export class UsersService {
     }
 
     // Validate role-based user creation permissions
-    if (currentUser.role === UserRole.RECRUITER) {
+    if (currentUser.role === UserRole.ADMIN) {
+      // ADMIN (Administrador de empresa) can ONLY create RECRUITER and TECHNICAL_REVIEWER users
+      if (role !== UserRole.RECRUITER && role !== UserRole.TECHNICAL_REVIEWER) {
+        throw new ForbiddenException('Administrators can only create RECRUITER and TECHNICAL_REVIEWER users');
+      }
+    } else if (currentUser.role === UserRole.RECRUITER) {
       // RECRUITER can only create RECRUITER and TECHNICAL_REVIEWER
       if (role !== UserRole.RECRUITER && role !== UserRole.TECHNICAL_REVIEWER) {
         throw new ForbiddenException('Recruiters can only create RECRUITER and TECHNICAL_REVIEWER users');
@@ -152,15 +157,22 @@ export class UsersService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto, currentUserId: string, currentUserRole: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     // Allow role update if it's the onboarding process/wizard
     if (id === currentUserId && updateUserDto.role && !updateUserDto.onboardingCompleted) {
       throw new ForbiddenException('You cannot change your own role');
     }
 
-    const user = await this.prisma.user.findUnique({ where: { id } });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
+    // Non-OWNER users cannot assign ADMIN or OWNER roles to anyone, unless they already have that role and it is not changing
+    if (currentUserRole !== 'OWNER' && updateUserDto.role && (updateUserDto.role as string) !== (user.role as string)) {
+      if ((updateUserDto.role as string) === 'ADMIN' || (updateUserDto.role as string) === 'OWNER') {
+        throw new ForbiddenException('Only system owners can assign ADMIN or OWNER roles');
+      }
     }
 
     if (updateUserDto.email && updateUserDto.email !== user.email) {

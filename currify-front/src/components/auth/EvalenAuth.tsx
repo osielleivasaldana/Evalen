@@ -253,7 +253,7 @@ const EvalenAuth: React.FC = () => {
     <div className="w-full max-w-md space-y-8 animate-[fadeInUp_0.4s_ease-out]">
       <div className="text-center">
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-          Bienvenido
+          Te damos la bienvenida
         </h2>
         <p className="text-slate-500 text-base">
           Ingresa tu correo para continuar
@@ -338,7 +338,7 @@ const EvalenAuth: React.FC = () => {
           Cambiar correo
         </button>
         <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-          Bienvenido de nuevo
+          Te damos la bienvenida de nuevo
         </h2>
         <p className="text-slate-500 text-base">
           Ingresa tu contraseña

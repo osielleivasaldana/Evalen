@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, UploadFile, File, HTTPException, Form, BackgroundTasks
+from fastapi import APIRouter, Depends, Request, Response, UploadFile, File, HTTPException, Form, BackgroundTasks
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -17,7 +17,7 @@ from app.models.resume import (
 from app.services.resume_extraction_service import ResumeExtractionService
 from app.services.resume_extraction_service_v2 import ResumeExtractionServiceV2
 from app.services.robust_extraction_service import RobustExtractionService
-from app.services.llm_service import LLMService
+from app.services.llm_service import LLMService, token_usage_var
 from app.services.profile_detection_service import ProfileDetectionService
 from app.core.security import verify_token
 from app.core.config import settings
@@ -52,6 +52,7 @@ async def limit_concurrency():
 @limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_window}minute")
 async def extract_resume(
     request: Request,
+    response: Response,
     file: UploadFile = File(..., description="Archivo de CV (PDF, DOCX, TXT, RTF)"),
     config: Optional[str] = Form(None, description="Configuración JSON opcional"),
     token: dict = Depends(verify_token),
@@ -65,6 +66,8 @@ async def extract_resume(
     - **config**: Configuración opcional en formato JSON
     - Retorna datos estructurados del CV con métricas de calidad
     """
+    token_usage_list = []
+    token_val = token_usage_var.set(token_usage_list)
     try:
         # Validar archivo
         if not file.filename:
@@ -87,16 +90,29 @@ async def extract_resume(
             except json.JSONDecodeError:
                 raise HTTPException(status_code=400, detail="Configuración JSON inválida")
 
-        logger.info(f"Processing CV extraction for file: {file.filename}")
+        # Generar Trace ID único para auditoría (especialmente para detectar data leakage)
+        request_id = extraction_config.get("request_id") or str(uuid.uuid4())[:8]
+        logger.info(f"[{request_id}] Processing CV extraction for file: {file.filename}")
 
         # Procesar extracción
         result = await extraction_service.extract_from_file(
             file_content=file_content,
             filename=file.filename,
-            config=extraction_config
+            config=extraction_config,
+            request_id=request_id
         )
 
         logger.info(f"CV extraction completed for {file.filename} with confidence {result.confianza_general:.3f}")
+
+        # Set custom usage headers if logs accumulated
+        if token_usage_list:
+            total_prompt = sum(u.get("prompt_tokens", 0) for u in token_usage_list)
+            total_completion = sum(u.get("completion_tokens", 0) for u in token_usage_list)
+            models = list(set(u.get("model", "unknown") for u in token_usage_list))
+            response.headers["X-LLM-Prompt-Tokens"] = str(total_prompt)
+            response.headers["X-LLM-Completion-Tokens"] = str(total_completion)
+            response.headers["X-LLM-Model"] = ",".join(models)
+            logger.info(f"🚀 Attached usage headers: prompt={total_prompt}, completion={total_completion}, models={models}")
 
         return result
 
@@ -105,6 +121,8 @@ async def extract_resume(
     except Exception as e:
         logger.error(f"Error processing CV extraction: {e}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+    finally:
+        token_usage_var.reset(token_val)
 
 @router.post("/extract-text", response_model=ResumeExtractionResponse)
 @limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_window}minute")
@@ -121,9 +139,10 @@ async def extract_from_text(
     - Útil cuando ya tienes el texto extraído y solo necesitas el procesamiento
     """
     try:
-        logger.info(f"Processing text extraction for file: {extraction_request.nombre_archivo}")
+        request_id = str(uuid.uuid4())[:8]
+        logger.info(f"[{request_id}] Processing text extraction for file: {extraction_request.nombre_archivo}")
 
-        result = await extraction_service.extract_from_text(extraction_request)
+        result = await extraction_service.extract_from_text(extraction_request, request_id=request_id)
 
         logger.info(f"Text extraction completed with confidence {result.confianza_general:.3f}")
 
@@ -152,13 +171,15 @@ async def extract_from_text_v2(
     Usa esta versión para máxima extracción de datos.
     """
     try:
-        logger.info(f"🚀 V2 Processing for file: {extraction_request.nombre_archivo}")
+        # Generar request_id único para trazabilidad
+        request_id = str(uuid.uuid4())[:8]
+        logger.info(f"[{request_id}] 🚀 V2 Processing for file: {extraction_request.nombre_archivo}")
 
         # Crear servicio V2 con técnicas avanzadas garantizadas
         llm_service = LLMService()
         extraction_service_v2 = ResumeExtractionServiceV2(llm_service)
 
-        result = await extraction_service_v2.extract_from_text(extraction_request)
+        result = await extraction_service_v2.extract_from_text(extraction_request, request_id=request_id)
 
         logger.info(f"🎯 V2 extraction completed - {len(result.datos_cv.formacion_academica)} academic + {len(result.datos_cv.experiencia_laboral)} experience")
 

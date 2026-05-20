@@ -20,6 +20,7 @@ import CandidateProcessPanel from './processes/CandidateProcessPanel';
 
 // Admin Components
 import UserManagement from './admin/UserManagement';
+import OwnerDashboard from './admin/OwnerDashboard';
 
 // Billing Components
 import BillingPage from './billing/BillingPage';
@@ -241,6 +242,14 @@ const AppRouter: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/owner/dashboard"
+              element={
+                <ProtectedRoute requiresOnboarding={false}>
+                  <OwnerDashboard />
                 </ProtectedRoute>
               }
             />

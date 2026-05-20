@@ -105,8 +105,8 @@ const CheckoutPage: React.FC = () => {
                                 <h2 className="text-2xl font-bold">Evalen Pro</h2>
                             </div>
                             <div className="text-right">
-                                <div className="text-3xl font-bold">$49</div>
-                                <div className="text-sm opacity-80">/mes</div>
+                                <div className="text-3xl font-bold">$19.990</div>
+                                <div className="text-sm opacity-80">CLP/mes</div>
                             </div>
                         </div>
                     </div>
@@ -134,7 +134,7 @@ const CheckoutPage: React.FC = () => {
                 <div className="bg-gray-50 rounded-xl p-6 mb-6">
                     <div className="flex justify-between mb-2">
                         <span className="text-gray-600">Evalen Pro (mensual)</span>
-                        <span className="font-medium">$49.00</span>
+                        <span className="font-medium">$19.990 CLP</span>
                     </div>
                     <div className="flex justify-between mb-2">
                         <span className="text-gray-600">Impuestos</span>
@@ -142,7 +142,7 @@ const CheckoutPage: React.FC = () => {
                     </div>
                     <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between">
                         <span className="font-semibold text-gray-900">Total</span>
-                        <span className="font-bold text-xl text-indigo-600">$49.00/mes</span>
+                        <span className="font-bold text-xl text-indigo-600">$19.990 CLP/mes</span>
                     </div>
                 </div>
 
@@ -160,7 +160,7 @@ const CheckoutPage: React.FC = () => {
                     onClick={handleConfirmPurchase}
                     className="w-full py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-[1.01] active:scale-[0.99]"
                 >
-                    Confirmar y pagar $49/mes
+                    Confirmar y pagar $19.990 CLP/mes
                 </button>
 
                 <p className="text-center text-sm text-gray-500 mt-4">

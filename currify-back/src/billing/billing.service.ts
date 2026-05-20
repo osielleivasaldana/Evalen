@@ -96,4 +96,17 @@ export class BillingService {
       }
     };
   }
+
+  async resetToFree(userId: string): Promise<any> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        plan: 'FREE',
+        stripeStatus: null,
+        trialEndsAt: null,
+        cvCredits: 3,
+        campaignLimit: 1,
+      },
+    });
+  }
 }

@@ -12,20 +12,8 @@ const PricingPage: React.FC = () => {
             return;
         }
 
-        setLoading(true);
-        try {
-            const { url } = await apiService.createCheckoutSession('PRO');
-            if (url) {
-                window.location.href = url;
-            } else {
-                alert('Error initiating checkout.');
-            }
-        } catch (error) {
-            console.error('Upgrade failed', error);
-            alert('Could not start checkout session.');
-        } finally {
-            setLoading(false);
-        }
+        // Redirect to the Checkout Page for review
+        window.location.href = '/checkout';
     };
 
     return (

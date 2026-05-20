@@ -34,14 +34,14 @@ class RobustExtractionService:
         self.max_text_length = 4000  # Caracteres máximos para procesamiento directo
         self.chunk_overlap = 600     # Solapamiento aumentado para mejor contexto (antes 200)
 
-    async def extract_from_text(self, request: ResumeExtractionRequest) -> ResumeExtractionResponse:
+    async def extract_from_text(self, request: ResumeExtractionRequest, request_id: str = "unknown") -> ResumeExtractionResponse:
         """
         Extracción robusta con múltiples validaciones y reintentos
         """
         start_time = time.time()
 
         try:
-            logger.info(f"🚀 INICIANDO EXTRACCIÓN ROBUSTA para {request.nombre_archivo}")
+            logger.info(f"[{request_id}] 🚀 INICIANDO EXTRACCIÓN ROBUSTA para {request.nombre_archivo}")
 
             # 1. Pre-procesamiento y análisis
             cv_text = self._preprocess_text(request.archivo_contenido)
@@ -51,11 +51,11 @@ class RobustExtractionService:
 
             # 2. Decidir estrategia de extracción basada en longitud
             if len(cv_text) <= self.max_text_length:
-                logger.info(f"✅ Texto corto ({len(cv_text)} ≤ {self.max_text_length}): Extracción directa")
-                extraction_result = await self._execute_robust_extraction(cv_text, profile_info)
+                logger.info(f"[{request_id}] ✅ Texto corto ({len(cv_text)} ≤ {self.max_text_length}): Extracción directa")
+                extraction_result = await self._execute_robust_extraction(cv_text, profile_info, request_id=request_id)
             else:
-                logger.info(f"📄 Texto largo ({len(cv_text)} > {self.max_text_length}): Extracción chunked")
-                extraction_result = await self._execute_chunked_extraction(cv_text, profile_info)
+                logger.info(f"[{request_id}] 📄 Texto largo ({len(cv_text)} > {self.max_text_length}): Extracción chunked")
+                extraction_result = await self._execute_chunked_extraction(cv_text, profile_info, request_id=request_id)
 
             # 3. Post-procesamiento y estructuración
             logger.info(f"🔧 CRITICAL: extraction_result keys: {list(extraction_result.keys()) if isinstance(extraction_result, dict) else type(extraction_result)}")
@@ -85,6 +85,7 @@ class RobustExtractionService:
                 confianza_general=confidence,
                 advertencias=self._collect_warnings(structured_data),
                 campos_faltantes=self._identify_missing_fields(resume_data),
+                request_id=request_id,
                 tiempo_procesamiento=processing_time,
                 timestamp=datetime.now().isoformat()
             )
@@ -129,7 +130,7 @@ class RobustExtractionService:
             logger.error(f"❌ Error en extracción robusta: {e}")
             import traceback
             traceback.print_exc()
-            return self._create_error_response(str(e), processing_time)
+            return self._create_error_response(str(e), processing_time, request_id=request_id)
 
     def _preprocess_text(self, raw_text: str) -> str:
         """
@@ -171,7 +172,7 @@ class RobustExtractionService:
 
         return text
 
-    async def _execute_robust_extraction(self, cv_text: str, profile_info: Dict) -> Dict[str, Any]:
+    async def _execute_robust_extraction(self, cv_text: str, profile_info: Dict, request_id: str = "unknown") -> Dict[str, Any]:
         """
         Extracción robusta usando Structured Outputs nativos con fallback a JSON
         """
@@ -186,7 +187,8 @@ class RobustExtractionService:
                 prompt=prompt,
                 input_data=cv_text,
                 response_model=ThinkingResumeData,
-                stage_name="structured_extraction_main"
+                stage_name="structured_extraction_main",
+                request_id=request_id
             )
 
             if result:
@@ -1356,7 +1358,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
     # ESTRATEGIA CHUNKED (Para textos largos)
     # -------------------------------------------------------------------------
 
-    async def _execute_chunked_extraction(self, cv_text: str, profile_info: Dict) -> Dict[str, Any]:
+    async def _execute_chunked_extraction(self, cv_text: str, profile_info: Dict, request_id: str = "unknown") -> Dict[str, Any]:
         """
         Estrategia para CVs muy largos que exceden el contexto
         """
@@ -1398,7 +1400,8 @@ Evita duplicar si es redundante, pero ante la duda, EXTRAE.
                     prompt=prompt,
                     input_data=chunk,
                     response_model=PartialResumeData,
-                    stage_name=f"chunk_{i+1}"
+                    stage_name=f"chunk_{i+1}",
+                    request_id=request_id
                 )
                 if result:
                     chunk_results.append(result.model_dump())
@@ -1674,6 +1677,8 @@ Tu tarea es DE-DUPLICAR y FUSIONAR la información.
                             merged_contact[field] = curr_val
                     
         return merged
+
+    def _create_minimal_valid_response(self) -> Dict[str, Any]:
         """
         Crear estructura vacía válida
         """
@@ -1697,7 +1702,7 @@ Tu tarea es DE-DUPLICAR y FUSIONAR la información.
             "reconocimientos": {"logros_premios": []}
         }
 
-    def _create_error_response(self, error_msg: str, processing_time: float) -> ResumeExtractionResponse:
+    def _create_error_response(self, error_msg: str, processing_time: float, request_id: str = "unknown") -> ResumeExtractionResponse:
         """
         Crear respuesta de error
         """
@@ -1706,12 +1711,13 @@ Tu tarea es DE-DUPLICAR y FUSIONAR la información.
             confianza_general=0.0,
             advertencias=[f"Error en procesamiento: {error_msg}"],
             campos_faltantes=["todos"],
+            request_id=request_id,
             tiempo_procesamiento=processing_time,
             timestamp=datetime.now().isoformat()
         )
 
     async def extract_from_file(self, file_content: bytes, filename: str,
-                               config: Optional[Dict[str, Any]] = None) -> ResumeExtractionResponse:
+                               config: Optional[Dict[str, Any]] = None, request_id: str = "unknown") -> ResumeExtractionResponse:
         """
         Extrae datos estructurados de un archivo de CV usando el servicio robusto
 
@@ -1765,11 +1771,11 @@ Tu tarea es DE-DUPLICAR y FUSIONAR la información.
             )
 
             # Usar extracción robusta
-            return await self.extract_from_text(request)
+            return await self.extract_from_text(request, request_id=request_id)
 
         except Exception as e:
             logger.error(f"Error en extract_from_file: {e}")
-            return self._create_error_response(str(e), 0.0)
+            return self._create_error_response(str(e), 0.0, request_id=request_id)
 
     def _extract_titular_from_text(self, cv_text: str) -> str:
         """

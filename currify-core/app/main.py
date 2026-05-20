@@ -7,7 +7,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
-from app.api import auth, resume, analytics, scoring
+from app.api import auth, resume, analytics, scoring, smart_fill
 
 # Configure logging
 logging.basicConfig(
@@ -92,3 +92,4 @@ app.include_router(auth.router)
 app.include_router(resume.router)
 app.include_router(analytics.router)
 app.include_router(scoring.router)
+app.include_router(smart_fill.router, prefix="/api")

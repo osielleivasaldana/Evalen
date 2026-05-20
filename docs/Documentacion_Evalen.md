@@ -33,9 +33,99 @@ Este es el cerebro del sistema. Está diseñado para realizar tareas computacion
 * **Servicios de Extracción (app/services/):**  
   * file_parser_service.py: Encargado de leer PDFs y extraer texto crudo.  
   * resume_extraction_service.py / robust_extraction_service.py: Utiliza prompts (resume_prompts.py) para obligar al LLM a convertir texto no estructurado del CV en un JSON estructurado con historial laboral, educación y habilidades.  
-  * education_normalizer.py: Estandariza los grados académicos (ej. "Ingeniería", "Bachelor", "Master").  
+  * education_normalizer.py: Estandariza los grados académicos (ej. "Ingeniería", "Bachelor", "Master").
+
+#### Pipeline de Extracción de CV (Arquitectura Detallada)
+
+El sistema de extracción de CVs utiliza una arquitectura de múltiples etapas con estrategias de recuperación:
+
+```
+Archivo → FileParserService → ResumeExtractionService → LLMService → DataStructurerService → ResumeData (Pydantic)
+```
+
+**1. FileParserService** (`app/services/file_parser_service.py`):
+- Extrae texto bruto de múltiples formatos
+- **Formatos soportados:** PDF (con OCR fallback), DOCX/DOC, TXT, RTF
+- **Características clave:**
+  - Procesamiento async con `asyncio.to_thread()`
+  - Extracción híbrida PDF (combinación de modos default y layout para mejor manejo de columnas)
+  - Fallback OCR con pytesseract + pdf2image cuando la extracción de texto yields < 100 caracteres
+  - Corrección de artefactos de diacríticos (ej. "´ a" → "á", "n˜" → "ñ")
+  - Validación: formato, tamaño (100B-50MB), filename
+
+**2. ResumeExtractionService** (`app/services/resume_extraction_service.py`):
+- Orquestación principal del proceso de extracción
+- **Métodos principales:**
+  - `extract_from_file()` - Punto de entrada que valida y parsea archivos
+  - `extract_from_text()` - Lógica core de extracción con detección de perfil
+  - `_execute_all_llm_extractions()` - Ejecuta múltiples estrategias de extracción LLM
+  - `_apply_advanced_prompting()` - Aplica Chain-of-Thought, descomposición y autocorrección
+
+**Pipeline de Extracción:**
+1. **Análisis de Documento:** Usa `DocumentAnalyzerService` para detectar secciones
+2. **Detección de Perfil:** Usa `ProfileDetectionService` para identificar tipo de candidato (JUNIOR, SENIOR, TECHNICAL, CREATIVE)
+3. **Extracción Principal:** Llama al LLM con prompts específicos por perfil
+4. **Prompting Avanzado:** Si quality < 0.5, aplica:
+   - Chain-of-Thought (CoT) extraction
+   - Descomposición para secciones faltantes
+   - Autocorrección
+   - Extracción comprehensiva de fallback
+5. **Estructuración de Datos:** Usa `DataStructurerService` para normalizar salida
+
+**Evaluación de Calidad:**
+```python
+# Calcula completitud basada en:
+# - Info contacto (peso 1.0)
+# - Experiencia laboral (peso 2.0)
+# - Educación (peso 1.5)
+# - Habilidades (peso 0.5)
+```
+
+**3. RobustExtractionService** (`app/services/robust_extraction_service.py`):
+- Servicio alternativo con robustez mejorada
+- **Características clave:**
+  - Extracción por chunks para CVs > 4000 caracteres
+  - Salidas estructuradas usando librería `instructor` para extracción basada en Pydantic
+  - Cadena de fallback: Structured → JSON fallback → Extracción vacía
+  - Deduplicación: Remueve experiencias/educación duplicadas por company+date
+  - Normalización de fechas: Parsea diversos formatos (Enero 2018, 2018-2020, etc.)
+
+**4. LLMService** (`app/services/llm_service.py`):
+- Interfaz unificada para múltiples proveedores LLM
+- **Proveedores soportados:** OpenAI, Anthropic (Claude), Google Gemini, Groq
+- **Características clave:**
+  - Control de concurrencia global con `asyncio.Semaphore`
+  - Exponential backoff: reintentos en errores 429 con espera 2-60s + jitter
+  - Extracción JSON: múltiples estrategias para extraer JSON de respuestas LLM
+  - Seguridad: envuelve input del usuario en delimitadores para prevenir prompt injection
+
+**5. DataStructurerService** (`app/services/data_structurer_service.py`):
+- Normaliza y estructura output bruto del LLM en formato ResumeData consistente
+- **Funciones principales:**
+  - Fusión multi-fuente: Combina datos de extracción principal, técnicas avanzadas y validación
+  - Clasificación Académica vs Complementaria: Separa títulos formales de cursos/diplomados
+  - Parseo de fechas: Regex-based para diversos formatos
+  - Generación de fallback: Crea estructura mínima válida en errores
+
+**6. Modelos Resume** (`app/models/resume.py`):
+- Modelos Pydantic: `ResumeData`, `ContactInfo`, `ProfessionalTitle`, `ProfessionalSummary`, `WorkExperience`, `Education`, `Skills`, `ThinkingResumeData`
+- **Validadores:**
+  - Validación de formato email
+  - Normalización de nivel de habilidades (Básico/Intermedio/Avanzado/Experto)
+  - Normalización de fechas (maneja "Presente", nulls)
+  - Normalización de campos raíz (maneja LLM retornando estructuras planas)
+
+**7. Prompts** (`app/core/resume_prompts.py`):
+- Tipos de prompt:
+  - `get_main_extraction_prompt()` - Extracción completa de CV con hints de análisis
+  - `get_junior_profile_prompt()` - Adaptado para perfiles junior
+  - `get_senior_profile_prompt()` - Enfatiza liderazgo/logros
+  - `get_technical_profile_prompt()` - Enfoca en tech stack
+  - `get_creative_profile_prompt()` - Enfoca en portfolio/herramientas
+  - `get_multilingual_prompt()` - Maneja CVs multi-idioma
+
 * **Servicios de Evaluación (Scoring):**  
-  * dynamic_rubric_service.py: A partir de una descripción de cargo, genera dinámicamente una rúbrica de evaluación (qué pesar más, qué habilidades son excluyentes).  
+  * dynamic_rubric_service.py: A partir de una descripción de cargo, genera dinámicamente una rúbrica de evaluación (qué peso tiene cada criterio, qué habilidades son excluyentes).  
   * scoring_service.py: Cruza el JSON del candidato con la rúbrica y utiliza el llm_service.py para generar un razonamiento y una nota final.  
 * **Manejo de Prompts (app/core/):** Contiene las instrucciones precisas para el LLM (job_parsing_prompts.py, resume_prompts.py, scoring_rubric.py), garantizando respuestas consistentes.
 
@@ -126,7 +216,210 @@ El proyecto está preparado para la nube y entornos escalables mediante contened
 8. **Backend -> DB -> Frontend:** El Backend guarda los resultados completos en PostgreSQL, asocia el Candidato a la Campaña y retorna la respuesta final al Frontend.  
 9. **Usuario (Frontend):** El usuario visualiza la nota del candidato en la pantalla CVResults.tsx o dentro del CandidateDrawer.tsx.
 
-## **7. Flujo de Autenticación y Landing Page (Marzo 2026)**
+## **7. Sistema de Planes y Suscripciones**
+
+### Estructura de Planes
+
+El sistema define tres niveles de planes mediante el enum `PlanTier` en Prisma:
+
+```prisma
+enum PlanTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+```
+
+### Límites por Plan
+
+| Campo | FREE | PRO | ENTERPRISE |
+|-------|------|-----|------------|
+| cvCredits | 3 | 999 | 999 |
+| campaignLimit | 1 | 999 | 999 |
+| stripeStatus | null | ACTIVE | ACTIVE |
+
+### Modelo de Usuario (Prisma)
+
+```prisma
+model User {
+  // Plan & Credits
+  plan              PlanTier    @default(FREE)  // FREE, PRO, ENTERPRISE
+  trialEndsAt       DateTime?
+  cvCredits         Int         @default(3)    // Créditos de extracción CV
+  campaignLimit     Int         @default(1)    // Máx. campañas activas
+  
+  // Stripe Integration
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?
+  stripeStatus           StripeStatus?  // ACTIVE, PAST_DUE, CANCELED, INCOMPLETE, TRIALING
+  stripePriceId          String?
+}
+```
+
+### Servicio de Billing (`src/billing/billing.service.ts`)
+
+El servicio de billing provee el estado actual de suscripción:
+
+```typescript
+async getBillingStatus(userId: string): Promise<BillingStatus>
+```
+
+**Retorna:**
+- `status`: 'active' | 'trialing' | 'canceled' | 'past_due' | 'free'
+- `planId`: 'pro_monthly' | 'free'
+- `benefits.cvLimit`: 999 para PRO, 3 para FREE
+- `benefits.campaignLimit`: 999 para PRO, 1 para FREE
+
+### Integración Stripe (`src/payments/stripe.service.ts`)
+
+**Métodos clave:**
+
+1. **`createCheckoutSession(userId, plan)`** - Crea sesión de checkout de Stripe:
+   ```typescript
+   const session = await this.stripe.checkout.sessions.create({
+       payment_method_types: ['card'],
+       line_items: [{ price: priceId, quantity: 1 }],
+       mode: 'subscription',
+       success_url: `${FRONTEND_URL}/dashboard?checkout_success=true`,
+       metadata: { userId, plan }
+   });
+   ```
+
+2. **`handleWebhook(signature, payload)`** - Procesa webhooks de Stripe
+   - Procesa eventos `checkout.session.completed`
+   - Actualiza user plan a PRO, establece stripeStatus a ACTIVE
+
+### Sistema de Créditos
+
+**Usage Guard** (`src/common/guards/usage.guard.ts`):
+```typescript
+async canActivate(context: ExecutionContext): Promise<boolean> {
+    const requiredCredits = this.reflector.get<number>('requiredCredits', context.getHandler());
+    const dbUser = await this.prisma.user.findUnique({ where: { id: user.id } });
+    
+    if (dbUser.cvCredits < requiredCredits) {
+        throw new HttpException({
+            status: HttpStatus.PAYMENT_REQUIRED,
+            error: 'Insufficient credits',
+            message: 'You have run out of credits. Please upgrade your plan.',
+            code: 'INSUFFICIENT_CREDITS'
+        }, HttpStatus.PAYMENT_REQUIRED);
+    }
+    return true;
+}
+```
+
+**Uso del Decorador:**
+```typescript
+@RequireCredits(1)
+@UseGuards(JwtAuthGuard, UsageGuard)
+@Post('extract')
+async extractCV(...) { ... }
+```
+
+### Checkout Dummy (Modo Desarrollo)
+
+Cuando `STRIPE_SECRET_KEY=dummy`:
+- Asigna plan PRO al usuario
+- Asigna límites altos (999 campañas, 999 CVs)
+- Asigna stripeStatus como 'ACTIVE'
+- Retorna `sessionId: 'dummy_session'` y `url: /dashboard?checkout_success=true`
+
+---
+
+## **8. Flujo de Onboarding**
+
+### Datos Recolectados en Onboarding
+
+El sistema recolecta información de perfil empresarial durante el onboarding:
+
+```prisma
+// Profiling & Onboarding
+companySize        String?   // ej. "1-10", "11-50", "50-200", "200+"
+hiringVolume       String?   // ej. "1-5", "5-20", "20+"
+atsSystem          String?   // ej. "greenhouse", "lever", "workday"
+onboardingCompleted Boolean  @default(false)
+```
+
+### Flujo de Registro
+
+**Auth Service** (`src/auth/auth.service.ts`):
+
+```typescript
+async register(registerDto: RegisterDto) {
+    // Crea usuario con plan FREE por defecto
+    const user = await this.prisma.user.create({
+        data: {
+            email,
+            password: hashedPassword,
+            name,
+            company,
+            role: 'ADMIN',  // Siempre ADMIN para SaaS
+            plan: 'FREE',
+            cvCredits: 3,
+            campaignLimit: 1
+        }
+    });
+    
+    // Retorna JWT con info del plan
+    const payload = {
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+        plan: user.plan,
+        cvCredits: user.cvCredits,
+        campaignLimit: user.campaignLimit
+    };
+}
+```
+
+### OAuth/Social Login (Google)
+
+1. Usuario se autentica con Google
+2. Si es nuevo → crea con `isActive: true`, `socialProvider: 'google'`
+3. Si existe → vincula socialId
+4. Retorna JWT con flag `onboardingPending: !user.company`
+
+### Completación de Onboarding
+
+```typescript
+// UsersService
+async updateCompany(userId: string, companyName: string) {
+    return await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+            company: companyName,
+            onboardingCompleted: true
+        }
+    });
+}
+```
+
+### Onboarding State en JWT
+
+```typescript
+// Auth Service - Login/Register response
+const payload = {
+    sub: user.id,
+    email: user.email,
+    role: user.role,
+    company: user.company,
+    onboardingPending: !user.company,  // Frontend usa esto para redirigir
+    plan: user.plan,
+    cvCredits: user.cvCredits,
+    campaignLimit: user.campaignLimit
+};
+```
+
+### Crédito de Cortesía
+
+Los usuarios nuevos en plan FREE reciben:
+- **3 CVs** credits para evaluaciones
+- **1 campaña** activa
+
+---
+
+## **9. Flujo de Autenticación y Landing Page (Marzo 2026)**
 
 ### Landing Page Unificada
 
@@ -247,15 +540,6 @@ La página de billing muestra la gestión de suscripción para usuarios existent
 | `/checkout` | Resumen de compra + pago | Requiere auth |
 | `/dashboard` | Dashboard principal | Requiere auth |
 
-### Checkout Dummy (Modo Desarrollo)
-
-El endpoint `/api/payments/create-checkout-session` opera en modo dummy cuando `STRIPE_SECRET_KEY=dummy`:
-
-* Asigna plan PRO al usuario
-* Asigna límites altos (999 campañas, 999 CVs)
-* Asigna stripeStatus como 'ACTIVE'
-* Retorna `sessionId: 'dummy_session'` y `url: /dashboard?checkout_success=true`
-
 ### Persistencia del Plan
 
 El sistema usa múltiples estrategias para persistir la intención del plan:
@@ -266,4 +550,4 @@ El sistema usa múltiples estrategias para persistir la intención del plan:
 
 Esta arquitectura garantiza que la intención del usuario (comprar Pro) se mantenga durante todo el flujo de autenticación.
 
-*Documento generado automáticamente a partir del análisis del código fuente. Última actualización: Marzo 2026.*
+*Documento generado automáticamente a partir del análisis del código fuente. Última actualización: Abril 2026.*
