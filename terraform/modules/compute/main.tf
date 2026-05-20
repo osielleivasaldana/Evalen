@@ -71,7 +71,7 @@ resource "google_cloud_run_v2_service" "core" {
 
       env {
         name  = "ALLOWED_ORIGINS"
-        value = "http://localhost:3000,http://localhost:8080,http://localhost:5173"
+        value = "https://currify-frontend-4yfulzoska-uc.a.run.app,http://localhost:3000,http://localhost:8080,http://localhost:5173"
       }
       
       env {
@@ -236,6 +236,21 @@ resource "google_cloud_run_v2_service" "backend" {
       env {
         name  = "GOOGLE_CALLBACK_URL"
         value = "https://currify-backend-4yfulzoska-uc.a.run.app/api/auth/google/callback" 
+      }
+
+      env {
+        name  = "ALLOWED_ORIGINS"
+        value = "https://currify-frontend-4yfulzoska-uc.a.run.app,http://localhost:3000"
+      }
+
+      env {
+        name  = "PAYMENT_GATEWAY"
+        value = "mercadopago"
+      }
+
+      env {
+        name  = "MERCADOPAGO_ACCESS_TOKEN"
+        value = "TEST-4289580756248676-052011-231abbb301eb4a706240c23bbd2044f3-31737893"
       }
     }
 
