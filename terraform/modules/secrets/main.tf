@@ -86,25 +86,26 @@ resource "google_secret_manager_secret_version" "stripe_price_id_pro_data" {
 
 # Outputs para ser usados en Cloud Run
 output "db_url_secret_id" {
-  value = google_secret_manager_secret.db_url.secret_id
+  value = google_secret_manager_secret.db_url.id
 }
 
 output "google_api_secret_id" {
-  value = google_secret_manager_secret.google_api.secret_id
+  value = google_secret_manager_secret.google_api.id
 }
 
 output "google_client_id_secret_id" {
-  value = google_secret_manager_secret.google_client_id.secret_id
+  value = google_secret_manager_secret.google_client_id.id
 }
 
 output "google_client_secret_secret_id" {
-  value = google_secret_manager_secret.google_client_secret.secret_id
+  value = google_secret_manager_secret.google_client_secret.id
 }
 
 output "stripe_secret_key_secret_id" {
-  value = google_secret_manager_secret.stripe_secret_key.secret_id
+  value = google_secret_manager_secret.stripe_secret_key.id
 }
 
 output "stripe_price_id_pro_secret_id" {
-  value = google_secret_manager_secret.stripe_price_id_pro.secret_id
+  value = google_secret_manager_secret.stripe_price_id_pro.id
 }
+
