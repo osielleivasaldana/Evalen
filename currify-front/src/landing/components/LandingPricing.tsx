@@ -1,19 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
 import { Check } from 'lucide-react';
+import { apiService } from '../../services/api';
 
-const plans = [
+const defaultPlans = [
   {
     name: 'Starter',
     price: '$0',
     period: '/mes',
     description: 'Ideal para probar la magia.',
     features: [
-      '1 Campaña activa',
-      '15 CVs por mes',
-      'Extracción básica de datos',
+      '1 campaña activa',
+      '3 CVs por mes',
+      '3 créditos de Smart Fill por mes',
       'Análisis de candidatos',
+      'Extracción básica de datos',
     ],
     cta: 'Comenzar Gratis',
     ctaLink: '/login?plan=free',
@@ -21,12 +23,13 @@ const plans = [
   },
   {
     name: 'EvalenPro',
-    price: '$49',
+    price: '$19.990',
     period: '/mes',
     description: 'Para equipos de RR.HH. que buscan escalar.',
     features: [
       'Campañas ilimitadas',
       'Procesamiento ilimitado de CVs',
+      'Smart Fill ilimitado',
       'Smart Match avanzado',
       'Exportación de reportes',
       'Soporte prioritario',
@@ -55,7 +58,7 @@ const plans = [
 ];
 
 const PricingCard: React.FC<{
-  plan: (typeof plans)[0];
+  plan: (typeof defaultPlans)[0];
   index: number;
 }> = React.memo(({ plan, index }) => {
   const { theme } = useTheme();
@@ -182,6 +185,46 @@ const LandingPricing: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const { ref, isVisible } = useScrollAnimation(0.1);
+  const [plans, setPlans] = useState<any[]>(defaultPlans);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const data = await apiService.getPlans();
+        if (data && data.length > 0) {
+          const tierOrder: Record<string, number> = { 'FREE': 1, 'PRO': 2, 'ENTERPRISE': 3 };
+          const sorted = [...data].sort((a, b) => (tierOrder[a.tier] || 99) - (tierOrder[b.tier] || 99));
+          const formatted = sorted.map((p) => {
+            const customFeatures = (p.features || []).filter((f: string) => {
+              const lower = f.toLowerCase();
+              return !lower.includes('campaña') && !lower.includes('cv') && !lower.includes('smart fill') && !lower.includes('procesamiento');
+            });
+            const dynamicFeatures = [
+              p.campaignLimit >= 999 ? 'Campañas ilimitadas' : `${p.campaignLimit} campaña${p.campaignLimit > 1 ? 's' : ''} mensual${p.campaignLimit > 1 ? 'es' : ''}`,
+              p.cvCredits >= 999 ? 'Procesamiento ilimitado de CVs' : `${p.cvCredits} CV${p.cvCredits > 1 ? 's' : ''} por mes`,
+              p.smartFillCredits >= 999 ? 'Smart Fill ilimitado' : `${p.smartFillCredits} crédito${p.smartFillCredits > 1 ? 's' : ''} de Smart Fill por mes`,
+              ...customFeatures
+            ];
+            return {
+              name: p.name,
+              price: p.price === 0 ? '$0' : p.price === -1 ? 'Personalizado' : `$${p.price.toLocaleString('es-CL')}`,
+              period: p.price === -1 ? '' : '/mes',
+              description: p.description,
+              features: dynamicFeatures,
+              cta: p.tier === 'FREE' ? 'Comenzar Gratis' : p.tier === 'PRO' ? 'Probar EvalenPro' : 'Contactar Ventas',
+              ctaLink: p.tier === 'FREE' ? '/login?plan=free' : p.tier === 'PRO' ? '/login?plan=pro' : '/login?plan=enterprise',
+              featured: p.tier === 'PRO',
+              badge: p.tier === 'PRO' ? 'Recomendado' : undefined
+            };
+          });
+          setPlans(formatted);
+        }
+      } catch (error) {
+        console.error('Error fetching plans in landing:', error);
+      }
+    };
+    fetchPlans();
+  }, []);
 
   return (
     <section
@@ -226,16 +269,6 @@ const LandingPricing: React.FC = () => {
             <PricingCard key={index} plan={plan} index={index} />
           ))}
         </div>
-
-        {/* Additional Note */}
-        <p
-          className={`mt-12 text-center text-sm ${
-            isDark ? 'text-slate-400' : 'text-slate-500'
-          }`}
-        >
-          Todos los planes incluyen una prueba gratuita de 14 días. Sin tarjeta de crédito
-          requerida.
-        </p>
       </div>
     </section>
   );

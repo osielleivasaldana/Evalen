@@ -63,6 +63,7 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
     if (campaign) {
       console.log('Raw campaign description:', campaign.description);
       console.log('Unescaped description:', unescapeHtml(campaign.description));
+      console.log('campaign in PublicCampaign:', campaign);
     }
   }, [campaign]);
 
@@ -392,9 +393,9 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
               <div className="flex items-center gap-2 bg-green-500 bg-opacity-90 px-4 py-2 rounded-full">
                 <CurrencyDollarIcon className="w-5 h-5" />
                 <span className="font-bold">
-                  {campaign.currency === 'CLP' ? `$${campaign.salary.toLocaleString('es-CL')}` :
-                    campaign.currency === 'USD' ? `$${campaign.salary.toLocaleString('en-US')}` :
-                      `${campaign.salary} ${campaign.currency}`}
+                  {campaign.currency === 'CLP' ? `$${Number(campaign.salary).toLocaleString('es-CL')}` :
+                    campaign.currency === 'USD' ? `$${Number(campaign.salary).toLocaleString('en-US')}` :
+                      `${Number(campaign.salary).toLocaleString()} ${campaign.currency}`}
                 </span>
               </div>
             )}

@@ -888,6 +888,36 @@ class ApiService {
     localStorage.removeItem('token');
   }
 
+  // Plan management methods
+  async getPlans(): Promise<any[]> {
+    return this.apiCall('/plans');
+  }
+
+  async getPlansAdmin(): Promise<any[]> {
+    return this.apiCall('/plans/admin');
+  }
+
+  async updatePlanConfig(
+    tier: string,
+    data: {
+      name?: string;
+      description?: string;
+      price?: number;
+      campaignLimit?: number;
+      cvCredits?: number;
+      smartFillCredits?: number;
+      features?: string[];
+    }
+  ): Promise<any> {
+    return this.apiCall(`/plans/admin/${tier}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    });
+  }
+
   isAuthenticated(): boolean {
     return !!this.token;
   }

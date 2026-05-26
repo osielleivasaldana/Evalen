@@ -117,12 +117,29 @@ export class DocumentsService {
 
       const document = await this.prisma.document.findUnique({
         where: { id: documentId },
-        include: { candidate: true },
+        include: {
+          candidate: {
+            include: {
+              campaign: {
+                include: {
+                  user: {
+                    select: {
+                      company: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!document) return;
 
-      const extractedData = await this.extractDataFromDocument(document.filePath);
+      const userId = document.candidate?.campaign?.userId;
+      const companyId = document.candidate?.campaign?.user?.company;
+
+      const extractedData = await this.extractDataFromDocument(document.filePath, userId, companyId || undefined);
 
       await this.prisma.$transaction(async (tx) => {
         await tx.document.update({
@@ -195,8 +212,8 @@ export class DocumentsService {
 
     try {
       const response = await axios.post(`${this.coreServiceUrl}/auth/login`, {
-        username: 'kinich',
-        password: 'kinich!'
+        username: this.configService.get<string>('SCORING_SERVICE_USERNAME') || 'kinich',
+        password: this.configService.get<string>('SCORING_SERVICE_PASSWORD') || 'kinich!'
       }, {
         headers: {
           'Accept': 'application/json',
@@ -215,7 +232,11 @@ export class DocumentsService {
     }
   }
 
-  private async extractDataFromDocument(filePath: string): Promise<{
+  private async extractDataFromDocument(
+    filePath: string,
+    userId?: string,
+    companyId?: string,
+  ): Promise<{
     rawText: string;
     structuredData: any;
   }> {
@@ -235,6 +256,25 @@ export class DocumentsService {
         },
         timeout: 120000, // 120 seconds timeout
       });
+
+      const promptTokens = parseInt(response.headers['x-llm-prompt-tokens'] || response.headers['X-LLM-Prompt-Tokens'] || '0', 10);
+      const completionTokens = parseInt(response.headers['x-llm-completion-tokens'] || response.headers['X-LLM-Completion-Tokens'] || '0', 10);
+      const model = response.headers['x-llm-model'] || response.headers['X-LLM-Model'] || 'unknown';
+
+      if (promptTokens > 0 || completionTokens > 0) {
+        await this.prisma.llmUsageLog.create({
+          data: {
+            userId: userId || null,
+            company: companyId || null,
+            action: 'RESUME_EXTRACTION',
+            model: model,
+            promptTokens: promptTokens,
+            completionTokens: completionTokens,
+            totalTokens: promptTokens + completionTokens,
+            costUsd: (promptTokens + completionTokens) * 0.00001,
+          },
+        }).catch(err => console.error('Error logging LLM usage for resume extraction:', err));
+      }
 
       return {
         rawText: response.data.datos_cv?.resumen_profesional?.resumen || 'Extracted text not available',

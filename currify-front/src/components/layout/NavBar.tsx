@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import {
   Bars3Icon,
@@ -12,25 +13,34 @@ import {
   LockClosedIcon,
 } from '@heroicons/react/24/outline';
 import { apiService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface NavBarProps {
   onLogout?: () => void;
 }
 
 const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [plans, setPlans] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!apiService.isAuthenticated()) return;
       try {
-        const profile = await apiService.getProfile();
+        const [profile, plansData] = await Promise.all([
+          apiService.getProfile(),
+          apiService.getPlans()
+        ]);
         console.log('[NavBar] Profile Loaded:', profile);
         console.log('[NavBar] Plan:', profile.plan); // Debug Plan
+        console.log('[NavBar] Plans Loaded:', plansData);
         setUserRole(profile.role);
         setUserProfile(profile);
+        setPlans(plansData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -39,11 +49,11 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
   }, []);
 
   const handleLogout = () => {
-    apiService.clearToken();
+    logout();
     if (onLogout) {
       onLogout();
     } else {
-      window.location.href = '/login';
+      navigate('/login');
     }
   };
 
@@ -66,9 +76,15 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
     ...(userRole === 'OWNER' ? [{ label: 'Panel Propietario', icon: Squares2X2Icon, href: '/owner/dashboard' }] : []),
   ];
 
-  // Credits Logic
-  const maxCredits = 3; // TODO: Fetch from Plan
-  const remainingCredits = userProfile?.cvCredits ?? maxCredits; // Default to max (0 used) if loading
+  // Find current plan configurations
+  const userPlanTier = userProfile?.plan || 'FREE';
+  const matchedPlan = plans.find(
+    (p) => p.tier.toUpperCase() === userPlanTier.toUpperCase()
+  );
+
+  const planName = matchedPlan?.name || (userPlanTier.toUpperCase() === 'PRO' ? 'EvalenPro' : 'Starter');
+  const maxCredits = matchedPlan?.cvCredits ?? (userPlanTier.toUpperCase() === 'PRO' ? 999 : 3);
+  const remainingCredits = userProfile?.cvCredits ?? maxCredits;
   const usedCredits = Math.max(0, maxCredits - remainingCredits);
 
   return (
@@ -78,7 +94,7 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
           {/* Logo */}
           <div
             className="flex items-center gap-2 cursor-pointer"
-            onClick={() => window.location.href = '/dashboard'}
+            onClick={() => navigate('/dashboard')}
           >
             <svg width="140" height="36" viewBox="0 0 180 48" xmlns="http://www.w3.org/2000/svg">
               <defs>
@@ -107,7 +123,7 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
                     if (item.onClick) {
                       item.onClick();
                     } else {
-                      window.location.href = item.href;
+                      navigate(item.href);
                     }
                   }}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${item.href === '#' ? 'text-slate-400 bg-slate-50 cursor-not-allowed' : 'text-gray-700 hover:bg-blue-500 hover:text-white'}`}
@@ -119,46 +135,29 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
             })}
           </div>
 
-          {/* Credits Badge - Limit (Free) or Status (Plus/Pro) */}
-          {/* Credits Badge - Limit (Free) or Status (Plus/Pro) */}
-          {userRole !== 'OWNER' && (userProfile?.plan?.toUpperCase() === 'PRO' ? (
+          {/* Credits Badge - Dynamic based on active plan manager configuration */}
+          {userRole !== 'OWNER' && (
             <div
-              onClick={() => window.location.href = '/pricing'}
-              className="hidden md:flex items-baseline mr-6 cursor-pointer hover:scale-105 transition-transform select-none group"
-              title="Tu Plan: PRO - Haz clic para gestionar"
+              onClick={() => navigate('/pricing')}
+              className="hidden md:flex items-center gap-2 mr-4 bg-slate-50 border border-slate-200 px-3.5 py-1.5 rounded-full shadow-sm cursor-pointer transition-all hover:bg-indigo-50 hover:shadow-md hover:border-indigo-200 group"
+              title={maxCredits >= 999 ? `Tu Plan: ${planName}` : 'Mejora tu plan para más créditos'}
             >
-              <span className="text-2xl font-black text-slate-900 tracking-tighter" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Evalen</span>
-              <span
-                className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 via-yellow-500 to-amber-600 ml-0.5 tracking-tighter drop-shadow-sm"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                Pro
-              </span>
-              <span className="ml-1 flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
+              <span className={`font-bold ${maxCredits >= 999 || remainingCredits > 0 ? 'text-emerald-500' : 'text-red-500'} ${maxCredits < 999 ? 'animate-pulse group-hover:scale-110 transition-transform' : ''}`}>⚡</span>
+              <span className={`text-xs font-bold transition-colors ${maxCredits >= 999 || remainingCredits > 0 ? 'text-slate-600' : 'text-red-500'}`}>
+                {maxCredits >= 999
+                  ? `Ilimitados en el plan ${planName}`
+                  : `${usedCredits}/${maxCredits} Usados en el plan ${planName}`}
               </span>
             </div>
-          ) : (
-            <div
-              onClick={() => window.location.href = '/checkout'}
-              className="hidden md:flex items-center gap-2 mr-4 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full shadow-sm cursor-pointer transition-all hover:bg-indigo-50 hover:shadow-md hover:border-indigo-200 group"
-              title="Mejora a PRO para más créditos"
-            >
-              <span className={`font-bold animate-pulse group-hover:scale-110 transition-transform ${remainingCredits > 0 ? 'text-emerald-500' : 'text-red-500'}`}>⚡</span>
-              <span className={`text-xs font-bold transition-colors ${remainingCredits > 0 ? 'text-slate-600' : 'text-red-500'}`}>
-                {usedCredits}/{maxCredits} Usados
-              </span>
-            </div>
-          ))}
+          )}
 
-          {/* Upgrade Button - Visible for Free Plan */}
-          {userRole !== 'OWNER' && userProfile?.plan?.toUpperCase() !== 'PRO' && (
+          {/* Upgrade Button - Visible for Free/Starter Plan */}
+          {userRole !== 'OWNER' && userProfile?.plan?.toUpperCase() === 'FREE' && (
             <button
-              onClick={() => window.location.href = '/checkout'}
-              className="hidden md:flex items-center gap-2 mr-4 px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all text-sm animate-pulse-slow"
+              onClick={() => navigate('/pricing')}
+              className="hidden md:flex items-center gap-2 mr-4 px-5 py-2 rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white text-xs font-black uppercase tracking-wider shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.7)] hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20"
             >
-              🚀 Subir a PRO
+              ✨ Mejorar Plan
             </button>
           )}
 
@@ -233,7 +232,7 @@ const NavBar: React.FC<NavBarProps> = ({ onLogout }) => {
                 <button
                   key={item.label}
                   onClick={() => {
-                    window.location.href = item.href;
+                    navigate(item.href);
                     setMobileMenuOpen(false);
                   }}
                   className="flex items-center gap-3 w-full px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-100 hover:text-blue-600 rounded-lg"

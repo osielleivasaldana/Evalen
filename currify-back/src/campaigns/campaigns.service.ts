@@ -489,8 +489,8 @@ export class CampaignsService {
 
     try {
       const response = await axios.post(`${this.coreServiceUrl}/auth/login`, {
-        username: 'kinich',
-        password: 'kinich!'
+        username: this.configService.get<string>('SCORING_SERVICE_USERNAME') || 'kinich',
+        password: this.configService.get<string>('SCORING_SERVICE_PASSWORD') || 'kinich!'
       }, {
         headers: {
           'Accept': 'application/json',

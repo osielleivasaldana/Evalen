@@ -96,8 +96,10 @@ describe('AuthController', () => {
       const mockReq = {
         user: {
           access_token: 'jwt-token',
-          onboardingPending: false,
-          company: 'Test Corp',
+          user: {
+            onboardingCompleted: true,
+            company: 'Test Corp',
+          }
         },
         query: {},
       };
@@ -114,8 +116,10 @@ describe('AuthController', () => {
       const mockReq = {
         user: {
           access_token: 'jwt-token',
-          onboardingPending: true,
-          company: null,
+          user: {
+            onboardingCompleted: false,
+            company: null,
+          }
         },
         query: {},
       };
@@ -132,8 +136,10 @@ describe('AuthController', () => {
       const mockReq = {
         user: {
           access_token: 'jwt-token',
-          onboardingPending: false,
-          company: 'Test Corp',
+          user: {
+            onboardingCompleted: true,
+            company: 'Test Corp',
+          }
         },
         query: { state: 'return-to-dashboard' },
       };
@@ -167,8 +173,10 @@ describe('AuthController', () => {
       const mockReq = {
         user: {
           access_token: 'jwt-token',
-          onboardingPending: false,
-          company: 'Corp',
+          user: {
+            onboardingCompleted: true,
+            company: 'Corp',
+          }
         },
         query: {},
       };

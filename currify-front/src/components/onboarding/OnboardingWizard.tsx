@@ -18,7 +18,9 @@ const OnboardingWizard: React.FC = () => {
             try {
                 const profile = await apiService.getProfile();
                 setUserName(profile.name.split(' ')[0]);
-                if (profile.onboardingCompleted) {
+                if (profile.role === 'OWNER') {
+                    navigate('/owner/dashboard', { replace: true });
+                } else if (profile.onboardingCompleted) {
                     navigate('/dashboard', { replace: true });
                 }
             } catch (e) {

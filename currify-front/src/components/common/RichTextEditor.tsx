@@ -67,7 +67,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[150px] p-4'
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[150px] p-4 text-gray-900 bg-white'
       }
     }
   });
@@ -104,7 +104,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }
 
   return (
-    <div className={`border-2 rounded-lg overflow-hidden flex flex-col ${!showMaximize ? 'h-full' : ''} ${error ? 'border-red-500' : 'border-gray-300'} focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500`}>
+    <div className={`border-2 rounded-lg overflow-hidden flex flex-col bg-white text-gray-900 ${!showMaximize ? 'h-full' : ''} ${error ? 'border-red-500' : 'border-gray-300'} focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500`}>
       {/* Toolbar */}
       <div className="bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-1 items-center justify-between">
         <div className="flex flex-wrap gap-1 flex-1">

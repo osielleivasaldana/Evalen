@@ -180,3 +180,30 @@ jobs:
             -e DATABASE_URL="${{ env.DATABASE_URL }}" \
             ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
             -c "npx prisma migrate status" || echo "Warning: Could not verify migration status"
+
+      # ==========================================================
+      # 6. INITIALIZE / PROMOTE SUPER ADMIN (OWNER)
+      # ==========================================================
+      - name: Initialize or Promote Super Admin
+        env:
+          OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
+          OWNER_PASSWORD: ${{ secrets.OWNER_PASSWORD }}
+        run: |
+          if [ -n "$OWNER_EMAIL" ] && [ -n "$OWNER_PASSWORD" ]; then
+            echo "=========================================================="
+            echo "Initializing/Promoting Super Admin ($OWNER_EMAIL)..."
+            echo "=========================================================="
+            docker run --rm \
+              --entrypoint "/bin/sh" \
+              -e DATABASE_URL="${{ env.DATABASE_URL }}" \
+              -e OWNER_EMAIL="$OWNER_EMAIL" \
+              -e OWNER_PASSWORD="$OWNER_PASSWORD" \
+              ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/currify-backend:${{ github.sha }} \
+              -c "node create-owner.js"
+          else
+            echo "=========================================================="
+            echo "Skipping Super Admin initialization because OWNER_EMAIL"
+            echo "or OWNER_PASSWORD is not configured in GitHub Secrets."
+            echo "=========================================================="
+          fi
+

@@ -17,8 +17,6 @@ describe('PrismaService', () => {
     }).compile();
 
     service = module.get<PrismaService>(PrismaService);
-    // Speed up retries for testing
-    (service as any).retryDelayMs = 10;
   });
 
   afterEach(async () => {
@@ -36,18 +34,22 @@ describe('PrismaService', () => {
   });
 
   it('should have retry configuration', () => {
-    expect((service as any).maxRetries).toBe(5);
-    expect((service as any).retryDelayMs).toBe(10);
+    expect((service as any).maxRetries).toBe(8);
+    expect((service as any).baseDelayMs).toBe(2000);
   });
 
   describe('onModuleInit', () => {
+    beforeEach(() => {
+      (service as any).baseDelayMs = 1;
+    });
+
     it('should connect successfully when database is available', async () => {
       const connectSpy = jest.spyOn(service, '$connect').mockResolvedValue(undefined);
 
       await service.onModuleInit();
 
       expect(connectSpy).toHaveBeenCalledTimes(1);
-      expect(loggerLogSpy).toHaveBeenCalledWith('Database connection established successfully');
+      expect(loggerLogSpy).toHaveBeenCalledWith('Database connection established successfully (attempt 1)');
     });
 
     it('should retry on connection failure and eventually succeed', async () => {
@@ -60,12 +62,12 @@ describe('PrismaService', () => {
       const promise = service.onModuleInit();
 
       // Advance timers to trigger retries
-      await jest.advanceTimersByTimeAsync(100);
+      await jest.advanceTimersByTimeAsync(5000);
       await promise;
 
       expect(service.$connect).toHaveBeenCalledTimes(3);
       expect(loggerWarnSpy).toHaveBeenCalledTimes(2);
-      expect(loggerLogSpy).toHaveBeenCalledWith('Database connection established successfully');
+      expect(loggerLogSpy).toHaveBeenCalledWith('Database connection established successfully (attempt 3)');
     });
 
     it('should throw after exhausting all retries', async () => {
@@ -75,11 +77,11 @@ describe('PrismaService', () => {
       const connectionError = new Error('Can\'t reach database server');
       jest.spyOn(service, '$connect').mockRejectedValue(connectionError);
       // Set very small retry delay for fast test
-      (service as any).retryDelayMs = 1;
+      (service as any).baseDelayMs = 1;
 
       await expect(service.onModuleInit()).rejects.toThrow('Can\'t reach database server');
-      expect(service.$connect).toHaveBeenCalledTimes(5);
-      expect(loggerWarnSpy).toHaveBeenCalledTimes(5);
+      expect(service.$connect).toHaveBeenCalledTimes(8);
+      expect(loggerWarnSpy).toHaveBeenCalledTimes(8);
     }, 10000);
 
     it('should log retry attempts with correct attempt number', async () => {
@@ -89,11 +91,11 @@ describe('PrismaService', () => {
         .mockResolvedValue(undefined);
 
       const promise = service.onModuleInit();
-      await jest.advanceTimersByTimeAsync(50);
+      await jest.advanceTimersByTimeAsync(5000);
       await promise;
 
       expect(loggerWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('attempt 1/5 failed'),
+        expect.stringContaining('attempt 1/8 failed'),
       );
     });
   });

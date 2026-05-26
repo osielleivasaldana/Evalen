@@ -348,3 +348,19 @@ model LlmUsageLog {
   @@map("llm_usage_logs")
 }
 
+model PlanConfig {
+  id               String   @id @default(cuid())
+  tier             PlanTier @unique
+  name             String
+  description      String
+  price            Int      // Price in CLP (use -1 for Custom/Enterprise)
+  campaignLimit    Int
+  cvCredits        Int
+  smartFillCredits Int
+  features         String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("plan_configs")
+}
+

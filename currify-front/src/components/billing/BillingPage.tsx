@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
 import Navbar from '../layout/NavBar';
 import { CheckCircleIcon, CreditCardIcon, CalendarIcon, SparklesIcon, UserGroupIcon, DocumentMagnifyingGlassIcon, ChartBarIcon } from '@heroicons/react/24/outline';
@@ -15,6 +16,7 @@ interface BillingData {
 }
 
 const BillingPage: React.FC = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [billingData, setBillingData] = useState<BillingData | null>(null);
   const [userName, setUserName] = useState('');
@@ -71,7 +73,7 @@ const BillingPage: React.FC = () => {
     if (!billingData) return;
 
     if (billingData.planId === 'free') {
-      window.location.href = '/pricing';
+      navigate('/pricing');
       return;
     }
 
@@ -153,7 +155,7 @@ const BillingPage: React.FC = () => {
                     </p>
                   </div>
                   <button
-                    onClick={() => window.location.href = '/pricing'}
+                    onClick={() => navigate('/pricing')}
                     className="bg-white text-amber-600 px-6 py-3 rounded-xl font-bold hover:bg-amber-50 transition-colors"
                   >
                     Activar Plan Pro
@@ -300,7 +302,7 @@ const BillingPage: React.FC = () => {
               <div className="space-y-3">
                 <button
                   className="w-full px-4 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors"
-                  onClick={() => window.location.href = '/dashboard'}
+                  onClick={() => navigate('/dashboard')}
                 >
                   Ir al Dashboard
                 </button>

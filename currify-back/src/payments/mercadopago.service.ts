@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { PlanTier } from '@prisma/client';
 import axios from 'axios';
 
 @Injectable()
@@ -24,6 +25,10 @@ export class MercadoPagoService {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new Error('User not found');
 
+    const targetPlan = await this.prisma.planConfig.findUnique({
+      where: { tier: plan as PlanTier }
+    });
+
     if (this.isDummy) {
       this.logger.warn(`[DUMMY_MODE] Simulating Mercado Pago subscription for user ${userId}`);
       
@@ -35,9 +40,9 @@ export class MercadoPagoService {
           stripeSubscriptionId: `mock_mp_sub_${Date.now()}`,
           stripeCustomerId: `mock_mp_cust_${userId}`,
           stripeStatus: 'ACTIVE',
-          campaignLimit: 999,
-          cvCredits: 999,
-          smartFillCredits: 999
+          campaignLimit: targetPlan?.campaignLimit ?? 999,
+          cvCredits: targetPlan?.cvCredits ?? 999,
+          smartFillCredits: targetPlan?.smartFillCredits ?? 999
         },
       });
 
@@ -47,8 +52,8 @@ export class MercadoPagoService {
     }
 
     try {
-      const amount = plan === 'PRO' ? 19990 : 0;
-      if (amount === 0) throw new Error('Invalid plan');
+      const amount = targetPlan?.price ?? (plan === 'PRO' ? 19990 : 0);
+      if (amount <= 0) throw new Error('Invalid plan or price not set');
 
       const response = await axios.post(
         'https://api.mercadopago.com/preapproval',
@@ -122,6 +127,9 @@ export class MercadoPagoService {
       }
 
       if (status === 'authorized') {
+        const proPlan = await this.prisma.planConfig.findUnique({
+          where: { tier: 'PRO' }
+        });
         this.logger.log(`Upgrading user ${userId} to PRO plan`);
         await this.prisma.user.update({
           where: { id: userId },
@@ -131,21 +139,24 @@ export class MercadoPagoService {
             stripeSubscriptionId: preapproval.id,
             stripeCustomerId: preapproval.payer_id ? String(preapproval.payer_id) : `mp_${preapproval.payer_email}`,
             stripeStatus: 'ACTIVE',
-            campaignLimit: 999,
-            cvCredits: 999,
-            smartFillCredits: 999
+            campaignLimit: proPlan?.campaignLimit ?? 999,
+            cvCredits: proPlan?.cvCredits ?? 999,
+            smartFillCredits: proPlan?.smartFillCredits ?? 999
           },
         });
       } else if (status === 'cancelled' || status === 'cancelled_by_payer' || status === 'cancelled_by_collector') {
+        const freePlan = await this.prisma.planConfig.findUnique({
+          where: { tier: 'FREE' }
+        });
         this.logger.log(`Downgrading user ${userId} to FREE plan`);
         await this.prisma.user.update({
           where: { id: userId },
           data: {
             plan: 'FREE',
             stripeStatus: 'CANCELED',
-            campaignLimit: 1,
-            cvCredits: 3,
-            smartFillCredits: 3
+            campaignLimit: freePlan?.campaignLimit ?? 1,
+            cvCredits: freePlan?.cvCredits ?? 3,
+            smartFillCredits: freePlan?.smartFillCredits ?? 3
           },
         });
       } else if (status === 'paused') {

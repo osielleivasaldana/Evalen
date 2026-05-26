@@ -18,7 +18,7 @@ type AuthStep = 'initial' | 'login' | 'signup' | 'onboarding';
 
 const EvalenAuth: React.FC = () => {
   const navigate = useNavigate();
-  const { login, register, isAuthenticated } = useAuth();
+  const { login, register, isAuthenticated, user } = useAuth();
   const [step, setStep] = useState<AuthStep>('initial');
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -32,15 +32,19 @@ const EvalenAuth: React.FC = () => {
 
   // React to auth state changes (e.g., after OAuth callback returns)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && user) {
       const plan = selectedPlan || sessionStorage.getItem('selectedPlan');
       if (plan === 'pro') {
         navigate('/checkout');
+      } else if (user.role === 'OWNER') {
+        navigate('/owner/dashboard');
+      } else if (user.onboardingCompleted) {
+        navigate('/dashboard');
       } else {
         navigate('/onboarding');
       }
     }
-  }, [isAuthenticated, navigate, selectedPlan]);
+  }, [isAuthenticated, navigate, selectedPlan, user]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
