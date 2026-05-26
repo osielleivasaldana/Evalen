@@ -17,6 +17,7 @@ import { BillingModule } from './billing/billing.module';
 import { HealthModule } from './health/health.module';
 import { StorageModule } from './storage/storage.module';
 import { OwnerModule } from './owner/owner.module';
+import { PlansModule } from './plans/plans.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { OwnerModule } from './owner/owner.module';
     HealthModule,
     StorageModule,
     OwnerModule,
+    PlansModule,
   ],
   controllers: [],
   providers: [

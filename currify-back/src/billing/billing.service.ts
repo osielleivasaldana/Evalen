@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { PlanTier } from '@prisma/client';
 
 export interface BillingStatus {
   status: 'active' | 'trialing' | 'canceled' | 'past_due' | 'free';
@@ -72,7 +73,11 @@ export class BillingService {
       }
     }
 
-    const planName = plan === 'PRO' ? 'Pro Mensual' : 'Gratis';
+    const planConfig = await this.prisma.planConfig.findUnique({
+      where: { tier: plan as PlanTier }
+    });
+
+    const planName = planConfig?.name || (plan === 'PRO' ? 'Pro Mensual' : 'Gratis');
 
     return {
       status,
@@ -89,8 +94,8 @@ export class BillingService {
         daysLeft: trialDaysLeft
       },
       benefits: {
-        cvLimit: plan === 'PRO' ? 999 : (user.cvCredits || 3),
-        campaignLimit: plan === 'PRO' ? 999 : (user.campaignLimit || 1),
+        cvLimit: planConfig?.cvCredits ?? (plan === 'PRO' ? 999 : (user.cvCredits || 3)),
+        campaignLimit: planConfig?.campaignLimit ?? (plan === 'PRO' ? 999 : (user.campaignLimit || 1)),
         cvUsed: 0,
         activeCampaigns: user._count.campaigns
       }
@@ -98,14 +103,19 @@ export class BillingService {
   }
 
   async resetToFree(userId: string): Promise<any> {
+    const freePlan = await this.prisma.planConfig.findUnique({
+      where: { tier: 'FREE' }
+    });
+
     return this.prisma.user.update({
       where: { id: userId },
       data: {
         plan: 'FREE',
         stripeStatus: null,
         trialEndsAt: null,
-        cvCredits: 3,
-        campaignLimit: 1,
+        cvCredits: freePlan?.cvCredits ?? 3,
+        campaignLimit: freePlan?.campaignLimit ?? 1,
+        smartFillCredits: freePlan?.smartFillCredits ?? 3,
       },
     });
   }

@@ -42,7 +42,9 @@ const AuthCallback: React.FC = () => {
 
                     const selectedPlan = sessionStorage.getItem('selectedPlan');
                     
-                    if (isNew) {
+                    if (profile.role === 'OWNER') {
+                        navigate('/owner/dashboard');
+                    } else if (isNew) {
                         if (selectedPlan === 'pro') {
                             navigate('/checkout');
                         } else {

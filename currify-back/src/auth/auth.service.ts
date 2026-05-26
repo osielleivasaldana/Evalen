@@ -146,7 +146,7 @@ export class AuthService {
   }
 
   async findUserById(id: string) {
-    const user = await this.prisma.user.findUnique({
+    let user = await this.prisma.user.findUnique({
       where: { id },
       select: {
         id: true,
@@ -165,11 +165,47 @@ export class AuthService {
 
     if (!user) return null;
 
+    // Sync cvCredits and campaignLimit dynamically based on the plan configuration
+    const planConfig = await this.prisma.planConfig.findUnique({
+      where: { tier: user.plan }
+    });
+    if (planConfig) {
+      const usedCvsCount = await this.prisma.candidate.count({
+        where: { campaign: { userId: user.id } }
+      });
+      // expectedCredits is the plan's limit minus what has actually been used
+      const expectedCredits = Math.max(0, planConfig.cvCredits - usedCvsCount);
+      const expectedCampaignLimit = planConfig.campaignLimit;
+
+      if (user.cvCredits !== expectedCredits || user.campaignLimit !== expectedCampaignLimit) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            cvCredits: expectedCredits,
+            campaignLimit: expectedCampaignLimit
+          },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            company: true,
+            role: true,
+            plan: true,
+            cvCredits: true,
+            smartFillCredits: true,
+            campaignLimit: true,
+            onboardingCompleted: true,
+            createdAt: true,
+          }
+        });
+      }
+    }
+
     // Count active campaigns for this user (SaaS Limit Check)
     const activeCampaignsCount = await this.prisma.campaign.count({
       where: {
         userId: user.id,
-        status: 'ACTIVE' // Explicit string or use Enum if imported
+        status: 'ACTIVE'
       }
     });
 

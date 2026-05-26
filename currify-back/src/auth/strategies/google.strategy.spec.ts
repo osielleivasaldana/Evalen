@@ -18,6 +18,7 @@ describe('GoogleStrategy', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks();
+    mockAuthService.validateOAuthLogin.mockReset();
   });
 
   describe('constructor', () => {

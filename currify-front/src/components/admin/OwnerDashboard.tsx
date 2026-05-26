@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../layout/Layout';
 import Unauthorized from '../common/Unauthorized';
 import { apiService } from '../../services/api';
@@ -66,12 +67,13 @@ interface OwnerUser {
 }
 
 const OwnerDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<OwnerSummary | null>(null);
   const [llmStats, setLlmStats] = useState<OwnerLlmStats | null>(null);
   const [users, setUsers] = useState<OwnerUser[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'llm'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'planes' | 'llm'>('overview');
   const [editingUser, setEditingUser] = useState<OwnerUser | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +86,20 @@ const OwnerDashboard: React.FC = () => {
     smartFillCredits: 3,
     campaignLimit: 1,
     isActive: true,
+  });
+
+  // Plans Management State
+  const [plans, setPlans] = useState<any[]>([]);
+  const [editingPlan, setEditingPlan] = useState<any>(null);
+  const [showPlanModal, setShowPlanModal] = useState(false);
+  const [planFormData, setPlanFormData] = useState({
+    name: '',
+    description: '',
+    price: 0,
+    campaignLimit: 0,
+    cvCredits: 0,
+    smartFillCredits: 0,
+    featuresText: ''
   });
 
   useEffect(() => {
@@ -101,6 +117,7 @@ const OwnerDashboard: React.FC = () => {
           loadSummary(),
           loadLlmStats(),
           loadUsers(),
+          loadPlans(),
         ]);
       }
       setLoading(false);
@@ -138,6 +155,80 @@ const OwnerDashboard: React.FC = () => {
     setShowEditModal(true);
     setError(null);
     setSuccess(null);
+  };
+
+  const loadPlans = async () => {
+    try {
+      const data = await apiService.getPlansAdmin();
+      const tierOrder: Record<string, number> = { 'FREE': 1, 'PRO': 2, 'ENTERPRISE': 3 };
+      const sorted = [...data].sort((a, b) => (tierOrder[a.tier] || 99) - (tierOrder[b.tier] || 99));
+      setPlans(sorted);
+    } catch (err: any) {
+      console.error('Error loading plans:', err);
+    }
+  };
+
+  const handleOpenPlanModal = (plan: any) => {
+    setEditingPlan(plan);
+    setPlanFormData({
+      name: plan.name,
+      description: plan.description,
+      price: plan.price,
+      campaignLimit: plan.campaignLimit,
+      cvCredits: plan.cvCredits,
+      smartFillCredits: plan.smartFillCredits,
+      featuresText: plan.features ? plan.features.join('\n') : ''
+    });
+    setShowPlanModal(true);
+    setError(null);
+    setSuccess(null);
+  };
+
+  const handleClosePlanModal = () => {
+    setShowPlanModal(false);
+    setEditingPlan(null);
+  };
+
+  const handlePlanFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    let finalValue: any = value;
+    if (type === 'number') {
+      finalValue = parseInt(value, 10) || 0;
+    }
+    setPlanFormData((prev) => ({
+      ...prev,
+      [name]: finalValue,
+    }));
+  };
+
+  const handleUpdatePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPlan) return;
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const features = planFormData.featuresText
+        .split('\n')
+        .map(f => f.trim())
+        .filter(f => f.length > 0);
+
+      await apiService.updatePlanConfig(editingPlan.tier, {
+        name: planFormData.name,
+        description: planFormData.description,
+        price: planFormData.price,
+        campaignLimit: planFormData.campaignLimit,
+        cvCredits: planFormData.cvCredits,
+        smartFillCredits: planFormData.smartFillCredits,
+        features
+      });
+
+      setSuccess(`Plan ${editingPlan.tier} actualizado exitosamente.`);
+      setShowPlanModal(false);
+      await loadPlans();
+    } catch (err: any) {
+      setError(err.message || 'Error al actualizar el plan');
+    }
   };
 
   const handleCloseEditModal = () => {
@@ -220,7 +311,7 @@ const OwnerDashboard: React.FC = () => {
               </h1>
             </div>
             <button
-              onClick={() => window.location.href = '/dashboard'}
+              onClick={() => navigate('/dashboard')}
               className="px-5 py-2.5 rounded-lg border border-slate-700 hover:border-slate-500 bg-slate-800/80 hover:bg-slate-800 text-sm font-medium transition-all shadow-md flex items-center gap-2"
             >
               <span>← Volver al Dashboard</span>
@@ -277,7 +368,7 @@ const OwnerDashboard: React.FC = () => {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex border-b border-slate-800 mb-8 overflow-x-auto gap-4">
+          <div className="flex border-b border-slate-800 mb-8 overflow-x-auto gap-4 font-sans">
             <button
               onClick={() => setActiveTab('overview')}
               className={`pb-4 px-2 text-sm font-bold tracking-wide transition-all border-b-2 whitespace-nowrap ${activeTab === 'overview' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-white'}`}
@@ -289,6 +380,12 @@ const OwnerDashboard: React.FC = () => {
               className={`pb-4 px-2 text-sm font-bold tracking-wide transition-all border-b-2 whitespace-nowrap ${activeTab === 'users' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-white'}`}
             >
               Usuarios y Licencias ({users.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('planes')}
+              className={`pb-4 px-2 text-sm font-bold tracking-wide transition-all border-b-2 whitespace-nowrap ${activeTab === 'planes' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-white'}`}
+            >
+              Mantenedor de Planes ({plans.length})
             </button>
             <button
               onClick={() => setActiveTab('llm')}
@@ -554,6 +651,70 @@ const OwnerDashboard: React.FC = () => {
             </div>
           )}
 
+          {/* Tab Content: PLANES */}
+          {activeTab === 'planes' && (
+            <div className="bg-slate-800/20 border border-slate-800/60 rounded-2xl p-6 backdrop-blur-md animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold">Mantenedor de Planes SaaS</h3>
+                  <p className="text-slate-400 text-xs">Define precios, límites y características por plan</p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto font-sans">
+                <table className="min-w-full divide-y divide-slate-800 text-left">
+                  <thead>
+                    <tr className="text-slate-400 text-xs uppercase font-black">
+                      <th className="py-3.5 px-4">Plan / Nivel</th>
+                      <th className="py-3.5 px-4">Precio (Mensual)</th>
+                      <th className="py-3.5 px-4 text-center">Campañas</th>
+                      <th className="py-3.5 px-4 text-center">Créditos CV</th>
+                      <th className="py-3.5 px-4 text-center">Créditos Fill</th>
+                      <th className="py-3.5 px-4">Descripción / Características</th>
+                      <th className="py-3.5 px-4 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/50 text-sm">
+                    {plans.map((p) => {
+                      return (
+                        <tr key={p.tier} className="hover:bg-slate-800/20 transition-colors">
+                          <td className="py-4 px-4">
+                            <div className="font-semibold text-white">{p.name}</div>
+                            <div className="text-xs text-slate-500 font-bold uppercase">{p.tier}</div>
+                          </td>
+                          <td className="py-4 px-4 font-bold text-white">
+                            {p.price === 0 ? 'Gratis ($0)' : p.price === -1 ? 'Personalizado (Enterprise)' : `$${p.price.toLocaleString('es-CL')}`}
+                          </td>
+                          <td className="py-4 px-4 text-center text-indigo-300 font-bold">{p.campaignLimit >= 999 ? 'Ilimitado' : p.campaignLimit}</td>
+                          <td className="py-4 px-4 text-center text-purple-300 font-bold">{p.cvCredits >= 999 ? 'Ilimitado' : p.cvCredits}</td>
+                          <td className="py-4 px-4 text-center text-amber-300 font-bold">{p.smartFillCredits >= 999 ? 'Ilimitado' : p.smartFillCredits}</td>
+                          <td className="py-4 px-4 max-w-xs">
+                            <div className="text-slate-300 text-xs mb-1.5">{p.description}</div>
+                            <div className="flex flex-wrap gap-1">
+                              {p.features && p.features.map((f: string, idx: number) => (
+                                <span key={idx} className="bg-slate-800 text-slate-300 text-[10px] px-2 py-0.5 rounded border border-slate-700">
+                                  {f}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 text-right">
+                            <button
+                              onClick={() => handleOpenPlanModal(p)}
+                              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold transition-all text-indigo-400"
+                            >
+                              Editar Plan
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* EDIT MODAL */}
           {showEditModal && editingUser && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
@@ -651,6 +812,145 @@ const OwnerDashboard: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleCloseEditModal}
+                      className="flex-1 py-2.5 rounded-xl border border-slate-700 hover:border-slate-500 text-sm font-semibold hover:bg-slate-800 transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-550 text-white text-sm font-semibold shadow-md transition-colors"
+                    >
+                      Guardar Cambios
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* EDIT PLAN MODAL */}
+          {showPlanModal && editingPlan && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in font-sans text-white">
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl">
+                <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center">
+                  <div>
+                    <h3 className="text-lg font-black text-white">Editar Configuración del Plan</h3>
+                    <p className="text-xs text-slate-400">Nivel: {editingPlan.tier}</p>
+                  </div>
+                  <button
+                    onClick={handleClosePlanModal}
+                    className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <form onSubmit={handleUpdatePlan} className="p-6 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                        Nombre del Plan
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={planFormData.name}
+                        onChange={handlePlanFormChange}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                        Precio Mensual (CLP)
+                      </label>
+                      <input
+                        type="number"
+                        name="price"
+                        value={planFormData.price}
+                        onChange={handlePlanFormChange}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                        placeholder="Ej: 19990 (-1 para Personalizado)"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                      Descripción corta
+                    </label>
+                    <input
+                      type="text"
+                      name="description"
+                      value={planFormData.description}
+                      onChange={handlePlanFormChange}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 font-mono">
+                        Límite Campañas
+                      </label>
+                      <input
+                        type="number"
+                        name="campaignLimit"
+                        value={planFormData.campaignLimit}
+                        onChange={handlePlanFormChange}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 font-mono">
+                        Créditos CV
+                      </label>
+                      <input
+                        type="number"
+                        name="cvCredits"
+                        value={planFormData.cvCredits}
+                        onChange={handlePlanFormChange}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 font-mono">
+                        Créditos Smart Fill
+                      </label>
+                      <input
+                        type="number"
+                        name="smartFillCredits"
+                        value={planFormData.smartFillCredits}
+                        onChange={handlePlanFormChange}
+                        className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+                      Características (Una por línea)
+                    </label>
+                    <textarea
+                      name="featuresText"
+                      value={planFormData.featuresText}
+                      onChange={handlePlanFormChange}
+                      rows={5}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 font-sans"
+                      placeholder="Escribe cada beneficio en una línea nueva..."
+                      required
+                    />
+                  </div>
+
+                  <div className="pt-4 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={handleClosePlanModal}
                       className="flex-1 py-2.5 rounded-xl border border-slate-700 hover:border-slate-500 text-sm font-semibold hover:bg-slate-800 transition-colors"
                     >
                       Cancelar

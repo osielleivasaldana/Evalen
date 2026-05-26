@@ -47,6 +47,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         try {
             const { name, emails, photos, id } = profile;
             
+            if (!emails || emails.length === 0 || !emails[0].value) {
+                throw new UnauthorizedException('Google account must have an email');
+            }
+            
             this.logger.log(`[GoogleStrategy] Received profile for email: ${emails?.[0]?.value}`);
 
             const user = {

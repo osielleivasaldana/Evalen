@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate, useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
 
@@ -55,6 +55,7 @@ const PublicCampaignWrapper: React.FC = () => {
 
 const AppRouter: React.FC = () => {
   const { isAuthenticated, user, loading, logout, checkAuth } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
@@ -62,6 +63,9 @@ const AppRouter: React.FC = () => {
 
   const LandingPageWrapper: React.FC = () => {
     if (isAuthenticated) {
+      if (user?.role === 'OWNER') {
+        return <Navigate to="/owner/dashboard" replace />;
+      }
       return <Navigate to="/dashboard" replace />;
     }
     return <LandingPage />;
@@ -72,7 +76,7 @@ const AppRouter: React.FC = () => {
       return <Navigate to="/login" replace />;
     }
 
-    if (requiresOnboarding && user?.onboardingCompleted === false) {
+    if (requiresOnboarding && user?.onboardingCompleted === false && user?.role !== 'OWNER') {
       return <Navigate to="/onboarding" replace />;
     }
 
@@ -125,22 +129,37 @@ const AppRouter: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        fontSize: '18px',
-        color: '#666'
-      }}>
-        Cargando Evalen...
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 font-sans relative overflow-hidden select-none">
+        {/* Background glow effects */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+        
+        <div className="z-10 flex flex-col items-center gap-6">
+          {/* Logo or beautiful spinner */}
+          <div className="relative flex items-center justify-center">
+            {/* Spinning gradient ring */}
+            <div className="w-16 h-16 rounded-full border-t-2 border-r-2 border-indigo-500 border-solid animate-spin"></div>
+            {/* Pulsing center dot */}
+            <div className="absolute w-8 h-8 rounded-full bg-indigo-600/20 flex items-center justify-center">
+              <div className="w-3 h-3 rounded-full bg-indigo-500 animate-ping"></div>
+            </div>
+          </div>
+          
+          <div className="flex flex-col items-center gap-1.5 text-center">
+            <h2 className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+              Cargando Evalen
+            </h2>
+            <p className="text-xs text-slate-500 font-medium tracking-wide animate-pulse">
+              Preparando tu espacio de trabajo...
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <Router>
-      <Routes>
+    <Routes>
         {/* Landing Page - Public (moved from /home) */}
         <Route path="/" element={
           <ErrorBoundary>
@@ -180,14 +199,18 @@ const AppRouter: React.FC = () => {
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute>
-                  <Dashboard
-                    onNavigateToCampaign={(campaignId) => window.location.href = `/campaigns/${campaignId}`}
-                    onCreateCampaign={() => window.location.href = '/create-campaign'}
-                    onEditCampaign={(campaignId) => window.location.href = `/edit-campaign/${campaignId}`}
-                    onLogout={handleLogout}
-                  />
-                </ProtectedRoute>
+                user?.role === 'OWNER' ? (
+                  <Navigate to="/owner/dashboard" replace />
+                ) : (
+                  <ProtectedRoute>
+                    <Dashboard
+                      onNavigateToCampaign={(campaignId) => navigate(`/campaigns/${campaignId}`)}
+                      onCreateCampaign={() => navigate('/create-campaign')}
+                      onEditCampaign={(campaignId) => navigate(`/edit-campaign/${campaignId}`)}
+                      onLogout={handleLogout}
+                    />
+                  </ProtectedRoute>
+                )
               }
             />
             <Route
@@ -198,9 +221,9 @@ const AppRouter: React.FC = () => {
                     onCampaignCreated={(campaign) => {
                       // Campaign created successfully, the component handles the success state
                     }}
-                    onCancel={() => window.location.href = '/dashboard'}
-                    onGoToDashboard={() => window.location.href = '/dashboard'}
-                    onManageCandidates={(campaignId) => window.location.href = `/campaigns/${campaignId}`}
+                    onCancel={() => navigate('/dashboard')}
+                    onGoToDashboard={() => navigate('/dashboard')}
+                    onManageCandidates={(campaignId) => navigate(`/campaigns/${campaignId}`)}
                   />
                 </ProtectedRoute>
               }
@@ -296,7 +319,7 @@ const AppRouter: React.FC = () => {
                 La página que buscas no existe.
               </p>
               <button
-                onClick={() => window.location.href = isAuthenticated ? '/dashboard' : '/login'}
+                onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}
                 style={{
                   padding: '12px 24px',
                   backgroundColor: '#3498db',
@@ -313,12 +336,12 @@ const AppRouter: React.FC = () => {
           }
         />
       </Routes>
-    </Router>
   );
 };
 
 const CampaignDetailsWrapper: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
+  const navigate = useNavigate();
 
   if (!campaignId) {
     return <Navigate to="/dashboard" replace />;
@@ -327,14 +350,15 @@ const CampaignDetailsWrapper: React.FC = () => {
   return (
     <CandidatesManagerNew
       campaignId={campaignId}
-      onBack={() => window.location.href = '/dashboard'}
-      onViewCandidate={(candidateId) => window.location.href = `/campaigns/${campaignId}/candidate/${candidateId}`}
+      onBack={() => navigate('/dashboard')}
+      onViewCandidate={(candidateId) => navigate(`/campaigns/${campaignId}/candidate/${candidateId}`)}
     />
   );
 };
 
 const EditCampaignWrapper: React.FC = () => {
   const { campaignId } = useParams<{ campaignId: string }>();
+  const navigate = useNavigate();
 
   if (!campaignId) {
     return <Navigate to="/dashboard" replace />;
@@ -343,15 +367,16 @@ const EditCampaignWrapper: React.FC = () => {
   return (
     <EditCampaign
       campaignId={campaignId}
-      onCampaignUpdated={() => window.location.href = '/dashboard'}
-      onCancel={() => window.location.href = '/dashboard'}
-      onGoToDashboard={() => window.location.href = '/dashboard'}
+      onCampaignUpdated={() => navigate('/dashboard')}
+      onCancel={() => navigate('/dashboard')}
+      onGoToDashboard={() => navigate('/dashboard')}
     />
   );
 };
 
 const CandidateDetailWrapper: React.FC = () => {
   const { campaignId, candidateId } = useParams<{ campaignId: string; candidateId: string }>();
+  const navigate = useNavigate();
 
   if (!campaignId || !candidateId) {
     return <Navigate to="/dashboard" replace />;
@@ -360,7 +385,7 @@ const CandidateDetailWrapper: React.FC = () => {
   return (
     <CandidateDetail
       candidateId={candidateId}
-      onBack={() => window.location.href = `/campaigns/${campaignId}`}
+      onBack={() => navigate(`/campaigns/${campaignId}`)}
     />
   );
 };

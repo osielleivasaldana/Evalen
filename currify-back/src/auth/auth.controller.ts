@@ -75,7 +75,7 @@ export class AuthController {
     }
 
     const { access_token } = user;
-    const isNew = user.onboardingPending || !user.company;
+    const isNew = !user.user.onboardingCompleted || !user.user.company;
 
     let redirectUrl = `${frontendUrl}/auth/callback?token=${access_token}&new=${isNew}`;
 

@@ -7,9 +7,28 @@ const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState<'review' | 'processing' | 'success'>('review');
     const [error, setError] = useState<string | null>(null);
+    const [proPlan, setProPlan] = useState<any>(null);
+    const [loadingPlan, setLoadingPlan] = useState(true);
 
     useEffect(() => {
         document.body.classList.add('checkout-mode');
+        
+        const fetchProPlan = async () => {
+            try {
+                const data = await apiService.getPlans();
+                const found = data.find((p: any) => p.tier === 'PRO');
+                if (found) {
+                    setProPlan(found);
+                }
+            } catch (err) {
+                console.error('Error fetching PRO plan config in checkout:', err);
+            } finally {
+                setLoadingPlan(false);
+            }
+        };
+
+        fetchProPlan();
+
         return () => {
             document.body.classList.remove('checkout-mode');
         };
@@ -37,17 +56,30 @@ const CheckoutPage: React.FC = () => {
         navigate('/pricing');
     };
 
-    const handleLogoClick = () => {
-        if (step === 'processing') return;
-        if (window.confirm('¿Estás seguro de salir? Perderás el progreso del checkout.')) {
-            sessionStorage.removeItem('selectedPlan');
-            navigate('/');
-        }
-    };
+    const formattedPrice = proPlan ? `$${proPlan.price.toLocaleString('es-CL')}` : '$19.990';
+    const planName = proPlan ? proPlan.name : 'Evalen Pro';
+
+    const customFeatures = proPlan ? (proPlan.features || []).filter((f: string) => {
+        const lower = f.toLowerCase();
+        return !lower.includes('campaña') && !lower.includes('cv') && !lower.includes('smart fill') && !lower.includes('procesamiento');
+    }) : [];
+
+    const displayFeatures = proPlan ? [
+        proPlan.campaignLimit >= 999 ? 'Campañas ilimitadas' : `${proPlan.campaignLimit} campaña${proPlan.campaignLimit > 1 ? 's' : ''} activa${proPlan.campaignLimit > 1 ? 's' : ''}`,
+        proPlan.cvCredits >= 999 ? 'Procesamiento ilimitado de CVs' : `${proPlan.cvCredits} CVs por mes`,
+        proPlan.smartFillCredits >= 999 ? 'Smart Fill ilimitado' : `${proPlan.smartFillCredits} créditos de Smart Fill por mes`,
+        ...customFeatures
+    ] : [
+        'Campañas ilimitadas',
+        'CVs ilimitados',
+        'Smart Match avanzado',
+        'Exportación de reportes',
+        'Soporte prioritario'
+    ];
 
     if (step === 'processing') {
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 font-sans">
                 <MinimalHeader />
                 <div className="flex items-center justify-center h-[calc(100vh-200px)]">
                     <div className="text-center max-w-md">
@@ -63,7 +95,7 @@ const CheckoutPage: React.FC = () => {
                             Procesando tu pago...
                         </h2>
                         <p className="text-gray-600 mb-6">
-                            Estamos activando tu plan Pro. Esto solo tomará unos segundos.
+                            Estamos activando tu plan {planName}. Esto solo tomará unos segundos.
                         </p>
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
                     </div>
@@ -73,14 +105,14 @@ const CheckoutPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 font-sans">
             <MinimalHeader />
 
             <div className="max-w-2xl mx-auto px-4 py-12">
                 {/* Header */}
                 <button
                     onClick={handleGoBack}
-                    className="inline-flex items-center text-gray-500 hover:text-gray-700 mb-6 transition-colors"
+                    className="inline-flex items-center text-gray-500 hover:text-gray-700 mb-6 transition-colors font-semibold"
                 >
                     <ArrowLeftIcon className="w-4 h-4 mr-1" />
                     Volver
@@ -102,10 +134,10 @@ const CheckoutPage: React.FC = () => {
                                     <SparklesIcon className="w-5 h-5" />
                                     <span className="text-sm font-medium opacity-90">Plan seleccionado</span>
                                 </div>
-                                <h2 className="text-2xl font-bold">Evalen Pro</h2>
+                                <h2 className="text-2xl font-bold">{planName}</h2>
                             </div>
                             <div className="text-right">
-                                <div className="text-3xl font-bold">$19.990</div>
+                                <div className="text-3xl font-bold">{formattedPrice}</div>
                                 <div className="text-sm opacity-80">CLP/mes</div>
                             </div>
                         </div>
@@ -114,13 +146,7 @@ const CheckoutPage: React.FC = () => {
                     <div className="p-6">
                         <h3 className="font-semibold text-gray-900 mb-4">Incluye:</h3>
                         <ul className="space-y-3">
-                            {[
-                                'Campañas ilimitadas',
-                                'CVs ilimitados',
-                                'Smart Match avanzado',
-                                'Exportación de reportes',
-                                'Soporte prioritario'
-                            ].map((feature, i) => (
+                            {displayFeatures.map((feature, i) => (
                                 <li key={i} className="flex items-center text-gray-600">
                                     <CheckCircleIcon className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                                     {feature}
@@ -133,8 +159,8 @@ const CheckoutPage: React.FC = () => {
                 {/* Price Summary */}
                 <div className="bg-gray-50 rounded-xl p-6 mb-6">
                     <div className="flex justify-between mb-2">
-                        <span className="text-gray-600">Evalen Pro (mensual)</span>
-                        <span className="font-medium">$19.990 CLP</span>
+                        <span className="text-gray-600">{planName} (mensual)</span>
+                        <span className="font-medium">{formattedPrice} CLP</span>
                     </div>
                     <div className="flex justify-between mb-2">
                         <span className="text-gray-600">Impuestos</span>
@@ -142,7 +168,7 @@ const CheckoutPage: React.FC = () => {
                     </div>
                     <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between">
                         <span className="font-semibold text-gray-900">Total</span>
-                        <span className="font-bold text-xl text-indigo-600">$19.990 CLP/mes</span>
+                        <span className="font-bold text-xl text-indigo-600">{formattedPrice} CLP/mes</span>
                     </div>
                 </div>
 
@@ -160,7 +186,7 @@ const CheckoutPage: React.FC = () => {
                     onClick={handleConfirmPurchase}
                     className="w-full py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-[1.01] active:scale-[0.99]"
                 >
-                    Confirmar y pagar $19.990 CLP/mes
+                    Confirmar y pagar {formattedPrice} CLP/mes
                 </button>
 
                 <p className="text-center text-sm text-gray-500 mt-4">
@@ -173,18 +199,20 @@ const CheckoutPage: React.FC = () => {
     );
 };
 
-const MinimalHeader: React.FC = () => (
-    <header className="bg-white border-b border-gray-100">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-            <button 
-                onClick={() => {
-                    if (window.confirm('¿Estás seguro de salir? Perderás el progreso del checkout.')) {
-                        sessionStorage.removeItem('selectedPlan');
-                        window.location.href = '/';
-                    }
-                }}
-                className="flex items-center gap-2"
-            >
+const MinimalHeader: React.FC = () => {
+    const navigate = useNavigate();
+    return (
+        <header className="bg-white border-b border-gray-100">
+            <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+                <button 
+                    onClick={() => {
+                        if (window.confirm('¿Estás seguro de salir? Perderás el progreso del checkout.')) {
+                            sessionStorage.removeItem('selectedPlan');
+                            navigate('/');
+                        }
+                    }}
+                    className="flex items-center gap-2"
+                >
                 <svg width="140" height="40" viewBox="0 0 180 48" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                         <linearGradient id="evalen-gradient-checkout" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -205,6 +233,7 @@ const MinimalHeader: React.FC = () => (
             </div>
         </div>
     </header>
-);
+    );
+};
 
 export default CheckoutPage;

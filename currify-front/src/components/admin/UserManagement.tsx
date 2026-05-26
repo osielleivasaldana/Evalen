@@ -261,7 +261,7 @@ const UserManagement: React.FC = () => {
 
         {showModal && (
           <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
-            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 text-gray-900">
               <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900">
                   {editingUser ? 'Editar Usuario' : 'Crear Usuario'}
@@ -287,7 +287,7 @@ const UserManagement: React.FC = () => {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                       placeholder="Ej: Juan Pérez"
                     />
                   </div>
@@ -301,7 +301,7 @@ const UserManagement: React.FC = () => {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                       placeholder="correo@ejemplo.com"
                     />
                   </div>
@@ -315,7 +315,7 @@ const UserManagement: React.FC = () => {
                         type="password"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                         placeholder="Dejar vacío para mantener contraseña actual"
                         minLength={6}
                       />
@@ -341,7 +341,7 @@ const UserManagement: React.FC = () => {
                       required
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
                     >
                       <option value="RECRUITER">Reclutador</option>
                       <option value="TECHNICAL_REVIEWER">Revisor Técnico</option>

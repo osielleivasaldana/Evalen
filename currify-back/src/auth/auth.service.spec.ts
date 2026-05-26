@@ -21,6 +21,12 @@ describe('AuthService', () => {
     campaign: {
       count: jest.fn(),
     },
+    planConfig: {
+      findUnique: jest.fn(),
+    },
+    candidate: {
+      count: jest.fn(),
+    },
   };
 
   const mockJwtService = {
@@ -39,6 +45,9 @@ describe('AuthService', () => {
     service = module.get<AuthService>(AuthService);
     prisma = module.get<PrismaService>(PrismaService);
     jwtService = module.get<JwtService>(JwtService);
+
+    mockPrisma.planConfig.findUnique.mockResolvedValue(null);
+    mockPrisma.candidate.count.mockResolvedValue(0);
 
     jest.clearAllMocks();
   });
@@ -259,7 +268,7 @@ describe('AuthService', () => {
         googleId: 'google-789',
       };
 
-      mockPrisma.user.findUnique.mockResolvedValue({
+      const existingUser = {
         id: '3',
         email: 'local-to-google@test.com',
         name: 'Bob Smith',
@@ -269,6 +278,13 @@ describe('AuthService', () => {
         plan: 'FREE',
         cvCredits: 0,
         campaignLimit: 5,
+      };
+
+      mockPrisma.user.findUnique.mockResolvedValue(existingUser);
+      mockPrisma.user.update.mockResolvedValue({
+        ...existingUser,
+        socialProvider: 'google',
+        socialId: 'google-789',
       });
 
       await service.validateOAuthLogin(profile, 'google');
