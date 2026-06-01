@@ -33,12 +33,10 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - GROQ_API_KEY=${GROQ_API_KEY}
       # Model Configuration
       - CLAUDE_MODEL=${CLAUDE_MODEL}
       - OPENAI_MODEL=${OPENAI_MODEL}
-      - GOOGLE_MODEL=gemini-2.0-flash
-      - GROQ_MODEL=${GROQ_MODEL}
+      - GOOGLE_MODEL=${GOOGLE_MODEL}
       # General LLM settings
       - MAX_TOKENS=${MAX_TOKENS}
       - TIMEOUT_SECONDS=${TIMEOUT_SECONDS}

@@ -27,6 +27,12 @@ enum ProcessingStatus {
   FAILED
 }
 
+enum ScoringStatus {
+  CURRENT
+  OUTDATED
+  PENDING
+}
+
 enum WorkType {
   FULL_TIME
   PART_TIME
@@ -169,8 +175,10 @@ model Candidate {
   email            String?
   name             String?
   phone            String?
+  expectedSalary   String?
   structuredData   Json?
   processingStatus ProcessingStatus @default(PENDING)
+  scoringStatus    ScoringStatus    @default(CURRENT)
   candidateStatus  CandidateStatus  @default(NEW)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt

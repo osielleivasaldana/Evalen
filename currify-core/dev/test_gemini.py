@@ -11,7 +11,7 @@ genai.configure(api_key=api_key)
 
 async def main():
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         config = genai.types.GenerationConfig(max_output_tokens=100, temperature=0.0)
         print("Sending request...")
         response = await model.generate_content_async("Hello world", generation_config=config)

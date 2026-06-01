@@ -58,7 +58,7 @@ class LLMService:
             if not openai:
                 raise ImportError("openai package not installed. Run: pip install openai")
             
-            raw_client = openai.AsyncOpenAI(api_key=self.api_key)
+            raw_client = openai.AsyncOpenAI(api_key=self.api_key, max_retries=0)
             self.client = instructor.from_openai(raw_client)
 
         elif self.provider == "google":
@@ -66,15 +66,6 @@ class LLMService:
                 raise ImportError("google-generativeai package not installed. Run: pip install google-generativeai")
             genai.configure(api_key=self.api_key)
             self.client = genai.GenerativeModel(settings.google_model)
-
-        elif self.provider == "groq":
-            if not openai:
-                raise ImportError("openai package not installed. Run: pip install openai")
-            raw_client = openai.AsyncOpenAI(
-                api_key=self.api_key,
-                base_url="https://api.groq.com/openai/v1"
-            )
-            self.client = instructor.from_openai(raw_client)
 
         else:
             raise ValueError(f"Unsupported LLM provider: {self.provider}")
@@ -165,12 +156,24 @@ class LLMService:
                 full_prompt = f"{prompt}\n\n{secure_input}"
                 
                 try:
+                    # Convertir el modelo Pydantic en un esquema compatible con Gemini
+                    # (inlining de $ref, remoción de default, title, etc. y resolución de anyOf)
+                    import copy
+                    if isinstance(response_model, dict):
+                        cleaned_schema = self._clean_schema_for_gemini(copy.deepcopy(response_model))
+                    else:
+                        try:
+                            raw_schema = response_model.model_json_schema()
+                        except AttributeError:
+                            raw_schema = response_model.schema()
+                        cleaned_schema = self._clean_schema_for_gemini(copy.deepcopy(raw_schema))
+                        
                     # Intenta usar la validación de esquema nativa de Google Gemini
                     config = genai.types.GenerationConfig(
                         max_output_tokens=settings.max_tokens,
                         temperature=0.0,
                         response_mime_type="application/json",
-                        response_schema=response_model
+                        response_schema=cleaned_schema
                     )
                     response = await self.client.generate_content_async(full_prompt, generation_config=config)
                 except Exception as e:
@@ -284,8 +287,17 @@ class LLMService:
                 is_rate_limit = any(x in err for x in ["429", "rate limit", "resource exhausted", "quota"])
                 
                 if is_rate_limit and attempt < max_retries - 1:
-                    # Exponential backoff: 2, 4, 8, 16... capped at 60s + jitter
-                    wait = min(60, (2 ** (attempt + 1))) + (random.random() * 5)
+                    # Try to extract wait time from response headers
+                    wait = self._get_retry_after(e)
+                    if wait is not None:
+                        if wait > 20.0:
+                            logger.error(f"[{request_id}] [{stage_name}] ❌ Rate Limit reset time ({wait:.2f}s) is too long. Failing fast to avoid timeout.")
+                            raise e
+                    else:
+                        # Exponential backoff: 2, 4, 8, 16... capped at 60s
+                        wait = min(60, (2 ** (attempt + 1)))
+                    # Add jitter to avoid synchronization
+                    wait += random.random() * 2
                     logger.warning(f"[{request_id}] [{stage_name}] ⚠️ 429 Rate Limit. Retrying in {wait:.2f}s... (Attempt {attempt+1}/{max_retries})")
                     await asyncio.sleep(wait)
                 else:
@@ -293,6 +305,24 @@ class LLMService:
                     if attempt == max_retries - 1: return None
                     # Short sleep for non-rate-limit errors
                     await asyncio.sleep(2)
+        return None
+
+    def _get_retry_after(self, e: Exception) -> Optional[float]:
+        """Extract wait time in seconds from exception headers if available."""
+        try:
+            response = getattr(e, "response", None)
+            if response is not None and hasattr(response, "headers"):
+                headers = response.headers
+                
+                # 1. Standard Retry-After header
+                retry_after = headers.get("retry-after") or headers.get("Retry-After")
+                if retry_after:
+                    try:
+                        return float(retry_after)
+                    except ValueError:
+                        pass
+        except Exception as ex:
+            logger.warning(f"Error parsing rate limit headers: {ex}")
         return None
 
     async def _call_provider_api_raw(self, prompt: str, temperature: float) -> Optional[str]:
@@ -313,11 +343,9 @@ class LLMService:
                  self._save_usage(response, settings.current_model)
                  return response.content[0].text.strip()
 
-             elif self.provider in ["openai", "groq"]:
+             elif self.provider == "openai":
                  import openai
-                 client_kwargs = {"api_key": self.api_key}
-                 if self.provider == "groq":
-                     client_kwargs["base_url"] = "https://api.groq.com/openai/v1"
+                 client_kwargs = {"api_key": self.api_key, "max_retries": 0}
                  raw_client = openai.AsyncOpenAI(**client_kwargs)
                  response = await raw_client.chat.completions.create(
                      model=settings.current_model,
@@ -339,7 +367,6 @@ class LLMService:
         if self.provider == "anthropic": return await self._call_anthropic_api(prompt, temperature)
         elif self.provider == "openai": return await self._call_openai_api(prompt, temperature)
         elif self.provider == "google": return await self._call_google_api(prompt, temperature)
-        elif self.provider == "groq": return await self._call_groq_api(prompt, temperature)
         return None
 
     async def _call_anthropic_api(self, prompt: str, temperature: float) -> Optional[str]:
@@ -370,17 +397,6 @@ class LLMService:
         self._save_usage(response, settings.google_model)
         return response.text.strip() if response.text else None
 
-    async def _call_groq_api(self, prompt: str, temperature: float) -> Optional[str]:
-        response = await self.client.chat.completions.create(
-            model=settings.current_model,
-            max_tokens=settings.max_tokens,
-            temperature=temperature,
-            messages=[{"role": "user", "content": prompt}],
-            timeout=settings.timeout_seconds
-        )
-        self._save_usage(response, settings.current_model)
-        return response.choices[0].message.content.strip() if response.choices else None
-    
     def _extract_json_from_response(self, response_text: str, stage: str = "unknown") -> Optional[Any]:
         import re
         import json
@@ -404,6 +420,70 @@ class LLMService:
             if start != -1 and end != -1: return json.loads(clean[start:end+1])
         except: pass
         return None
+
+    def _clean_schema_for_gemini(self, schema: dict, defs: dict = None) -> dict:
+        """
+        Recursivamente resuelve e inlínea referencias ($ref), y limpia campos 
+        no soportados por el compilador de esquemas de Google Gemini (anyOf, default, title, etc.).
+        """
+        if defs is None:
+            defs = schema.get("$defs", schema.get("definitions", {}))
+            
+        if not isinstance(schema, dict):
+            return schema
+            
+        # 1. Resolver referencias de Pydantic ($ref)
+        if "$ref" in schema:
+            ref_path = schema["$ref"]
+            ref_name = ref_path.split("/")[-1]
+            resolved = defs.get(ref_name, {}).copy()
+            return self._clean_schema_for_gemini(resolved, defs)
+            
+        # 2. Resolver uniones (anyOf / oneOf) que Gemini no soporta
+        if "anyOf" in schema:
+            options = schema.pop("anyOf")
+            non_null_options = [opt for opt in options if isinstance(opt, dict) and opt.get("type") != "null"]
+            has_null = any(isinstance(opt, dict) and opt.get("type") == "null" for opt in options)
+            if non_null_options:
+                schema.update(self._clean_schema_for_gemini(non_null_options[0], defs))
+                if has_null:
+                    schema["nullable"] = True
+            else:
+                schema["type"] = "string"
+                schema["nullable"] = True
+                
+        if "oneOf" in schema:
+            options = schema.pop("oneOf")
+            non_null_options = [opt for opt in options if isinstance(opt, dict) and opt.get("type") != "null"]
+            has_null = any(isinstance(opt, dict) and opt.get("type") == "null" for opt in options)
+            if non_null_options:
+                schema.update(self._clean_schema_for_gemini(non_null_options[0], defs))
+                if has_null:
+                    schema["nullable"] = True
+            else:
+                schema["type"] = "string"
+                schema["nullable"] = True
+                
+        # 3. Recorrer recursivamente todos los valores del diccionario
+        for key, val in list(schema.items()):
+            if isinstance(val, dict):
+                schema[key] = self._clean_schema_for_gemini(val, defs)
+            elif isinstance(val, list):
+                schema[key] = [self._clean_schema_for_gemini(item, defs) if isinstance(item, dict) else item for item in val]
+                
+        # 4. Eliminar campos prohibidos en Gemini
+        keys_to_remove = ["$defs", "definitions", "default", "title", "description", "examples", "additionalProperties"]
+        for key in keys_to_remove:
+            schema.pop(key, None)
+            
+        # 5. MEJORA: Remover metadata y metadata_procesamiento para reducir drásticamente el tamaño del JSON
+        if "properties" in schema and isinstance(schema["properties"], dict):
+            schema["properties"].pop("metadata", None)
+            schema["properties"].pop("metadata_procesamiento", None)
+            if "required" in schema and isinstance(schema["required"], list):
+                schema["required"] = [r for r in schema["required"] if r not in ["metadata", "metadata_procesamiento"]]
+                
+        return schema
 
 # Aliases for backward compatibility
 AnthropicService = LLMService

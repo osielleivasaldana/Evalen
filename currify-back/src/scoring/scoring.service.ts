@@ -256,10 +256,22 @@ export class ScoringService {
         );
       }
 
-      // Si ya existe scoring, retornarlo (no recalcular)
-      if (candidate.scoring) {
+      // Si ya existe scoring y está CURRENT, retornarlo (no recalcular)
+      if (candidate.scoring && candidate.scoringStatus === 'CURRENT') {
         this.logger.log(`Returning existing score for candidate ${candidateId}`);
         return candidate.scoring;
+      }
+
+      // Si está OUTDATED, limpiar scoring anterior y continuar con rescore
+      if (candidate.scoringStatus === 'OUTDATED') {
+        this.logger.log(`Candidate ${candidateId} is OUTDATED, rescoring...`);
+        await this.prisma.candidateScoring.deleteMany({
+          where: { candidateId },
+        });
+        await this.prisma.candidate.update({
+          where: { id: candidateId },
+          data: { scoringStatus: 'PENDING' },
+        });
       }
 
       // Parsear job description (con caché)
@@ -322,6 +334,12 @@ export class ScoringService {
         },
       });
 
+      // Marcar scoring como CURRENT después de evaluación exitosa
+      await this.prisma.candidate.update({
+        where: { id: candidateId },
+        data: { scoringStatus: 'CURRENT' },
+      });
+
       this.logger.log(`Scoring saved for candidate ${candidateId}: ${scoringResult.overall_score}`);
       return savedScoring;
     } catch (error) {
@@ -357,8 +375,26 @@ export class ScoringService {
 
   /**
    * Re-evalúa un candidato (usado cuando se reprocesa un CV)
+   * Consume 1 crédito CV si el rescore es exitoso
    */
-  async reevaluateCandidate(candidateId: string): Promise<any> {
+  async reevaluateCandidate(candidateId: string, userId: string): Promise<any> {
+    // Verificar créditos del usuario ANTES de rescorear
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { cvCredits: true },
+    });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (user.cvCredits <= 0) {
+      throw new HttpException(
+        'Créditos insuficientes para reevaluar candidato. Adquiere más créditos para continuar.',
+        HttpStatus.PAYMENT_REQUIRED,
+      );
+    }
+
     try {
       // Eliminar scoring existente si existe
       await this.prisma.candidateScoring.deleteMany({
@@ -366,10 +402,87 @@ export class ScoringService {
       });
 
       // Evaluar de nuevo
-      return await this.evaluateCandidate(candidateId);
+      const result = await this.evaluateCandidate(candidateId);
+
+      // Solo descontar crédito si el rescore fue EXITOSO
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { cvCredits: { decrement: 1 } },
+      });
+
+      this.logger.log(`Consumed 1 CV credit for user ${userId} rescoring candidate ${candidateId}`);
+
+      return result;
     } catch (error) {
+      // Si falla, NO descontar crédito
       this.logger.error(`Error re-evaluating candidate ${candidateId}`, error);
       throw error;
     }
+  }
+
+  /**
+   * Re-evalúa todos los candidatos OUTDATED de una campaña
+   * Máximo 100 candidatos por operación. Consume 1 crédito CV por cada rescore exitoso.
+   */
+  async rescoreCampaign(campaignId: string, userId: string) {
+    const MAX_RESCORE = 100;
+
+    const candidates = await this.prisma.candidate.findMany({
+      where: {
+        campaignId,
+        scoringStatus: 'OUTDATED',
+        processingStatus: 'COMPLETED',
+      },
+      select: { id: true },
+    });
+
+    if (candidates.length === 0) {
+      this.logger.log(`No outdated candidates to rescore for campaign ${campaignId}`);
+      return { total: 0, started: 0, limited: false };
+    }
+
+    // Limitar a MAX_RESCORE candidatos
+    let limited = false;
+    let candidatesToProcess = candidates;
+    if (candidates.length > MAX_RESCORE) {
+      candidatesToProcess = candidates.slice(0, MAX_RESCORE);
+      limited = true;
+      this.logger.log(
+        `Rescore limitado a 100 candidatos para campaign ${campaignId}. ${candidates.length - MAX_RESCORE} candidatos quedaron sin reevaluar.`,
+      );
+    }
+
+    this.logger.log(`Rescoring ${candidatesToProcess.length} candidates for campaign ${campaignId}`);
+
+    // Rescore asíncrono con semáforo (máx 3 concurrentes)
+    let active = 0;
+    let index = 0;
+    const results: PromiseSettledResult<any>[] = [];
+
+    return new Promise<{ total: number; started: number; limited: boolean }>((resolve) => {
+      const startNext = async () => {
+        if (index >= candidatesToProcess.length && active === 0) {
+          resolve({ total: candidates.length, started: candidatesToProcess.length, limited });
+          return;
+        }
+
+        while (active < 3 && index < candidatesToProcess.length) {
+          const candidate = candidatesToProcess[index++];
+          active++;
+          this.reevaluateCandidate(candidate.id, userId)
+            .then((r) => { results.push({ status: 'fulfilled', value: r }); })
+            .catch((e) => {
+              // Si un rescore individual falla (ej. créditos insuficientes), continuar con los demás
+              results.push({ status: 'rejected', reason: e });
+            })
+            .finally(() => {
+              active--;
+              startNext();
+            });
+        }
+      };
+
+      startNext();
+    });
   }
 }

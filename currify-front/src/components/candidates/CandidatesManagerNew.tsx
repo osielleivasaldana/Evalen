@@ -39,7 +39,8 @@ import { CheckCircleIcon as CheckIconSolid } from '@heroicons/react/24/solid';
 import { Card, CardHeader } from '../ui/card';
 import { Badge } from '../ui/badge';
 import Layout from '../layout/Layout';
-import { apiService, Campaign, Candidate, CandidateFilters, CandidateStats, CVData, ProcessInstance, StageInstance } from '../../services/api';
+import { apiService, Campaign, Candidate, CandidateFilters, CandidateStats, CVData, ProcessInstance, StageInstance, RescoreStatus } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import DOMPurify from 'dompurify';
 import { unescapeHtml } from '../../utils/htmlUtils';
 import CandidateDrawer from './CandidateDrawer';
@@ -87,6 +88,14 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [dismissingCandidates, setDismissingCandidates] = useState<Set<string>>(new Set());
 
+  // Rescore State
+  const [rescoringAll, setRescoringAll] = useState(false);
+  const [rescoresInProgress, setRescoresInProgress] = useState<Set<string>>(new Set());
+  const [showRescoreConfirm, setShowRescoreConfirm] = useState(false);
+  const [rescoreProgress, setRescoreProgress] = useState<RescoreStatus | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const [pollingTimedOut, setPollingTimedOut] = useState(false);
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -110,7 +119,14 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
     return () => clearInterval(interval);
   }, []);
 
-
+  // Auth context for user credits
+  const { user } = useAuth();
+  const outdatedCount = useMemo(() => candidates.filter(c => c.scoringStatus === 'OUTDATED').length, [candidates]);
+  const availableCredits = user?.cvCredits ?? 0;
+  const cost = outdatedCount;
+  const creditsAfter = availableCredits - cost;
+  const isRescoreActive = isPolling || (rescoreProgress !== null && rescoreProgress.current < rescoreProgress.total) || pollingTimedOut;
+  const rescoreCompleted = rescoreProgress !== null && rescoreProgress.current >= rescoreProgress.total;
 
   // ---- DATA LOADING ----
   const loadData = useCallback(async () => {
@@ -507,6 +523,93 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
     }
   };
 
+  // ---- RESCORE HANDLERS ----
+  const handleRescoreAll = () => {
+    setShowRescoreConfirm(true);
+  };
+
+  const confirmRescoreAll = async () => {
+    setShowRescoreConfirm(false);
+    setRescoringAll(true);
+    setRescoreProgress(null);
+    setPollingTimedOut(false);
+    try {
+      await apiService.rescoreCampaign(campaignId);
+      setSnackbarMessage('Reevaluación iniciada para todos los candidatos');
+      setIsPolling(true);
+      await loadData();
+    } catch (err) {
+      setSnackbarMessage('Error al iniciar reevaluación');
+    } finally {
+      setRescoringAll(false);
+    }
+  };
+
+  const handleCloseRescoreConfirm = () => {
+    setShowRescoreConfirm(false);
+  };
+
+  const handleDismissRescoreResult = () => {
+    setRescoreProgress(null);
+    setIsPolling(false);
+    setPollingTimedOut(false);
+  };
+
+  // Polling for rescore progress
+  useEffect(() => {
+    if (!isPolling) return;
+
+    const startTime = Date.now();
+    const TIMEOUT_MS = 60000;
+
+    const interval = setInterval(async () => {
+      try {
+        const status = await apiService.getRescoreStatus(campaignId);
+        setRescoreProgress(status);
+
+        if (status.current >= status.total) {
+          // Rescore completed
+          setIsPolling(false);
+          setPollingTimedOut(false);
+          setSnackbarMessage(`¡${status.total} candidatos reevaluados!`);
+          setTimeout(() => setSnackbarMessage(''), 4000);
+          await loadData();
+          clearInterval(interval);
+        } else if (Date.now() - startTime > TIMEOUT_MS) {
+          // Timeout after 60 seconds
+          setPollingTimedOut(true);
+          setIsPolling(false);
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.error('Error polling rescore status:', err);
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [isPolling, campaignId, loadData]);
+
+  const rescoreSingle = async (candidateId: string) => {
+    setRescoresInProgress(prev => new Set(prev).add(candidateId));
+    try {
+      await apiService.rescoreCandidate(candidateId);
+      setSnackbarMessage('Candidato reevaluado correctamente');
+      loadData();
+    } catch (err: any) {
+      if (err?.message?.includes('402') || err?.status === 402) {
+        setSnackbarMessage('Créditos insuficientes para reevaluar este candidato. Adquiere más créditos CV.');
+      } else {
+        setSnackbarMessage('Error al reevaluar candidato');
+      }
+    } finally {
+      setRescoresInProgress(prev => {
+        const next = new Set(prev);
+        next.delete(candidateId);
+        return next;
+      });
+    }
+  };
+
   // ---- RENDER ----
   if (loading && candidates.length === 0) {
     return (
@@ -683,6 +786,90 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
           </div>
         </div>
 
+        {/* RESCORE BANNER — PROGRESS DURING POLLING */}
+        {(isRescoreActive || rescoreCompleted) && rescoreProgress && (
+          <div className="bg-indigo-50 border-l-4 border-indigo-400 p-4 mb-6 rounded-r-lg">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-2">
+                  {rescoreCompleted ? (
+                    <CheckCircleIconOutline className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+                  ) : pollingTimedOut ? (
+                    <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 flex-shrink-0" />
+                  ) : (
+                    <ArrowPathIcon className="w-5 h-5 text-indigo-500 animate-spin flex-shrink-0" />
+                  )}
+                  <div>
+                    <p className="text-sm font-semibold text-indigo-800">
+                      {rescoreCompleted
+                        ? `✅ ¡${rescoreProgress.current}/${rescoreProgress.total} reevaluados!`
+                        : pollingTimedOut
+                          ? 'El proceso continúa en segundo plano'
+                          : `⏳ Reevaluando... ${rescoreProgress.current}/${rescoreProgress.total}`}
+                    </p>
+                    {!rescoreCompleted && !pollingTimedOut && (
+                      <p className="text-xs text-indigo-600 mt-0.5">Consumiendo créditos CV...</p>
+                    )}
+                  </div>
+                </div>
+                {rescoreCompleted && (
+                  <button
+                    onClick={handleDismissRescoreResult}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm font-medium"
+                  >
+                    <CheckIcon className="w-4 h-4" />
+                    Aceptar
+                  </button>
+                )}
+              </div>
+              {/* Progress bar */}
+              {!rescoreCompleted && !pollingTimedOut && (
+                <div className="w-full bg-indigo-200 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="bg-indigo-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${Math.round((rescoreProgress.current / rescoreProgress.total) * 100)}%` }}
+                  ></div>
+                </div>
+              )}
+              {!rescoreCompleted && !pollingTimedOut && (
+                <p className="text-xs text-indigo-500 font-medium">
+                  {Math.round((rescoreProgress.current / rescoreProgress.total) * 100)}% completado
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* RESCORE BANNER — NORMAL OUTDATED WARNING */}
+        {!isRescoreActive && !rescoreCompleted && outdatedCount > 0 && (
+          <div className="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 rounded-r-lg">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <ExclamationTriangleIcon className="w-5 h-5 text-orange-500 flex-shrink-0" />
+                <div>
+                  <p className="text-sm text-orange-800">
+                    <span className="font-semibold">{outdatedCount} candidatos</span> necesitan
+                    reevaluación tras los cambios en la campaña
+                  </p>
+                  {availableCredits <= 0 && (
+                    <p className="text-xs text-orange-700 mt-1 font-medium">
+                      No tienes créditos CV disponibles para reevaluarlos.
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={handleRescoreAll}
+                disabled={rescoringAll}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ArrowPathIcon className={`w-4 h-4 ${rescoringAll ? 'animate-spin' : ''}`} />
+                {rescoringAll ? 'Reevaluando...' : 'Reevaluar Todos'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* CONTROLS ROW */}
         <div className="flex flex-col md:flex-row justify-between items-center bg-white p-2 rounded-xl border border-slate-100 shadow-sm">
           {/* CONTEXT TABS (The "Pill" Navigation) */}
@@ -832,6 +1019,19 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                             {isProcessing ? (
                               <div className="flex justify-center">
                                 <ArrowPathIcon className="w-5 h-5 text-indigo-600 animate-spin" />
+                              </div>
+                            ) : candidate.scoringStatus === 'OUTDATED' ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[10px] text-orange-700 font-medium bg-orange-50 px-2 py-1 rounded-full border border-orange-200 whitespace-nowrap">
+                                  Score desactualizado
+                                </span>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); rescoreSingle(candidate.id); }}
+                                  disabled={rescoresInProgress.has(candidate.id)}
+                                  className="text-[10px] text-orange-600 hover:text-orange-800 underline font-medium"
+                                >
+                                  {rescoresInProgress.has(candidate.id) ? 'Reevaluando...' : 'Reevaluar'}
+                                </button>
                               </div>
                             ) : (
                               <div className="flex items-center justify-center gap-2 group/score relative">
@@ -1003,6 +1203,72 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                   className="flex-1 py-3 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all flex justify-center items-center"
                 >
                   {startingProcess ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : 'Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL CONFIRMACIÓN RESCORE MASIVO */}
+        {showRescoreConfirm && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-fade-in-up">
+              <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4 text-orange-600">
+                <ExclamationTriangleIcon className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold text-center text-slate-900 mb-2">¿Reevaluar todos los candidatos?</h3>
+
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Candidatos a reevaluar</span>
+                  <span className="font-bold text-slate-900">{outdatedCount}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Créditos CV necesarios</span>
+                  <span className="font-bold text-slate-900">{cost}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Créditos disponibles</span>
+                  <span className={`font-bold ${availableCredits > 0 ? 'text-emerald-600' : 'text-red-600'}`}>{availableCredits}</span>
+                </div>
+                <hr className="border-slate-200" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Créditos después</span>
+                  <span className={`font-bold ${creditsAfter >= 0 ? 'text-slate-900' : 'text-red-600'}`}>
+                    {creditsAfter >= 0 ? creditsAfter : `❌ Faltan ${Math.abs(creditsAfter)}`}
+                  </span>
+                </div>
+              </div>
+
+              {cost > availableCredits && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-red-700 font-medium">
+                    ❌ No tienes suficientes créditos CV. Te faltan {cost - availableCredits} créditos.
+                  </p>
+                </div>
+              )}
+
+              {creditsAfter >= 0 && creditsAfter <= availableCredits * 0.5 && creditsAfter >= 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-amber-700 font-medium">
+                    ⚠️ Después de esta operación te quedarán solo {creditsAfter} créditos.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCloseRescoreConfirm}
+                  className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmRescoreAll}
+                  disabled={cost > availableCredits}
+                  className="flex-1 py-3 bg-orange-500 text-white text-sm font-bold rounded-xl hover:bg-orange-600 shadow-lg shadow-orange-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+                >
+                  {rescoringAll ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : 'Reevaluar'}
                 </button>
               </div>
             </div>

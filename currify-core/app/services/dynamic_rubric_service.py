@@ -1,5 +1,6 @@
 
 import logging
+from typing import Optional
 from app.services.llm_service import LLMService
 from app.models.dynamic_rubric import StructuredRubric
 
@@ -11,8 +12,8 @@ class DynamicRubricService:
     from a vague Job Description.
     """
 
-    def __init__(self):
-        self.llm_service = LLMService()
+    def __init__(self, llm_service: Optional[LLMService] = None):
+        self.llm_service = llm_service or LLMService()
 
     async def generate_rubric(self, job_title: str, job_description: str, parsed_data: dict = None) -> StructuredRubric:
         """

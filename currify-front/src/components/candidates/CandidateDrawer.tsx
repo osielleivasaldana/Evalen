@@ -6,6 +6,7 @@ import {
     ChatBubbleLeftEllipsisIcon,
     EnvelopeIcon,
     PhoneIcon,
+    CurrencyDollarIcon,
     CheckIcon,
     BoltIcon,
     AcademicCapIcon,
@@ -199,6 +200,14 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                                 </div>
                             ) : (
                                 <p className="text-red-400 text-xs">Sin teléfono</p>
+                            )}
+                            {candidate.expectedSalary && (
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className="text-slate-600 font-bold text-sm flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-full border border-slate-200">
+                                        <CurrencyDollarIcon className="w-4.5 h-4.5 text-indigo-500" />
+                                        <span>Renta líquida: {candidate.expectedSalary}</span>
+                                    </div>
+                                </div>
                             )}
                         </div>
 

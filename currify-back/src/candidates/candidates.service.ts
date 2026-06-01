@@ -240,6 +240,7 @@ export class CandidatesService {
       name: candidate.name,
       email: candidate.email,
       phone: candidate.phone,
+      expectedSalary: candidate.expectedSalary,
       processingStatus: candidate.processingStatus,
       createdAt: candidate.createdAt,
       skills: (candidate.structuredData as any)?.datos_cv?.habilidades?.habilidades_tecnicas || [],

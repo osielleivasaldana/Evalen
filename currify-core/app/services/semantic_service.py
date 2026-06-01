@@ -1,6 +1,6 @@
 
 import logging
-from typing import List, Set
+from typing import List, Set, Optional
 from app.services.llm_service import LLMService
 
 logger = logging.getLogger(__name__)
@@ -11,8 +11,8 @@ class SemanticService:
     Ensures that implicit technical knowledge and job titles are standardized for deterministic scoring.
     """
     
-    def __init__(self):
-        self.llm_service = LLMService()
+    def __init__(self, llm_service: Optional[LLMService] = None):
+        self.llm_service = llm_service or LLMService()
         self._embedding_cache = {}
 
     async def get_text_embedding(self, text: str) -> List[float]:

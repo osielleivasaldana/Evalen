@@ -26,7 +26,7 @@ export class DocumentsService {
     file: Express.Multer.File,
     uploadDto: UploadDocumentDto
   ) {
-    const { campaignPublicId, candidateName, candidateEmail, candidatePhone } = uploadDto;
+    const { campaignPublicId, candidateName, candidateEmail, candidatePhone, candidateExpectedSalary } = uploadDto;
 
     const campaign = await this.prisma.campaign.findUnique({
       where: { publicId: campaignPublicId },
@@ -77,6 +77,7 @@ export class DocumentsService {
             name: candidateName,
             email: candidateEmail,
             phone: candidatePhone,
+            expectedSalary: candidateExpectedSalary,
             processingStatus: ProcessingStatus.PENDING,
           },
         });

@@ -31,5 +31,6 @@ export { CampaignStatus };
 
 // Valores de enums de Prisma duplicados como constantes
 // para evitar problemas de resolución en tiempo de ejecución
+export const SCORING_STATUS_VALUES = ['CURRENT', 'OUTDATED', 'PENDING'] as const;
 export const PROCESSING_STATUS_VALUES = ['PENDING', 'COMPLETED', 'ERROR'] as const;
 export const CAMPAIGN_STATUS_VALUES = ['DRAFT', 'ACTIVE', 'CLOSED'] as const;

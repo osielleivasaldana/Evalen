@@ -16,4 +16,8 @@ export class UploadDocumentDto {
   @IsOptional()
   @IsString()
   candidatePhone?: string;
+
+  @IsOptional()
+  @IsString()
+  candidateExpectedSalary?: string;
 }

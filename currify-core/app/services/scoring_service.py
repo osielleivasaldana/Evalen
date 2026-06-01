@@ -20,12 +20,12 @@ logger = logging.getLogger(__name__)
 class ScoringService:
     """Service for evaluating candidate-job matching"""
 
-    def __init__(self):
-        self.llm_service = LLMService()
+    def __init__(self, llm_service: Optional[LLMService] = None):
+        self.llm_service = llm_service or LLMService()
         self.rubric = ScoringRubric()
-        self.dynamic_rubric_service = DynamicRubricService()
+        self.dynamic_rubric_service = DynamicRubricService(llm_service=self.llm_service)
         self.education_normalizer = EducationNormalizer()
-        self.semantic_service = SemanticService()
+        self.semantic_service = SemanticService(llm_service=self.llm_service)
 
     async def evaluate_candidate(
         self,

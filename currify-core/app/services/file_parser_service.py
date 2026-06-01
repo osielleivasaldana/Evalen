@@ -10,7 +10,7 @@ class FileParserService:
     """Servicio para extraer texto de diferentes tipos de archivos"""
 
     def __init__(self):
-        self.supported_formats = ['.pdf', '.docx', '.doc', '.txt', '.rtf']
+        self.supported_formats = ['.pdf', '.docx', '.doc', '.txt', '.rtf', '.html', '.htm']
 
     async def parse_file(self, file_content: bytes, filename: str) -> Dict[str, any]:
         """
@@ -38,6 +38,8 @@ class FileParserService:
                 return self._parse_text(file_content, filename)
             elif file_extension == '.rtf':
                 return self._parse_rtf(file_content, filename)
+            elif file_extension in ['.html', '.htm']:
+                return self._parse_html(file_content, filename)
             else:
                 raise ValueError(f"Parser no implementado para: {file_extension}")
 
@@ -149,28 +151,61 @@ class FileParserService:
         try:
             import pytesseract
             from pdf2image import convert_from_bytes
-            
+
             logger.info("Attempting OCR extraction...")
-            
-            # Convert PDF to images
+
             images = convert_from_bytes(file_content)
-            
-            ocr_text_parts = []
-            for i, image in enumerate(images):
-                # Extract text from image
-                text = pytesseract.image_to_string(image, lang='eng+spa')
-                if text.strip():
-                    ocr_text_parts.append(text)
-                logger.info(f"OCR processed page {i+1}/{len(images)}")
-                
-            return "\n\n".join(ocr_text_parts)
-            
+
+            if images:
+                try:
+                    sample_text = pytesseract.image_to_string(images[0], lang='eng+spa')
+                    detected_lang = self._detect_ocr_language(sample_text)
+                except Exception:
+                    detected_lang = 'eng+spa'
+
+                logger.info(f"OCR language set to: {detected_lang}")
+
+                ocr_text_parts = []
+                for i, image in enumerate(images):
+                    text = pytesseract.image_to_string(image, lang=detected_lang)
+                    if text.strip():
+                        ocr_text_parts.append(text)
+                    logger.info(f"OCR processed page {i+1}/{len(images)}")
+
+                return "\n\n".join(ocr_text_parts)
+
         except ImportError:
             logger.error("Missing OCR dependencies (pytesseract or pdf2image)")
             return ""
         except Exception as e:
             logger.error(f"OCR failed: {e}")
             return ""
+
+    def _detect_ocr_language(self, sample_text: str) -> str:
+        """Detecta el idioma para configurar Tesseract OCR dinámicamente"""
+        sample_lower = sample_text.lower()
+
+        lang_signatures = {
+            'spa': ['experiencia', 'formación', 'educación', 'el', 'los', 'para', 'como'],
+            'eng': ['experience', 'education', 'skills', 'the', 'and', 'for', 'work'],
+            'fra': ['expérience', 'formation', 'éducation', 'le', 'les', 'pour', 'dans'],
+            'deu': ['erfahrung', 'ausbildung', 'bildung', 'der', 'und', 'für', 'mit'],
+            'por': ['experiência', 'formação', 'educação', 'o', 'os', 'para', 'como'],
+            'ita': ['esperienza', 'formazione', 'istruzione', 'il', 'per', 'come'],
+        }
+
+        best_lang = 'eng+spa'
+        best_score = 0
+
+        for lang, keywords in lang_signatures.items():
+            score = sum(1 for kw in keywords if kw in sample_lower)
+            if score > best_score:
+                best_score = score
+                best_lang = lang
+
+        if best_lang == 'eng+spa':
+            return 'eng+spa'
+        return f'{best_lang}+eng' if best_lang != 'eng' else 'eng'
 
     def _parse_word(self, file_content: bytes, filename: str) -> Dict[str, any]:
         """Extrae texto de archivos Word (.docx, .doc)"""
@@ -257,7 +292,6 @@ class FileParserService:
         try:
             from striprtf.striprtf import rtf_to_text
 
-            # Decodificar el contenido RTF
             rtf_content = file_content.decode('utf-8', errors='ignore')
             extracted_text = rtf_to_text(rtf_content)
             cleaned_text = self._clean_extracted_text(extracted_text)
@@ -279,6 +313,38 @@ class FileParserService:
         except Exception as e:
             logger.error(f"Error parsing RTF file {filename}: {e}")
             return self._create_error_response(filename, "rtf", str(e))
+
+    def _parse_html(self, file_content: bytes, filename: str) -> Dict[str, any]:
+        """Extrae texto de archivos HTML (ej: export de LinkedIn)"""
+        try:
+            from bs4 import BeautifulSoup
+
+            html_content = file_content.decode('utf-8', errors='ignore')
+            soup = BeautifulSoup(html_content, 'lxml')
+
+            for element in soup(['script', 'style', 'nav', 'footer', 'header']):
+                element.decompose()
+
+            extracted_text = soup.get_text(separator='\n')
+            cleaned_text = self._clean_extracted_text(extracted_text)
+
+            return {
+                "success": True,
+                "text": cleaned_text,
+                "metadata": {
+                    "filename": filename,
+                    "file_type": "html",
+                    "parsing_method": "beautifulsoup",
+                    "text_length": len(cleaned_text),
+                    "has_text": len(cleaned_text.strip()) > 0
+                }
+            }
+
+        except ImportError:
+            return self._handle_missing_dependency("beautifulsoup4", filename, "html")
+        except Exception as e:
+            logger.error(f"Error parsing HTML file {filename}: {e}")
+            return self._create_error_response(filename, "html", str(e))
 
     def _clean_extracted_text(self, text: str) -> str:
         """Limpia el texto extraído eliminando caracteres problemáticos"""
@@ -343,19 +409,21 @@ class FileParserService:
 
     def validate_file(self, file_content: bytes, filename: str) -> Dict[str, any]:
         """
-        Valida si un archivo es válido para procesamiento
-
-        Returns:
-            Dict con resultado de validación
+        Valida si un archivo es válido para procesamiento usando magic bytes
         """
         file_extension = Path(filename).suffix.lower()
         file_size = len(file_content)
 
-        # Validaciones básicas
+        # Validación por magic bytes (no confía en extensión)
+        detected_type = self._detect_mime_type(file_content)
+        extension_matches = file_extension in self.supported_formats
+
         validations = {
-            "is_supported_format": file_extension in self.supported_formats,
+            "is_supported_format": extension_matches,
+            "magic_bytes_match": detected_type is not None,
+            "extension_matches_magic": self._extension_matches_magic(file_extension, detected_type),
             "has_content": file_size > 0,
-            "size_reasonable": 100 <= file_size <= 50 * 1024 * 1024,  # 100B a 50MB
+            "size_reasonable": 100 <= file_size <= 50 * 1024 * 1024,
             "filename_valid": self._is_filename_valid(filename)
         }
 
@@ -364,6 +432,10 @@ class FileParserService:
         issues = []
         if not validations["is_supported_format"]:
             issues.append(f"Formato no soportado: {file_extension}")
+        if not validations["magic_bytes_match"]:
+            issues.append("El archivo no coincide con un formato conocido (magic bytes)")
+        if not validations["extension_matches_magic"]:
+            issues.append(f"La extensión {file_extension} no coincide con el tipo real del archivo")
         if not validations["has_content"]:
             issues.append("El archivo está vacío")
         if not validations["size_reasonable"]:
@@ -381,10 +453,55 @@ class FileParserService:
             "file_info": {
                 "filename": filename,
                 "extension": file_extension,
+                "detected_type": detected_type,
                 "size_bytes": file_size,
                 "size_mb": round(file_size / (1024 * 1024), 2)
             }
         }
+
+    def _detect_mime_type(self, file_content: bytes) -> Optional[str]:
+        """Detecta el tipo MIME real del archivo por magic bytes"""
+        if len(file_content) < 4:
+            return None
+
+        header = file_content[:8]
+
+        if header[:4] == b'%PDF':
+            return 'pdf'
+        if header[:4] == b'PK\x03\x04':
+            if b'word/' in file_content[:512]:
+                return 'docx'
+            return 'zip'
+        if header[:4] == b'\xD0\xCF\x11\xE0':
+            return 'doc'
+        if header[:6] == b'{\\rtf1':
+            return 'rtf'
+        if file_content[:1].isascii() and all(
+            32 <= b < 127 or b in (9, 10, 13)
+            for b in file_content[:min(256, len(file_content))]
+        ):
+            return 'txt'
+
+        return None
+
+    def _extension_matches_magic(self, extension: str, magic_type: Optional[str]) -> bool:
+        """Verifica que la extensión coincida con el magic bytes detectado"""
+        if magic_type is None:
+            return False
+
+        if extension in ('.txt',):
+            return True
+
+        mapping = {
+            '.pdf': 'pdf',
+            '.docx': 'docx',
+            '.doc': 'doc',
+            '.rtf': 'rtf',
+            '.html': 'html',
+            '.htm': 'html',
+        }
+
+        return mapping.get(extension) == magic_type
 
     def _is_filename_valid(self, filename: str) -> bool:
         """

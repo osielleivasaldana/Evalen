@@ -14,8 +14,7 @@ from app.models.resume import (
     ErrorResponse,
     ResumeData
 )
-from app.services.resume_extraction_service import ResumeExtractionService
-from app.services.resume_extraction_service_v2 import ResumeExtractionServiceV2
+from _deprecated.resume_extraction_service_v2 import ResumeExtractionServiceV2
 from app.services.robust_extraction_service import RobustExtractionService
 from app.services.llm_service import LLMService, token_usage_var
 from app.services.profile_detection_service import ProfileDetectionService
@@ -38,8 +37,20 @@ def get_resume_extraction_service(llm_service: LLMService = Depends(get_llm_serv
 def get_profile_detection_service() -> ProfileDetectionService:
     return ProfileDetectionService()
 
-# Storage temporal para procesamiento por lotes
+# Storage temporal para procesamiento por lotes (con TTL de 30 minutos)
+import time as _time
 batch_jobs = {}
+batch_jobs_ttl = 1800  # 30 minutos
+
+def _cleanup_expired_batch_jobs():
+    """Limpia jobs expirados del storage en memoria"""
+    now = _time.time()
+    expired = [
+        jid for jid, job in batch_jobs.items()
+        if job.get("_created_at", 0) + batch_jobs_ttl < now
+    ]
+    for jid in expired:
+        del batch_jobs[jid]
 
 # Global semaphore to limit concurrent extraction requests (protects memory & DNS)
 global_extraction_semaphore = asyncio.Semaphore(3)
@@ -119,8 +130,8 @@ async def extract_resume(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error processing CV extraction: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        logger.error(f"[{request_id}] Error processing CV extraction: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
     finally:
         token_usage_var.reset(token_val)
 
@@ -135,11 +146,15 @@ async def extract_from_text(
     """
     Extrae datos estructurados de texto de CV ya extraído
 
-    - **extraction_request**: Objeto con texto del CV y configuraciones
+    - **extraction_request**: Objeto con texto del CV y configuraciones (máx 100KB de texto)
     - Útil cuando ya tienes el texto extraído y solo necesitas el procesamiento
     """
     try:
         request_id = str(uuid.uuid4())[:8]
+
+        if len(extraction_request.archivo_contenido) > 100_000:
+            raise HTTPException(status_code=400, detail="El texto del CV excede el límite de 100KB")
+
         logger.info(f"[{request_id}] Processing text extraction for file: {extraction_request.nombre_archivo}")
 
         result = await extraction_service.extract_from_text(extraction_request, request_id=request_id)
@@ -149,8 +164,8 @@ async def extract_from_text(
         return result
 
     except Exception as e:
-        logger.error(f"Error processing text extraction: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        logger.error(f"Error processing text extraction: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 @router.post("/extract-text-v2", response_model=ResumeExtractionResponse)
 @limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_window}minute")
@@ -186,8 +201,8 @@ async def extract_from_text_v2(
         return result
 
     except Exception as e:
-        logger.error(f"Error in V2 text extraction: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        logger.error(f"Error in V2 text extraction: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 @router.post("/extract-batch")
 @limiter.limit(f"10/hour")  # Límite más restrictivo para lotes
@@ -227,6 +242,7 @@ async def extract_batch(
         job_id = str(uuid.uuid4())
 
         # Crear entrada en storage temporal
+        _cleanup_expired_batch_jobs()
         batch_jobs[job_id] = {
             "status": "processing",
             "total_files": len(files),
@@ -234,7 +250,8 @@ async def extract_batch(
             "results": [],
             "errors": [],
             "started_at": datetime.now().isoformat(),
-            "completed_at": None
+            "completed_at": None,
+            "_created_at": _time.time()
         }
 
         # Procesar archivos en background
@@ -258,8 +275,8 @@ async def extract_batch(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error starting batch processing: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        logger.error(f"Error starting batch processing: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 @router.get("/batch/{job_id}")
 @limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_window}minute")
@@ -341,8 +358,8 @@ async def analyze_profile(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error analyzing profile: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        logger.error(f"Error analyzing profile: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 @router.post("/validate")
 @limiter.limit(f"{settings.rate_limit_requests}/{settings.rate_limit_window}minute")
@@ -388,8 +405,8 @@ async def validate_resume_data(
         }
 
     except Exception as e:
-        logger.error(f"Error validating resume data: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        logger.error(f"Error validating resume data: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
 
 @router.get("/health")
 async def health_check():
@@ -440,7 +457,7 @@ async def health_check():
         }
 
 # Funciones auxiliares
-async def process_batch_files(job_id: str, files: List[UploadFile], config: Dict[str, Any], extraction_service: ResumeExtractionService):
+async def process_batch_files(job_id: str, files: List[UploadFile], config: Dict[str, Any], extraction_service: RobustExtractionService):
     """Procesa archivos en lote en background de manera paralela con límite"""
     # Límite de concurrencia para proteger recursos (LLM/Memoria)
     semaphore = asyncio.Semaphore(5)
