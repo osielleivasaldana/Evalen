@@ -929,7 +929,7 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
         <div className="flex gap-6 items-start relative min-h-[600px]">
 
           {/* TABLE CONTAINER */}
-          <div className={`flex-1 transition-all duration-500 ease-spring ${selectedCandidate ? 'mr-[460px]' : ''}`}>
+          <div className={`flex-1 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${selectedCandidate ? 'mr-[462px]' : ''}`}>
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-slate-50/80 backend-blur supports-[backdrop-filter]:bg-slate-50/50">
@@ -1173,8 +1173,7 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
             onStartProcess={handleStartProcess}
             onViewAIAnalysis={handleViewAIAnalysis}
             onViewProcess={handleViewProcess}
-            undoAction={undoAction || undefined}
-            showUndo={showSnackbarUndo}
+            loading={loadingCVData}
           />
         </div>
 
