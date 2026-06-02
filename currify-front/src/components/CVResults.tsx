@@ -236,6 +236,29 @@ const CVResults: React.FC<CVResultsProps> = ({ data, onReset }) => {
     </div>
   );
 
+  const renderOtrosAntecedentes = () => (
+    <div>
+      {data.datos_cv.otros_antecedentes && data.datos_cv.otros_antecedentes.length > 0 ? (
+        <table style={tableStyle}>
+          <thead>
+            <tr>
+              <th style={thStyle}>Otros Antecedentes / Información Adicional</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.datos_cv.otros_antecedentes.map((item, index) => (
+              <tr key={index}>
+                <td style={tdStyle}>{item}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p style={{ color: '#6c757d', fontStyle: 'italic' }}>No se registraron otros antecedentes.</p>
+      )}
+    </div>
+  );
+
   const renderContent = () => {
     switch (activeTab) {
       case 'contacto':
@@ -252,6 +275,8 @@ const CVResults: React.FC<CVResultsProps> = ({ data, onReset }) => {
         return renderSkills();
       case 'formacion':
         return renderAdditionalTraining();
+      case 'otros':
+        return renderOtrosAntecedentes();
       default:
         return renderContactInfo();
     }
@@ -308,6 +333,9 @@ const CVResults: React.FC<CVResultsProps> = ({ data, onReset }) => {
         </button>
         <button style={tabStyle(activeTab === 'formacion')} onClick={() => setActiveTab('formacion')}>
           Formación Extra
+        </button>
+        <button style={tabStyle(activeTab === 'otros')} onClick={() => setActiveTab('otros')}>
+          Otros Antecedentes
         </button>
       </div>
 

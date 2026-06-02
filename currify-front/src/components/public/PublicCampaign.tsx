@@ -19,6 +19,7 @@ import {
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { apiService, Campaign, UploadDocumentRequest } from '../../services/api';
 import { unescapeHtml } from '../../utils/htmlUtils';
+import { formatNumber } from '../../utils/formatters';
 
 interface PublicCampaignProps {
   publicId: string;
@@ -35,6 +36,7 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
     name: '',
     email: '',
     phone: '',
+    expectedSalary: '',
     linkedin: '',
   });
   const [uploading, setUploading] = useState(false);
@@ -82,6 +84,10 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
 
     if (!candidateInfo.phone.trim()) {
       newErrors.phone = 'El teléfono es requerido';
+    }
+
+    if (!candidateInfo.expectedSalary.trim()) {
+      newErrors.expectedSalary = 'Las espectativas de renta linquida son requeridas';
     }
 
     setErrors(newErrors);
@@ -168,7 +174,7 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!selectedFile || !candidateInfo.name || !candidateInfo.email || !candidateInfo.phone) {
+    if (!selectedFile || !candidateInfo.name || !candidateInfo.email || !candidateInfo.phone || !candidateInfo.expectedSalary) {
       setError('Por favor complete todos los campos');
       return;
     }
@@ -182,7 +188,8 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
         campaignPublicId: publicId,
         candidateName: candidateInfo.name,
         candidateEmail: candidateInfo.email,
-        candidatePhone: candidateInfo.phone
+        candidatePhone: candidateInfo.phone,
+        candidateExpectedSalary: candidateInfo.expectedSalary
       };
 
       await apiService.uploadDocument(uploadData);
@@ -196,6 +203,33 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
+    if (name === 'expectedSalary') {
+      const cleanNumber = value.replace(/\D/g, '');
+      if (cleanNumber === '') {
+        setCandidateInfo(prev => ({
+          ...prev,
+          expectedSalary: ''
+        }));
+      } else {
+        const currency = campaign?.currency || 'CLP';
+        const formatted = formatNumber(parseInt(cleanNumber));
+        setCandidateInfo(prev => ({
+          ...prev,
+          expectedSalary: `${currency} ${formatted}`
+        }));
+      }
+
+      if (errors.expectedSalary) {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.expectedSalary;
+          return newErrors;
+        });
+      }
+      return;
+    }
+
     setCandidateInfo(prev => ({
       ...prev,
       [name]: value
@@ -590,6 +624,27 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
 
                           <div>
                             <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              Espectativas de renta linquida *
+                            </label>
+                            <div className="relative">
+                              <CurrencyDollarIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                              <input
+                                type="text"
+                                name="expectedSalary"
+                                value={candidateInfo.expectedSalary}
+                                onChange={handleInputChange}
+                                className={`w-full pl-10 pr-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors text-gray-900 bg-white ${errors.expectedSalary ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                                  }`}
+                                placeholder={campaign?.currency === 'CLP' ? 'CLP 2.000.000' : `${campaign?.currency || 'USD'} 3.000`}
+                              />
+                            </div>
+                            {errors.expectedSalary && (
+                              <p className="text-red-500 text-xs mt-1">{errors.expectedSalary}</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
                               LinkedIn (Opcional)
                             </label>
                             <input
@@ -722,6 +777,10 @@ const PublicCampaign: React.FC<PublicCampaignProps> = ({ publicId }) => {
                                 <span className="text-gray-600">Teléfono:</span>
                                 <span className="font-semibold text-gray-900">{candidateInfo.phone}</span>
                               </div>
+                               <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Espectativas de renta linquida:</span>
+                                  <span className="font-semibold text-gray-900">{candidateInfo.expectedSalary}</span>
+                                </div>
                               {candidateInfo.linkedin && (
                                 <div className="flex justify-between text-sm">
                                   <span className="text-gray-600">LinkedIn:</span>

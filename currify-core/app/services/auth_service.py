@@ -12,34 +12,62 @@ logger = logging.getLogger(__name__)
 
 class AuthService:
     """Service to handle authentication and authorization"""
-    
+
+    def __init__(self):
+        try:
+            from passlib.hash import bcrypt
+            self._bcrypt = bcrypt
+        except ImportError:
+            self._bcrypt = None
+
     def authenticate_user(self, username: str, password: str) -> bool:
         """Authenticate user with username/password"""
-        if username == settings.admin_username and password == settings.admin_password:
-            logger.info(f"Successful login for user: {username}")
-            return True
-        
-        logger.warning(f"Failed login attempt for user: {username}")
+        if not settings.admin_password:
+            logger.critical("ADMIN_PASSWORD not configured — authentication disabled")
+            return False
+
+        if username == settings.admin_username:
+            if self._bcrypt and settings.admin_password.startswith("$2"):
+                valid = self._bcrypt.verify(password, settings.admin_password)
+            else:
+                valid = password == settings.admin_password
+
+            if valid:
+                logger.info("Successful login")
+                return True
+
+        logger.warning("Failed login attempt")
         return False
-    
+
     def authenticate_api_key(self, api_key: str) -> bool:
-        """Authenticate using API key"""
-        if api_key in settings.valid_api_keys_list:
-            logger.info(f"Successful API key authentication")
-            return True
-        
-        logger.warning(f"Invalid API key attempted")
+        """Authenticate using API key (bcrypt-hashed in env)"""
+        if not settings.valid_api_keys_list:
+            logger.critical("VALID_API_KEYS not configured — API key auth disabled")
+            return False
+
+        for stored in settings.valid_api_keys_list:
+            if self._bcrypt and stored.startswith("$2"):
+                try:
+                    if self._bcrypt.verify(api_key, stored):
+                        logger.info("Successful API key authentication")
+                        return True
+                except Exception:
+                    continue
+            elif api_key == stored:
+                logger.info("Successful API key authentication (plain comparison)")
+                return True
+
+        logger.warning("Invalid API key attempted")
         return False
-    
+
     def generate_token(self, username: str) -> str:
         """Generate JWT token for authenticated user"""
         return create_access_token(data={"sub": username, "type": "user"})
-    
+
     def generate_api_token(self, api_key: str) -> str:
         """Generate JWT token for API key"""
-        # Hash API key for privacy in JWT
-        key_hash = hashlib.md5(api_key.encode()).hexdigest()[:8]
-        return create_access_token(data={"sub": f"api_key_{key_hash}", "type": "api_key"})
+        key_hash = hashlib.sha256(api_key.encode()).hexdigest()[:12]
+        return create_access_token(data={"sub": f"api_{key_hash}", "type": "api_key"})
     
     def validate_login_attempt(self, username: str, password: str) -> dict:
         """Complete login validation with rate limiting awareness"""

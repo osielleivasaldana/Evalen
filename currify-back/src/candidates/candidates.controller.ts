@@ -13,11 +13,15 @@ import {
 import { CandidatesService } from './candidates.service';
 import { SearchCandidatesDto } from './dto/search-candidates.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ScoringService } from '../scoring/scoring.service';
 
 @Controller('candidates')
 @UseGuards(JwtAuthGuard)
 export class CandidatesController {
-  constructor(private readonly candidatesService: CandidatesService) { }
+  constructor(
+    private readonly candidatesService: CandidatesService,
+    private readonly scoringService: ScoringService,
+  ) { }
 
   @Get('campaign/:campaignId')
   findAll(
@@ -66,6 +70,11 @@ export class CandidatesController {
   @Delete(':id')
   remove(@Param('id') id: string, @Request() req: any) {
     return this.candidatesService.remove(id, req.user.id);
+  }
+
+  @Post(':id/rescore')
+  rescoreCandidate(@Param('id') id: string, @Request() req: any) {
+    return this.scoringService.reevaluateCandidate(id, req.user.id);
   }
 
   @Patch(':id/status')

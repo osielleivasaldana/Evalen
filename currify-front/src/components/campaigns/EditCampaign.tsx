@@ -20,7 +20,8 @@ import {
   CheckIcon,
   UserGroupIcon,
   PlusIcon,
-  TrashIcon
+  TrashIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
 
 interface EditCampaignProps {
@@ -61,6 +62,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
   const [candidateCount, setCandidateCount] = useState<number>(0);
+  const [showRescoreWarning, setShowRescoreWarning] = useState(false);
 
   const [formData, setFormData] = useState<Partial<CreateCampaignRequest>>({
     title: '',
@@ -296,17 +298,39 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
     window.scrollTo(0, 0);
   };
 
+  const handleStepClick = (stepNumber: Step) => {
+    if (stepNumber === currentStep) return;
+
+    if (stepNumber > currentStep) {
+      if (!validateStep(currentStep)) return;
+    }
+
+    setCurrentStep(stepNumber);
+    window.scrollTo(0, 0);
+  };
+
+  const handleSubmitClick = () => {
+    if (candidateCount > 0) {
+      setShowRescoreWarning(true);
+      return;
+    }
+    handleSubmit();
+  };
+
   const handleSubmit = async () => {
     setSaving(true);
     try {
       // Cast to any to bypass strict type check on stageTemplates
       const updatedCampaign = await apiService.updateCampaign(campaignId, formData as any);
+      if (updatedCampaign.scoringInvalidated) {
+        alert('Campaña actualizada. Los candidatos existentes necesitarán reevaluación.');
+      }
       onCampaignUpdated(updatedCampaign);
     } catch (err: any) {
       setErrors({ submit: err.message || 'Error al actualizar la campaña' });
-      // If error involves candidates, show clear message
-      if (err.message && err.message.includes('already has candidates')) {
-        setErrors({ submit: 'No se pueden editar las etapas de una campaña con candidatos activos.' });
+      // If error involves candidates in process, show clear message
+      if (err.message && err.message.includes('already in a selection process')) {
+        setErrors({ submit: 'No se pueden editar las etapas porque hay candidatos en proceso de selección activo.' });
       }
     } finally {
       setSaving(false);
@@ -357,15 +381,17 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                 const isCompleted = currentStep > step.number;
 
                 return (
-                  <React.Fragment key={step.number}>
+                    <React.Fragment key={step.number}>
                     <div className="flex flex-col items-center flex-1">
                       <div
+                        onClick={() => handleStepClick(step.number as Step)}
+                        title={step.title}
                         className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${isCompleted
                           ? 'bg-green-500 text-white'
                           : isActive
                             ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-110'
                             : 'bg-gray-200 text-gray-400'
-                          }`}
+                          } ${!isActive ? 'cursor-pointer hover:scale-110' : ''}`}
                       >
                         {isCompleted ? (
                           <CheckIcon className="w-6 h-6" />
@@ -1059,7 +1085,7 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                 </button>
               ) : (
                 <button
-                  onClick={handleSubmit}
+                  onClick={handleSubmitClick}
                   disabled={saving}
                   className={`flex items-center gap-2 px-8 py-3 rounded-lg font-semibold transition-all duration-200 ${saving
                     ? 'bg-gray-400 text-white cursor-not-allowed'
@@ -1158,6 +1184,40 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
         title="Condiciones y Beneficios"
         placeholder="Incluye información sobre beneficios, modalidad de trabajo, horarios, vacaciones, etc..."
       />
+      {/* Modal de advertencia por edición con candidatos */}
+      {showRescoreWarning && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                <ExclamationTriangleIcon className="w-6 h-6 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">¿Editar campaña con candidatos?</h3>
+            </div>
+            <p className="text-gray-600">
+              Esta campaña tiene <strong>{candidateCount} candidatos</strong>. Al editar, los scores actuales se eliminarán
+              y los candidatos quedarán marcados para reevaluación automática.
+            </p>
+            <p className="text-sm text-gray-500">
+              Podrás reevaluarlos desde la vista de la campaña cuando quieras.
+            </p>
+            <div className="flex gap-3 justify-end pt-2">
+              <button
+                onClick={() => setShowRescoreWarning(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => { setShowRescoreWarning(false); handleSubmit(); }}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
+              >
+                Entendido, editar de todas formas
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

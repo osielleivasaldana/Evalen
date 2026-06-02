@@ -16,6 +16,8 @@ import {
   GlobeAltIcon,
   CheckBadgeIcon,
   ExclamationCircleIcon,
+  CurrencyDollarIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/outline';
 import {
   CheckCircleIcon,
@@ -194,6 +196,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
   const getExperienciaLaboral = (): ExperienciaLaboral[] => (actualCvData?.experiencia_laboral as ExperienciaLaboral[]) || [];
   const getFormacionAcademica = (): FormacionAcademica[] => (actualCvData?.formacion_academica as FormacionAcademica[]) || [];
   const getFormacionComplementaria = (): FormacionComplementaria => actualCvData?.formacion_complementaria || { certificaciones_cursos: [] };
+  const getOtrosAntecedentes = (): string[] => actualCvData?.otros_antecedentes || [];
 
   if (loading) {
     return (
@@ -478,6 +481,15 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
                       <p className="text-gray-900 font-medium">{getDatosContacto().telefono || 'No especificado'}</p>
                     </div>
                   </div>
+                  {candidate.expectedSalary && (
+                    <div className="flex items-start gap-3">
+                      <CurrencyDollarIcon className="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-gray-500">Espectativas de renta linquida</p>
+                        <p className="text-gray-900 font-medium">{candidate.expectedSalary}</p>
+                      </div>
+                    </div>
+                  )}
                   {getDatosContacto().ubicacion && (
                     <div className="flex items-start gap-3">
                       <MapPinIcon className="h-5 w-5 text-indigo-600 mt-0.5 flex-shrink-0" />
@@ -703,6 +715,28 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({ candidateId, onBack }
                         <li key={idx} className="flex items-start gap-3 text-gray-700">
                           <CheckCircleIcon className="h-5 w-5 text-teal-500 mt-0.5 flex-shrink-0" />
                           <span>{cert}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+
+              {/* Otros Antecedentes */}
+              {getOtrosAntecedentes().length > 0 && (
+                <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+                  <div className="bg-gradient-to-r from-purple-500 to-indigo-500 px-6 py-4">
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                      <BookmarkIcon className="h-6 w-6" />
+                      Otros Antecedentes
+                    </h2>
+                  </div>
+                  <div className="p-6">
+                    <ul className="space-y-3">
+                      {getOtrosAntecedentes().map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-gray-700">
+                          <CheckCircleIcon className="h-5 w-5 text-purple-500 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
                         </li>
                       ))}
                     </ul>

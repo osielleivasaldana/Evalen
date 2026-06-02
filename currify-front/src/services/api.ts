@@ -139,6 +139,7 @@ interface Campaign {
   createdAt: string;
   updatedAt: string;
   stageTemplates?: StageTemplate[];
+  scoringInvalidated?: boolean;
   _count?: {
     candidates: number;
   };
@@ -198,6 +199,7 @@ interface UploadDocumentRequest {
   candidateName: string;
   candidateEmail: string;
   candidatePhone: string;
+  candidateExpectedSalary?: string;
 }
 
 interface CVData {
@@ -270,6 +272,7 @@ interface CVData {
     };
     actividades_extracurriculares: any;
     intereses: any;
+    otros_antecedentes?: string[];
     metadata_procesamiento: any;
   };
   confianza_general: number;
@@ -291,6 +294,8 @@ interface Document {
   createdAt: string;
 }
 
+type ScoringStatus = 'CURRENT' | 'OUTDATED' | 'PENDING';
+
 interface CandidateScoring {
   id: string;
   overallScore: number;
@@ -308,7 +313,9 @@ interface Candidate {
   name: string;
   email: string;
   phone: string;
+  expectedSalary?: string;
   processingStatus: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  scoringStatus?: ScoringStatus;
   candidateStatus: CandidateStatus;
   campaignId: string;
   documentId?: string;
@@ -317,6 +324,7 @@ interface Candidate {
   scoring?: CandidateScoring | null;
   createdAt: string;
   updatedAt: string;
+  campaign?: Campaign;
 }
 
 // Process and Stage Instance interfaces
@@ -400,6 +408,13 @@ interface CandidateStats {
   pendingCandidates: number;
   processedCandidates: number;
   errorCandidates: number;
+}
+
+interface RescoreStatus {
+  total: number;
+  current: number;
+  outdated: number;
+  pending: number;
 }
 
 class ApiService {
@@ -621,6 +636,9 @@ class ApiService {
     formData.append('candidateName', data.candidateName);
     formData.append('candidateEmail', data.candidateEmail);
     formData.append('candidatePhone', data.candidatePhone);
+    if (data.candidateExpectedSalary) {
+      formData.append('candidateExpectedSalary', data.candidateExpectedSalary);
+    }
 
     const response = await fetch(`${API_BASE_URL}/documents/upload`, {
       method: 'POST',
@@ -728,6 +746,22 @@ class ApiService {
     });
 
     return response;
+  }
+
+  async rescoreCampaign(campaignId: string): Promise<any> {
+    return this.apiCall(`/campaigns/${campaignId}/rescore-all`, {
+      method: 'POST'
+    });
+  }
+
+  async getRescoreStatus(campaignId: string): Promise<RescoreStatus> {
+    return this.apiCall(`/campaigns/${campaignId}/rescore-status`);
+  }
+
+  async rescoreCandidate(candidateId: string): Promise<any> {
+    return this.apiCall(`/candidates/${candidateId}/rescore`, {
+      method: 'POST'
+    });
   }
 
   // Legacy CV processing method (for old functionality)
@@ -940,6 +974,7 @@ export type {
   CandidateScoring,
   CandidateFilters,
   CandidateStats,
+  RescoreStatus,
   UploadDocumentRequest,
   Document
 };

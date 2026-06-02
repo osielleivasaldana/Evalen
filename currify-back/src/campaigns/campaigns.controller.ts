@@ -74,6 +74,19 @@ export class CampaignsController {
     return this.campaignsService.update(id, req.user.id, updateCampaignDto);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN', 'RECRUITER')
+  @Post(':id/rescore-all')
+  rescoreAll(@Param('id') id: string, @Request() req: any) {
+    return this.campaignsService.rescoreAll(id, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/rescore-status')
+  getRescoreStatus(@Param('id') id: string, @Request() req: any) {
+    return this.campaignsService.getRescoreStatus(id, req.user.id);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @Request() req: any) {

@@ -108,7 +108,7 @@ async def evaluate_candidate_job_fit(request: ScoringRequest, response: Response
         logger.error(f"Unexpected error in scoring endpoint: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado durante la evaluación: {str(e)}"
+            detail="Error inesperado durante la evaluación"
         )
     finally:
         token_usage_var.reset(token)
@@ -216,7 +216,7 @@ REQUISITOS:
         logger.error(f"Unexpected error in job parsing endpoint: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inesperado durante el parsing: {str(e)}"
+            detail="Error inesperado durante el parsing"
         )
     finally:
         token_usage_var.reset(token)
@@ -267,7 +267,7 @@ async def combine_job_data(
         logger.error(f"Error combining job data: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al combinar datos: {str(e)}"
+            detail="Error al combinar datos"
         )
 
 

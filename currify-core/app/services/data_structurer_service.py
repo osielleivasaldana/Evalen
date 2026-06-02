@@ -6,6 +6,7 @@ import logging
 from typing import Dict, List, Optional, Any, Union
 from datetime import datetime
 from app.models.resume import ResumeData
+from app.services.date_parser_service import DateParserService
 
 logger = logging.getLogger(__name__)
 
@@ -270,76 +271,25 @@ class DataStructurerService:
         if not all_titles:
             return None
 
-        # Priorizar títulos profesionales por orden de importancia
-        professional_priorities = [
-            # Títulos universitarios y profesionales
-            ("contador publico", "Contador Público"),
-            ("contador auditor", "Contador Auditor"),
-            ("auditor", "Auditor"),
-            ("ingeniero", "Ingeniero"),
-            ("licenciado", "Licenciado"),
-            ("arquitecto", "Arquitecto"),
-            ("medico", "Médico"),
-            ("abogado", "Abogado"),
-            ("psicologo", "Psicólogo"),
-            ("administrador", "Administrador"),
-
-            # Títulos de posgrado
-            ("magister", "Magíster"),
-            ("master", "Máster"),
-            ("mba", "MBA"),
-            ("doctorado", "Doctor"),
-            ("doctor", "Doctor"),
-            ("phd", "PhD"),
+        priority_keywords = [
+            "doctor", "phd", "doctorado",
+            "master", "magister", "máster", "mba",
+            "ingeniero", "ingeniería",
+            "licenciado", "licenciatura",
+            "arquitecto", "abogado", "médico", "contador",
+            "administrador", "psicólogo",
         ]
 
-        # Buscar el título de mayor prioridad
-        for priority_keyword, clean_title in professional_priorities:
+        for keyword in priority_keywords:
             for title in all_titles:
                 title_lower = title.lower()
-                if priority_keyword in title_lower:
-                    # Si encontramos una coincidencia, extraer el título específico
-                    if "contador publico" in title_lower and "auditor" in title_lower:
-                        return "Contador Público - Auditor"
-                    elif "contador auditor" in title_lower:
-                        return "Contador Auditor"
-                    elif "contador publico" in title_lower:
-                        return "Contador Público"
-                    elif "ingeniero" in title_lower:
-                        # Extraer tipo de ingeniería si es específico
-                        engineering_types = ["civil", "industrial", "comercial", "sistemas", "informatico", "electronico", "mecanico"]
-                        for eng_type in engineering_types:
-                            if eng_type in title_lower:
-                                return f"Ingeniero {eng_type.capitalize()}"
-                        return "Ingeniero"
-                    elif "licenciado" in title_lower or "licenciatura" in title_lower:
-                        # Extraer área de licenciatura
-                        if "contabilidad" in title_lower:
-                            return "Licenciado en Contabilidad"
-                        elif "auditoria" in title_lower:
-                            return "Licenciado en Auditoría"
-                        elif "administracion" in title_lower:
-                            return "Licenciado en Administración"
-                        else:
-                            return "Licenciado"
-                    elif "magister" in title_lower or "master" in title_lower:
-                        if "direccion" in title_lower and "empresas" in title_lower:
-                            return "Magíster en Dirección de Empresas"
-                        elif "administracion" in title_lower:
-                            return "Magíster en Administración"
-                        elif "mba" in title_lower:
-                            return "MBA"
-                        else:
-                            return "Magíster"
-                    else:
-                        return clean_title
+                if keyword in title_lower:
+                    if not any(w in title_lower for w in ["diplomado", "curso", "certific", "seminario", "taller"]):
+                        return self._clean_professional_title(title.strip())
 
-        # Si no encontramos títulos prioritarios, usar el primer título académico (no diplomado)
         for title in all_titles:
             title_lower = title.lower()
-            # Evitar diplomados y cursos
             if not any(word in title_lower for word in ["diplomado", "diploma", "curso", "certificado", "seminario", "taller"]):
-                # Limpiar y formatear el título
                 cleaned_title = title.strip()
                 if len(cleaned_title) > 10 and len(cleaned_title) <= 80:
                     return self._clean_professional_title(cleaned_title)
@@ -565,144 +515,7 @@ class DataStructurerService:
         }
 
     def _normalize_period(self, period: Any) -> Dict[str, Any]:
-        """Normaliza períodos de tiempo - SIEMPRE devuelve un dict válido con parsing inteligente"""
-        if not period:
-            return {
-                "fecha_inicio": None,
-                "fecha_fin": None,
-                "texto_original": "No especificado"
-            }
-
-        if isinstance(period, dict):
-            # Si ya está estructurado, usar tal como está
-            texto_original = period.get("texto_original") or "No especificado"
-            fecha_inicio = period.get("fecha_inicio")
-            fecha_fin = period.get("fecha_fin")
-
-            # Si no hay fechas estructuradas, intentar parsear desde texto original
-            if not fecha_inicio and not fecha_fin and texto_original != "No especificado":
-                parsed_dates = self._parse_period_from_text(texto_original)
-                fecha_inicio = parsed_dates["fecha_inicio"]
-                fecha_fin = parsed_dates["fecha_fin"]
-
-            return {
-                "fecha_inicio": fecha_inicio,
-                "fecha_fin": fecha_fin,
-                "texto_original": texto_original
-            }
-        elif isinstance(period, str):
-            # Parsear fechas desde texto
-            parsed_dates = self._parse_period_from_text(period)
-            return {
-                "fecha_inicio": parsed_dates["fecha_inicio"],
-                "fecha_fin": parsed_dates["fecha_fin"],
-                "texto_original": period
-            }
-
-        # Fallback para cualquier otro tipo
-        period_str = str(period) if period is not None else "No especificado"
-        parsed_dates = self._parse_period_from_text(period_str) if period_str != "No especificado" else {"fecha_inicio": None, "fecha_fin": None}
-
-        return {
-            "fecha_inicio": parsed_dates["fecha_inicio"],
-            "fecha_fin": parsed_dates["fecha_fin"],
-            "texto_original": period_str
-        }
-
-    def _parse_period_from_text(self, period_text: str) -> Dict[str, Any]:
-        """Parsea fechas desde texto en formato libre"""
-        import re
-
-        if not period_text or period_text == "No especificado":
-            return {"fecha_inicio": None, "fecha_fin": None}
-
-        # Meses en español
-        months_es = {
-            "enero": "01", "febrero": "02", "marzo": "03", "abril": "04",
-            "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
-            "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12"
-        }
-
-        fecha_inicio = None
-        fecha_fin = None
-
-        try:
-            # Patterns comunes de fechas
-            patterns = [
-                # "Enero 2018 - Julio 2019", "Enero 2018 – Julio 2019"
-                r'(\w+)\s+(\d{4})\s*[-–]\s*(\w+)\s+(\d{4})',
-                # "01/2018 - 07/2019"
-                r'(\d{1,2})/(\d{4})\s*[-–]\s*(\d{1,2})/(\d{4})',
-                # "2018-01 - 2019-07"
-                r'(\d{4})-(\d{1,2})\s*[-–]\s*(\d{4})-(\d{1,2})',
-                # "2018 - 2019"
-                r'(\d{4})\s*[-–]\s*(\d{4})',
-                # "Enero 2018 - Presente", "Enero 2018 – Presente"
-                r'(\w+)\s+(\d{4})\s*[-–]\s*(Presente|Actualidad|Actual)',
-                # "01/2018 - Presente"
-                r'(\d{1,2})/(\d{4})\s*[-–]\s*(Presente|Actualidad|Actual)',
-                # "2018 - Presente"
-                r'(\d{4})\s*[-–]\s*(Presente|Actualidad|Actual)'
-            ]
-
-            for pattern in patterns:
-                match = re.search(pattern, period_text, re.IGNORECASE)
-                if match:
-                    groups = match.groups()
-
-                    if len(groups) == 4:
-                        # Formato: Mes YYYY - Mes YYYY o MM/YYYY - MM/YYYY
-                        start_part1, start_part2, end_part1, end_part2 = groups
-
-                        if start_part1.lower() in months_es:
-                            # Formato: Mes YYYY
-                            fecha_inicio = f"{start_part2}-{months_es[start_part1.lower()]}"
-                        elif start_part1.isdigit() and len(start_part1) <= 2:
-                            # Formato: MM/YYYY
-                            fecha_inicio = f"{start_part2}-{start_part1.zfill(2)}"
-                        elif len(start_part1) == 4:
-                            # Formato: YYYY-MM
-                            fecha_inicio = f"{start_part1}-{start_part2.zfill(2)}"
-
-                        if end_part1.lower() in months_es:
-                            # Formato: Mes YYYY
-                            fecha_fin = f"{end_part2}-{months_es[end_part1.lower()]}"
-                        elif end_part1.isdigit() and len(end_part1) <= 2:
-                            # Formato: MM/YYYY
-                            fecha_fin = f"{end_part2}-{end_part1.zfill(2)}"
-                        elif len(end_part1) == 4:
-                            # Formato: YYYY-MM
-                            fecha_fin = f"{end_part1}-{end_part2.zfill(2)}"
-
-                    elif len(groups) == 3:
-                        # Formato: Mes YYYY - Presente
-                        start_part1, start_part2, end_keyword = groups
-
-                        if start_part1.lower() in months_es:
-                            fecha_inicio = f"{start_part2}-{months_es[start_part1.lower()]}"
-                        elif start_part1.isdigit() and len(start_part1) <= 2:
-                            fecha_inicio = f"{start_part2}-{start_part1.zfill(2)}"
-                        elif len(start_part1) == 4:
-                            fecha_inicio = f"{start_part1}-{start_part2.zfill(2)}"
-
-                        fecha_fin = "Presente"
-
-                    elif len(groups) == 2:
-                        # Formato: YYYY - YYYY o YYYY - Presente
-                        start_year, end_part = groups
-                        fecha_inicio = start_year
-
-                        if end_part.lower() in ["presente", "actualidad", "actual"]:
-                            fecha_fin = "Presente"
-                        else:
-                            fecha_fin = end_part
-
-                    break
-
-        except Exception as e:
-            logger.warning(f"Error parseando período '{period_text}': {e}")
-
-        return {"fecha_inicio": fecha_inicio, "fecha_fin": fecha_fin}
+        return DateParserService.normalize_period(period)
 
     def _normalize_achievements(self, achievements: Any) -> List[str]:
         """Normaliza logros/responsabilidades"""

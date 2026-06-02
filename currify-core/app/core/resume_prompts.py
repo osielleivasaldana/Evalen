@@ -33,6 +33,7 @@ INSTRUCCIONES CRÍTICAS:
 - Mantén el texto original pero estructura la información
 - Si un campo no está disponible, usa null
 - NO incluyas metadata en esta extracción
+- Extrae a 'otros_antecedentes' toda la información miscelánea, secciones fuera de formato, competencias técnicas generales u otros datos que no entren en la estructura estándar
 
 ESTRATEGIAS DE BÚSQUEDA INTELIGENTE:
 1. Busca palabras clave en diferentes idiomas y variaciones
@@ -119,7 +120,8 @@ ESTRUCTURA JSON REQUERIDA:
   }},
   "intereses": {{
     "hobbies_intereses": ["string - Lista de hobbies e intereses"]
-  }}
+  }},
+  "otros_antecedentes": ["string - Cualquier otra sección, competencias técnicas no estructuradas, información adicional, referencias laborales, etc. que no encajen en las secciones estándar"]
 }}
 ```
 

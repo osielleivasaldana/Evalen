@@ -1,15 +1,17 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { ConfigService } from '@nestjs/config';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
 import { SmartFillDto } from './dto/smart-fill.dto';
-import { CampaignStatus } from '@prisma/client';
+import { CampaignStatus, Prisma } from '@prisma/client';
+import { ScoringService } from '../scoring/scoring.service';
 import axios from 'axios';
 
 @Injectable()
 export class CampaignsService {
+  private readonly logger = new Logger(CampaignsService.name);
   private readonly coreServiceUrl: string;
   private tokenCache: string | null = null;
   private tokenExpiry: number = 0;
@@ -18,6 +20,7 @@ export class CampaignsService {
     private prisma: PrismaService,
     private emailService: EmailService,
     private configService: ConfigService,
+    private scoringService: ScoringService,
   ) { 
     this.coreServiceUrl = this.configService.get<string>('SCORING_SERVICE_URL') || 'http://currify-core:8000';
   }
@@ -177,6 +180,7 @@ export class CampaignsService {
             name: true,
             email: true,
             phone: true,
+            expectedSalary: true,
             processingStatus: true,
             createdAt: true,
           },
@@ -273,22 +277,21 @@ export class CampaignsService {
       throw new ForbiddenException('You can only update your own campaigns');
     }
 
-    // Prevent editing campaigns that already have candidates (scoring integrity)
-    if (campaign._count.candidates > 0) {
-      throw new ForbiddenException(
-        'Cannot edit campaign that already has candidates. This would invalidate existing scores.'
-      );
-    }
-
     const { stageTemplates, ...campaignData } = updateCampaignDto;
+    const hasCandidates = campaign._count.candidates > 0;
 
     // Si se intentan actualizar las etapas
     if (stageTemplates) {
-      // 1. Verificar que no haya candidatos (validación crítica)
-      if (campaign._count.candidates > 0) {
-        throw new ForbiddenException(
-          'Cannot edit campaign stages because it already has candidates. This would invalidate existing scores.'
-        );
+      // 1. Verificar que no haya procesos de selección activos
+      if (hasCandidates) {
+        const activeProcesses = await this.prisma.processInstance.count({
+          where: { campaignId: id }
+        });
+        if (activeProcesses > 0) {
+          throw new ForbiddenException(
+            'Cannot edit campaign stages because candidates are already in a selection process.'
+          );
+        }
       }
 
       // 2. Validar que haya al menos una etapa
@@ -318,7 +321,7 @@ export class CampaignsService {
       }
 
       // 4. Ejecutar transacción: Borrar etapas viejas -> Crear nuevas -> Actualizar campaña
-      return this.prisma.$transaction(async (tx) => {
+      const result = await this.prisma.$transaction(async (tx) => {
         // Borrar etapas existentes
         await tx.stageTemplate.deleteMany({
           where: { campaignId: id }
@@ -351,10 +354,17 @@ export class CampaignsService {
           }
         });
       });
+
+      // Invalidar scores si había candidatos
+      if (hasCandidates) {
+        await this.invalidateCandidateScores(id);
+      }
+
+      return { ...result, scoringInvalidated: hasCandidates };
     }
 
     // Si no hay cambios en etapas, actualización normal
-    return this.prisma.campaign.update({
+    const result = await this.prisma.campaign.update({
       where: { id },
       data: campaignData,
       include: {
@@ -371,6 +381,62 @@ export class CampaignsService {
         }
       }
     });
+
+    // Invalidar scores si había candidatos
+    if (hasCandidates) {
+      await this.invalidateCandidateScores(id);
+    }
+
+    return { ...result, scoringInvalidated: hasCandidates };
+  }
+
+  /**
+   * Invalida los scores de todos los candidatos de una campaña
+   */
+  private async invalidateCandidateScores(campaignId: string) {
+    await this.prisma.candidateScoring.deleteMany({
+      where: { candidate: { campaignId } },
+    });
+    await this.prisma.candidate.updateMany({
+      where: { campaignId },
+      data: { scoringStatus: 'OUTDATED' },
+    });
+
+    // Invalidar parsedJobData para que se regenere en el próximo rescore
+    await this.prisma.campaign.update({
+      where: { id: campaignId },
+      data: {
+        parsedJobData: Prisma.DbNull,
+        parsedJobDataAt: null,
+      },
+    });
+
+    this.logger.log(`Invalidated scores for all candidates in campaign ${campaignId}`);
+  }
+
+  /**
+   * Dispara rescore asíncrono de todos los candidatos OUTDATED de una campaña
+   */
+  async rescoreAll(id: string, userId: string) {
+    const campaign = await this.prisma.campaign.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException('Campaign not found');
+    }
+
+    if (campaign.userId !== userId) {
+      throw new ForbiddenException('You can only rescore your own campaigns');
+    }
+
+    // Disparar rescore asíncrono en background (pasa userId para control de créditos)
+    this.scoringService.rescoreCampaign(id, userId).catch(err =>
+      this.logger.error(`rescoreAll failed for campaign ${id}:`, err)
+    );
+
+    return { message: 'Rescore iniciado', campaignId: id };
   }
 
   async remove(id: string, userId: string) {
@@ -389,6 +455,52 @@ export class CampaignsService {
     return this.prisma.campaign.delete({
       where: { id },
     });
+  }
+
+  /**
+   * Obtiene el estado del rescore de una campaña (conteo por scoringStatus)
+   */
+  async getRescoreStatus(id: string, userId: string) {
+    const campaign = await this.prisma.campaign.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+
+    if (!campaign) {
+      throw new NotFoundException('Campaign not found');
+    }
+
+    if (campaign.userId !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const counts = await this.prisma.candidate.groupBy({
+      by: ['scoringStatus'],
+      where: { campaignId: id },
+      _count: { id: true },
+    });
+
+    const result: {
+      total: number;
+      current: number;
+      outdated: number;
+      pending: number;
+    } = {
+      total: 0,
+      current: 0,
+      outdated: 0,
+      pending: 0,
+    };
+
+    for (const c of counts) {
+      const key = c.scoringStatus.toLowerCase() as keyof typeof result;
+      if (key in result) {
+        result[key] = c._count.id;
+        result.total += c._count.id;
+      }
+    }
+
+    return result;
   }
 
   // Helper function to check if user has access to a campaign (creator or assigned as responsible)

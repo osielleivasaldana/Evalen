@@ -7,12 +7,17 @@ import asyncio
 import json
 import logging
 import time
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, Tuple
 from datetime import datetime
 
 from app.services.llm_service import LLMService
 from app.models.resume import ResumeData, ResumeExtractionRequest, ResumeExtractionResponse, ThinkingResumeData
+from app.models.resume import SectionType
 from app.services.profile_detection_service import ProfileDetectionService
+from app.services.date_parser_service import DateParserService
+from app.services.document_analyzer_service import DocumentAnalyzerService
+from app.services.section_extractor import SectionExtractor
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +30,8 @@ class RobustExtractionService:
     def __init__(self, llm_service: LLMService):
         self.llm_service = llm_service
         self.profile_detector = ProfileDetectionService()
+        self.document_analyzer = DocumentAnalyzerService()
+        self.section_extractor = SectionExtractor(self.llm_service)
 
         # Configuración robusta
         self.max_retries = 3
@@ -46,16 +53,29 @@ class RobustExtractionService:
             # 1. Pre-procesamiento y análisis
             cv_text = self._preprocess_text(request.archivo_contenido)
             profile_info = self.profile_detector.detect_profile_type(cv_text)
+            document_analysis = self.document_analyzer.analyze_document(cv_text)
 
             logger.info(f"📊 Longitud de texto: {len(cv_text)} caracteres")
+            logger.info(f"📊 Documento analizado: idioma={document_analysis.get('language')}, secciones={list(document_analysis.get('sections_detected', {}).keys())}")
 
-            # 2. Decidir estrategia de extracción basada en longitud
-            if len(cv_text) <= self.max_text_length:
-                logger.info(f"[{request_id}] ✅ Texto corto ({len(cv_text)} ≤ {self.max_text_length}): Extracción directa")
-                extraction_result = await self._execute_robust_extraction(cv_text, profile_info, request_id=request_id)
+            # 2. Decidir estrategia de extracción
+            # ── NUEVO PIPELINE: Extracción por secciones ──
+            if getattr(settings, 'section_extraction_enabled', False):
+                logger.info(f"[{request_id}] 🔀 Usando pipeline de extracción por secciones")
+                section_results = await self._extract_by_sections(cv_text, request_id)
+                if section_results:
+                    merged = self._merge_section_results(section_results, cv_text, request_id)
+                    extraction_result = self._structure_final_data(merged, request, profile_info)
+                    logger.info(f"[{request_id}] ✅ Pipeline por secciones completado exitosamente")
+                else:
+                    logger.warning(f"[{request_id}] ⚠️ Section extraction returned no results, falling back to legacy")
+                    extraction_result = await self._execute_legacy_extraction(cv_text, profile_info, request_id)
             else:
-                logger.info(f"[{request_id}] 📄 Texto largo ({len(cv_text)} > {self.max_text_length}): Extracción chunked")
-                extraction_result = await self._execute_chunked_extraction(cv_text, profile_info, request_id=request_id)
+                extraction_result = await self._execute_legacy_extraction(cv_text, profile_info, request_id)
+
+            # Legacy extraction method (preserved for backward compatibility)
+            # Fallback route is wrapped in _execute_legacy_extraction which decides
+            # between direct vs chunked based on text length
 
             # 3. Post-procesamiento y estructuración
             logger.info(f"🔧 CRITICAL: extraction_result keys: {list(extraction_result.keys()) if isinstance(extraction_result, dict) else type(extraction_result)}")
@@ -172,6 +192,454 @@ class RobustExtractionService:
 
         return text
 
+    # ─────────────────────────────────────────────────────────────────────
+    # ESTRATEGIA LEGACY: extracción monolítica para backward compatibility
+    # ─────────────────────────────────────────────────────────────────────
+
+    async def _execute_legacy_extraction(self, cv_text: str, profile_info: Dict, request_id: str = "unknown") -> Dict[str, Any]:
+        """
+        Legado: extracción monolítica directa usando Structured Outputs + CoT.
+        Solo se usa como fallback cuando section_extraction_enabled=False
+        o cuando el pipeline de secciones no produce resultados.
+        """
+        logger.info(f"[{request_id}] 🔄 Usando extracción legacy ({len(cv_text)} caracteres)")
+        return await self._execute_robust_extraction(cv_text, profile_info, request_id=request_id)
+
+    # ═════════════════════════════════════════════════════════════════════
+    # NUEVO PIPELINE: Extracción por Secciones (Commits 3 & 4)
+    # ═════════════════════════════════════════════════════════════════════
+
+    async def _extract_by_sections(self, text: str, request_id: str) -> Optional[Dict[str, Any]]:
+        """
+        FASE 1 + FASE 2 del nuevo pipeline:
+          1. Segmentación: detectar secciones con DocumentAnalyzerService.analyze()
+          2. Extracción paralela: SectionExtractor.extract_all() con asyncio.gather
+
+        Returns:
+            Dict[str, SectionResult] o None si falla la segmentación
+        """
+        # ── FASE 1: Segmentación ──
+        analyzer = DocumentAnalyzerService()
+        sections = analyzer.analyze(text)
+
+        logger.info(
+            "[%s] 🔍 Detectadas %d secciones: %s",
+            request_id,
+            len(sections),
+            [f"{s.section_type.value}(L{s.start_line}-{s.end_line})" for s in sections]
+        )
+
+        if not sections:
+            logger.warning("[%s] ⚠️ No se detectaron secciones, usando extracción legacy", request_id)
+            return None
+
+        # ── Preparar contenido por sección (CONSOLIDADO por tipo) ──
+        lines = text.split('\n')
+        section_contents: Dict[str, str] = {}
+        for section in sections:
+            content_lines = lines[section.start_line:section.end_line]
+            content = '\n'.join(content_lines).strip()
+            key = section.section_type.value
+            if key not in section_contents:
+                section_contents[key] = content
+            else:
+                # Concatenar contenido de múltiples fragmentos del mismo tipo
+                if content and content != section_contents[key]:
+                    section_contents[key] += "\n" + content
+
+        # Pre-procesar secciones OTHER: unir líneas de continuación sin bullet
+        for key, content in list(section_contents.items()):
+            if key == "other":
+                lines = content.split('\n')
+                merged = []
+                for line in lines:
+                    stripped = line.strip()
+                    # Si no es header (no está en all-caps corto) y no tiene bullet
+                    is_header = stripped.isupper() and len(stripped) < 60 and len(stripped.split()) <= 6
+                    has_bullet = stripped.startswith(('✓', '\uf0fc', '•', '-', '*', '>', '○'))
+                    
+                    if stripped and not is_header and not has_bullet and merged:
+                        # Continuación del item anterior
+                        merged[-1] += ' ' + stripped
+                    else:
+                        merged.append(stripped)
+                section_contents[key] = '\n'.join(merged)
+
+        # ── FASE 2: Extracción paralela ──
+        start_time = time.time()
+        section_results = await self.section_extractor.extract_all(
+            sections=sections,
+            sections_content=section_contents,
+            request_id=request_id,
+            max_concurrent=settings.llm_concurrency_per_request,
+        )
+
+        elapsed = time.time() - start_time
+        logger.info(
+            "[%s] ⏱️ Extracción paralela completada en %.2fs (%d secciones)",
+            request_id, elapsed, len(section_results)
+        )
+
+        # ── Logging detallado de resultados ──
+        for key, result in section_results.items():
+            logger.info(
+                "[%s] 📋 Sección %-20s method=%-10s success=%-5s time=%.0fms%s",
+                request_id,
+                key,
+                result.method,
+                str(result.success),
+                result.processing_time_ms,
+                f" error={result.error}" if result.error else ""
+            )
+
+        return section_results
+
+    def _merge_section_results(
+        self,
+        section_results: Dict[str, Any],
+        raw_text: str,
+        request_id: str,
+    ) -> Dict[str, Any]:
+        """
+        FASE 3: Merge + Normalización de resultados de secciones.
+
+        Mapea cada SectionResult a los campos correspondientes de ResumeData,
+        aplicando reglas de prioridad y combinando secciones relacionadas.
+
+        Returns:
+            Dict compatible con ResumeData para validación Pydantic
+        """
+        import re
+
+        merged: Dict[str, Any] = {}
+
+        # ── 4A. Datos de contacto (SIEMPRE heurístico) ──
+        merged["datos_contacto"] = self._extract_contact_info(raw_text)
+
+        # ── 4B. Mapeo de secciones a campos ──
+
+        # ---- SUMMARY → resumen_profesional ----
+        if "summary" in section_results and section_results["summary"].success:
+            summary_data = section_results["summary"].data or {}
+            resumen = summary_data.get("resumen", "")
+            if resumen:
+                merged["resumen_profesional"] = {"resumen": resumen}
+        if "resumen_profesional" not in merged:
+            merged["resumen_profesional"] = {"resumen": ""}
+
+        # ---- EXPERIENCE → experiencia_laboral ----
+        experience_data_raw: List[Dict[str, Any]] = []
+        if "experience" in section_results and section_results["experience"].success:
+            exp_data = section_results["experience"].data or {}
+            experience_data_raw = exp_data.get("experiencias", [])
+        merged["experiencia_laboral"] = experience_data_raw
+
+        # ---- EDUCATION → formacion_academica ----
+        education_formacion: List[Dict[str, Any]] = []
+        if "education" in section_results and section_results["education"].success:
+            edu_data = section_results["education"].data or {}
+            education_formacion = edu_data.get("formacion", [])
+        merged["formacion_academica"] = list(education_formacion)
+
+        # ---- TITLES → titular_profesional + formacion_academica (merge) ----
+        titles_formacion: List[Dict[str, Any]] = []
+        titular_from_titles: Optional[str] = None
+        if "titles" in section_results and section_results["titles"].success:
+            titles_data = section_results["titles"].data or {}
+            titular_from_titles = titles_data.get("titulo_profesional")
+            titles_formacion = titles_data.get("formacion", [])
+
+        # ---- 4C. Merge de formación (titles + education) sin duplicados ----
+        formacion_combinada: List[Dict[str, Any]] = []
+        seen_edu = set()
+        for entry in titles_formacion + education_formacion:
+            if not isinstance(entry, dict):
+                continue
+            titulo = str(entry.get("titulo", "")).strip()
+            institucion = str(entry.get("institucion", "")).strip()
+            key = (titulo.lower(), institucion.lower())
+            if key not in seen_edu and (titulo or institucion):
+                seen_edu.add(key)
+                formacion_combinada.append(entry)
+        merged["formacion_academica"] = formacion_combinada
+
+        # ---- SKILLS → habilidades ----
+        habilidades_data: Dict[str, Any] = {
+            "habilidades_tecnicas": [],
+            "idiomas": [],
+            "habilidades_blandas": [],
+        }
+        if "skills" in section_results and section_results["skills"].success:
+            sk_data = section_results["skills"].data or {}
+            habilidades_data["habilidades_tecnicas"] = sk_data.get("habilidades_tecnicas", [])
+            habilidades_data["habilidades_blandas"] = sk_data.get("habilidades_blandas", [])
+            # Skills prompt also extracts languages
+            if sk_data.get("idiomas"):
+                habilidades_data["idiomas"] = sk_data["idiomas"]
+
+        # ---- LANGUAGES → merge into habilidades.idiomas ----
+        if "languages" in section_results and section_results["languages"].success:
+            lang_data = section_results["languages"].data or {}
+            extra_langs = lang_data.get("idiomas", [])
+            if extra_langs:
+                existing_langs = {str(l.get("idioma", "")).lower() for l in habilidades_data["idiomas"] if isinstance(l, dict)}
+                for lang in extra_langs:
+                    if isinstance(lang, dict):
+                        if str(lang.get("idioma", "")).lower() not in existing_langs:
+                            habilidades_data["idiomas"].append(lang)
+
+        merged["habilidades"] = habilidades_data
+
+        # ---- CERTIFICATIONS → formacion_complementaria ----
+        certificaciones: List[str] = []
+        if "certifications" in section_results and section_results["certifications"].success:
+            cert_data = section_results["certifications"].data or {}
+            cert_items = cert_data.get("items", [])
+            if isinstance(cert_items, list):
+                certificaciones = [str(item) for item in cert_items if item]
+            elif isinstance(cert_data.get("section_name"), str) and cert_data["section_name"]:
+                certificaciones = [cert_data["section_name"]]
+        merged["formacion_complementaria"] = {"certificaciones_cursos": certificaciones}
+
+        # ---- PROJECTS → proyectos ----
+        proyectos_list: List[Dict[str, Any]] = []
+        if "projects" in section_results and section_results["projects"].success:
+            proj_data = section_results["projects"].data or {}
+            items = proj_data.get("items", [])
+            if isinstance(items, list):
+                for item in items:
+                    if isinstance(item, str):
+                        proyectos_list.append({"nombre": item})
+                    elif isinstance(item, dict):
+                        proyectos_list.append(item)
+        merged["proyectos"] = {"proyectos": proyectos_list}
+
+        # ---- AWARDS → reconocimientos ----
+        awards_list: List[str] = []
+        if "awards" in section_results and section_results["awards"].success:
+            awards_data = section_results["awards"].data or {}
+            awards_list = awards_data.get("items", [])
+        merged["reconocimientos"] = {"logros_premios": awards_list if isinstance(awards_list, list) else []}
+
+        # ---- VOLUNTEER → actividades_extracurriculares ----
+        volunteer_list: List[str] = []
+        if "volunteer" in section_results and section_results["volunteer"].success:
+            vol_data = section_results["volunteer"].data or {}
+            volunteer_list = vol_data.get("items", [])
+        merged["actividades_extracurriculares"] = {"voluntariado": volunteer_list if isinstance(volunteer_list, list) else []}
+
+        # ---- INTERESTS → intereses ----
+        interests_list: List[str] = []
+        if "interests" in section_results and section_results["interests"].success:
+            int_data = section_results["interests"].data or {}
+            interests_list = int_data.get("items", [])
+        merged["intereses"] = {"hobbies_intereses": interests_list if isinstance(interests_list, list) else []}
+
+        # ---- REFERENCES → campo referencias (separado de otros_antecedentes) ----
+        referencias_list: List[Dict[str, str]] = []
+        if "references" in section_results and section_results["references"].success:
+            ref_data = section_results["references"].data or {}
+            referencias_list = ref_data.get("referencias", [])
+            if not isinstance(referencias_list, list):
+                referencias_list = []
+        merged["referencias"] = referencias_list
+
+        # ---- OTHER → otros_antecedentes (SIN referencias) ----
+        otros_items: List[str] = []
+        if "other" in section_results and section_results["other"].success:
+            other_data = section_results["other"].data or {}
+            if isinstance(other_data, list):
+                # LLM returned a plain list instead of {"items": [...]}
+                for item in other_data:
+                    if isinstance(item, dict):
+                        items = item.get("items", [])
+                        if items:
+                            otros_items.extend([str(i) for i in items if i])
+                    else:
+                        otros_items.append(str(item))
+            elif isinstance(other_data, dict):
+                items = other_data.get("items", [])
+                if isinstance(items, list):
+                    otros_items.extend([str(i) for i in items if i])
+        merged["otros_antecedentes"] = otros_items
+
+        # ── 4A. Regla de prioridad para titular_profesional ──
+        titular_final = "No extraído"
+
+        # Prioridad 1: titles → titulo_profesional
+        if titular_from_titles and str(titular_from_titles).strip().lower() not in (
+            "no extraído", "no extraido", "", "none", "null"
+        ):
+            titular_final = str(titular_from_titles).strip()
+            logger.info("[%s] 🏷️ Titular desde titles: %s", request_id, titular_final)
+
+        # Prioridad 2: buscar título más alto en formación académica combinada
+        if titular_final == "No extraído" and formacion_combinada:
+            for entry in formacion_combinada:
+                titulo_str = str(entry.get("titulo", "")).strip()
+                if titulo_str and len(titulo_str) > 3:
+                    titular_final = titulo_str
+                    logger.info("[%s] 🏷️ Titular desde education: %s", request_id, titular_final)
+                    break
+
+        # Prioridad 3: buscar keywords de profesión en cargos de experiencia
+        if titular_final == "No extraído" and experience_data_raw:
+            prof_keywords = [
+                "ingeniero", "licenciado", "arquitecto", "médico", "abogado",
+                "contador", "profesor", "doctor", "psicólogo", "enfermer",
+                "científico", "desarrollador", "programador", "analista",
+            ]
+            for exp in experience_data_raw:
+                cargo = str(exp.get("cargo", "")).lower()
+                if any(kw in cargo for kw in prof_keywords):
+                    titular_final = str(exp.get("cargo", "")).strip()
+                    logger.info("[%s] 🏷️ Titular desde experience: %s", request_id, titular_final)
+                    break
+
+        merged["titular_profesional"] = {"titular": titular_final}
+
+        # ── 4F. Manejo de campos requeridos ──
+        self._ensure_required_fields(merged, raw_text)
+
+        logger.info(
+            "[%s] 📦 Merge completado: exp=%d, edu=%d, skills=%d, otros=%d",
+            request_id,
+            len(merged.get("experiencia_laboral", [])),
+            len(merged.get("formacion_academica", [])),
+            len(merged.get("habilidades", {}).get("habilidades_tecnicas", [])),
+            len(merged.get("otros_antecedentes", [])),
+        )
+
+        return merged
+
+    def _extract_contact_info(self, raw_text: str) -> Dict[str, Any]:
+        """
+        Extrae datos de contacto del texto crudo usando regex.
+        Siempre heurístico (no usa LLM).
+        """
+        import re
+
+        result: Dict[str, Any] = {
+            "nombre_completo": "No extraído",
+            "telefono": None,
+            "email": "no-extraido@example.com",
+            "ubicacion": None,
+        }
+
+        # ── Email ──
+        email_match = re.search(
+            r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}',
+            raw_text
+        )
+        if email_match:
+            result["email"] = email_match.group(0)
+
+        # ── Teléfono ──
+        # Primero: formato internacional con +, acepta (+XX) o +XX
+        phone_match = re.search(
+            r'(?:\+\d{1,3}|\(\+\d{1,3}\))[\s\-.]?\d[\d\s\-.]{6,}',
+            raw_text
+        )
+        if not phone_match:
+            # Fallback: buscar secuencias de dígitos con separadores
+            # pero EXCLUIR patrones de RUT chileno (XX.XXX.XXX - X)
+            rut_pattern = re.compile(r'\d{1,2}\.\d{3}\.\d{3}\s*[-–]\s*\d')
+            candidates = []
+            for m in re.finditer(r'(?<!\d)(\d[\d\s\-.]{7,}\d)(?!\d)', raw_text):
+                candidate = m.group(0).strip()
+                if not rut_pattern.search(candidate):
+                    candidates.append(candidate)
+            if candidates:
+                # Elegir el candidato con más dígitos (más probable que sea teléfono)
+                phone_match = type('Match', (), {
+                    'group': lambda self, g=0: max(candidates, key=lambda x: sum(c.isdigit() for c in x))
+                })()
+        if phone_match:
+            result["telefono"] = phone_match.group(0).strip()
+
+        # ── Nombre (primeras líneas significativas) ──
+        lines = [l.strip() for l in raw_text.split('\n') if l.strip()]
+        for line in lines[:5]:
+            # Saltar líneas que son email, teléfono, URL, o encabezados
+            if '@' in line or re.search(r'https?://', line):
+                continue
+            if re.match(r'^[\d\s\-+/()]+$', line):
+                continue
+            # Buscar patrón Nombre Apellido (2+ palabras, capitalizadas)
+            if len(line.split()) >= 2 and len(line) < 60:
+                words = line.split()
+                capital_words = sum(1 for w in words if w and w[0].isupper())
+                if capital_words >= 2 and all(len(w) > 1 for w in words):
+                    result["nombre_completo"] = line
+                    break
+
+        # ── Ubicación ──
+        loc_patterns = [
+            r'(?:Santiago|Valparaíso|Viña|Concepción|Antofagasta|La Serena|'
+            r'Temuco|Valdivia|Puerto Montt|Iquique|Arica|Rancagua|Talca|'
+            r'Chillán|Osorno|Punta Arenas|Copiapó|'
+            r'Lima|Buenos Aires|Bogotá|México|Madrid|Barcelona|'
+            r'New York|London|Paris|Berlin|Toronto)[,\s]+(?:Chile|Perú|Argentina|'
+            r'Colombia|México|España|USA|UK|Francia|Alemania|Canadá)?',
+        ]
+        for pat in loc_patterns:
+            loc_match = re.search(pat, raw_text, re.IGNORECASE)
+            if loc_match:
+                result["ubicacion"] = loc_match.group(0).strip()
+                break
+
+        return result
+
+    def _ensure_required_fields(self, merged: Dict[str, Any], raw_text: str) -> None:
+        """
+        Asegura que todos los campos requeridos tengan al menos valores por defecto.
+        """
+        # experiencia_laboral
+        if not merged.get("experiencia_laboral"):
+            merged["experiencia_laboral"] = []
+            logger.warning("⚠️ experiencia_laboral vacío tras merge")
+
+        # formacion_academica
+        if not merged.get("formacion_academica"):
+            merged["formacion_academica"] = []
+            logger.warning("⚠️ formacion_academica vacía tras merge")
+
+        # habilidades
+        if not isinstance(merged.get("habilidades"), dict):
+            merged["habilidades"] = {
+                "habilidades_tecnicas": [],
+                "idiomas": [],
+                "habilidades_blandas": [],
+            }
+
+        # resumen_profesional
+        if "resumen_profesional" not in merged or not merged.get("resumen_profesional"):
+            merged["resumen_profesional"] = {"resumen": ""}
+
+        # formacion_complementaria
+        if "formacion_complementaria" not in merged:
+            merged["formacion_complementaria"] = {"certificaciones_cursos": []}
+
+        # reconocimientos
+        if "reconocimientos" not in merged:
+            merged["reconocimientos"] = {"logros_premios": []}
+
+        # proyectos
+        if "proyectos" not in merged:
+            merged["proyectos"] = {"proyectos": []}
+
+        # actividades_extracurriculares
+        if "actividades_extracurriculares" not in merged:
+            merged["actividades_extracurriculares"] = {"voluntariado": []}
+
+        # intereses
+        if "intereses" not in merged:
+            merged["intereses"] = {"hobbies_intereses": []}
+
+        # otros_antecedentes
+        if "otros_antecedentes" not in merged:
+            merged["otros_antecedentes"] = []
+
     async def _execute_robust_extraction(self, cv_text: str, profile_info: Dict, request_id: str = "unknown") -> Dict[str, Any]:
         """
         Extracción robusta usando Structured Outputs nativos con fallback a JSON
@@ -198,27 +666,44 @@ class RobustExtractionService:
             
             logger.warning("⚠️ Falló la extracción estructurada, intentando fallback JSON...")
             
+            # Obtener esquema para fallback
+            try:
+                schema_dict = ThinkingResumeData.model_json_schema()
+            except AttributeError:
+                schema_dict = ThinkingResumeData.schema()
+            schema_dict = self.llm_service._clean_schema_for_gemini(schema_dict)
+
             # 2. Intentar fallback JSON (Extracción Flexible)
-            return await self._execute_fallback_extraction(cv_text, prompt)
+            return await self._execute_fallback_extraction(cv_text, prompt, schema_dict)
 
         except Exception as e:
             logger.error(f"❌ Error en extracción estructurada: {e}")
             logger.info("⚠️ Intentando fallback JSON tras error...")
             try:
-                return await self._execute_fallback_extraction(cv_text, prompt)
+                try:
+                    schema_dict = ThinkingResumeData.model_json_schema()
+                except AttributeError:
+                    schema_dict = ThinkingResumeData.schema()
+                schema_dict = self.llm_service._clean_schema_for_gemini(schema_dict)
+                return await self._execute_fallback_extraction(cv_text, prompt, schema_dict)
             except Exception as e2:
                 logger.error(f"❌ Falló también el fallback JSON: {e2}")
-                return self._create_empty_extraction()
+                return self._create_empty_structure()
 
-    async def _execute_fallback_extraction(self, cv_text: str, prompt: str) -> Dict[str, Any]:
+    async def _execute_fallback_extraction(self, cv_text: str, prompt: str, schema_dict: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Estrategia de respaldo usando modo JSON estándar y mapeo manual
         """
         logger.info("🔄 Ejecutando extracción fallback (JSON laxo)")
         
+        schema_str = ""
+        if schema_dict:
+            import json
+            schema_str = f"\n\nDebes retornar la salida ÚNICAMENTE en formato JSON plano que se ajuste exactamente al siguiente esquema:\n{json.dumps(schema_dict, indent=2, ensure_ascii=False)}"
+
         # Usar el modo JSON estándar del servicio LLM
         json_result = await self.llm_service.call_agent(
-            prompt=prompt + "\n\nIMPORTANTE: Devuelve JSON válido. Si no estás seguro de un campo, usa null.",
+            prompt=prompt + schema_str + "\n\nIMPORTANTE: Devuelve JSON válido. Si no estás seguro de un campo o está vacío, usa null.",
             input_data=cv_text,
             stage_name="fallback_json_extraction",
             temperature=0.1
@@ -228,15 +713,18 @@ class RobustExtractionService:
              data_to_map = None
              
              if isinstance(json_result, dict):
-                 data_to_map = json_result
+                 # Si viene estructurado bajo el esquema de ThinkingResumeData (con la llave 'extraction')
+                 if "extraction" in json_result and isinstance(json_result["extraction"], dict):
+                     logger.info("🔧 Encontrado bloque 'extraction' en fallback JSON, desempaquetando...")
+                     data_to_map = json_result["extraction"]
+                 else:
+                     data_to_map = json_result
              elif isinstance(json_result, list):
                  if len(json_result) == 1 and isinstance(json_result[0], dict):
                      logger.info("⚠️ Fallback devolvió lista unitem, desempaquetando...")
                      data_to_map = json_result[0]
                  elif len(json_result) > 0 and isinstance(json_result[0], dict):
                      # Heuristic: If detailed list, assume it's main content but missing wrapper.
-                     # However, mapping arbitrary lists to ResumeData is risky without context.
-                     # Let's try to detect if it's a list of experiences or education?
                      logger.warning(f"⚠️ Fallback devolvió lista de {len(json_result)} items. Intentando heurística simple...")
                      first_keys = json_result[0].keys()
                      if any(k in first_keys for k in ['cargo', 'empresa', 'responsabilidades']):
@@ -253,7 +741,7 @@ class RobustExtractionService:
                  return self._map_loose_data_to_model(data_to_map)
              
         logger.error("❌ Falló la extracción fallback JSON (formato inválido)")
-        return self._create_empty_extraction()
+        return self._create_empty_structure()
 
     def _map_loose_data_to_model(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -309,9 +797,6 @@ class RobustExtractionService:
 
 
     def _create_robust_extraction_prompt(self) -> str:
-        """
-        Prompt optimizado para Structured Outputs
-        """
         return """
 <system_role>
 Eres un experto analista de currículums y reclutador senior. 
@@ -320,38 +805,60 @@ Tu objetivo es transformar documentos de CV (que pueden ser desordenados) en dat
 
 <instructions>
 1. **Análisis Profundo:** Antes de extraer, analiza el documento para entender su estructura, idioma y matices.
-2. **Exhaustividad:** Extrae TODO el historial laboral y educativo. No omitas nada por parecer "antiguo". NO mezcles instituciones ni títulos. Si dice "Título de Contador" y abajo "Universidad Diego Portales", mantén el nombre exacto del título.
+2. **Exhaustividad:** Extrae TODO el historial laboral y educativo. No omitas nada por parecer "antiguo". NO mezcles instituciones ni títulos.
 3. **Inferencia Inteligente:** Si falta la ciudad, infiérela de la empresa/universidad. Si falta el año de fin y dice "Actualidad", usa "Presente".
-4. **Resumen Profesional:** Busca cualquier párrafo introductorio bajo títulos como "Perfil", "Resumen", "Descripción Profesional" o "Sobre mí" y extráelo completo en `resumen_profesional.resumen`.
-5. **Normalización:** Fechas a YYYY-MM. 
-6. **Búsqueda de Contacto Extrema:** Busca exhaustivamente en márgenes, encabezados y pies de página por correos electrónicos y teléfonos, aun si el recuadro que los contiene parece "roto" o con espacios (ej. +56 9 1 2 3).
+4. **Resumen Profesional:** Busca cualquier párrafo introductorio bajo títulos como "Perfil", "Resumen", "Descripción Profesional" o "Sobre mí".
+5. **Normalización de Fechas: CRÍTICO** – Sigue EXACTAMENTE estos formatos:
+   - "Enero 2018" → "2018-01" (SIEMPRE con mes de 2 dígitos)
+   - "2018" → "2018" (solo año cuando no hay mes)
+   - "Actualidad", "A la fecha", "Presente" → "Presente"
+   - NUNCA dejes "Enero 2018" como texto suelto – conviértelo siempre
+   - NUNCA uses formatos como "01/2018" – usa "2018-01"
+6. **Búsqueda de Contacto Extrema:** Busca exhaustivamente en márgenes, encabezados y pies de página por correos electrónicos y teléfonos.
 </instructions>
 
+<date_examples_few_shot>
+TEXTO ORIGINAL: "Enero 2018 - Julio 2019"
+EXTRACCIÓN CORRECTA: {"fecha_inicio": "2018-01", "fecha_fin": "2019-07", "texto_original": "Enero 2018 - Julio 2019"}
+
+TEXTO ORIGINAL: "Mar 2020 - Actualidad"
+EXTRACCIÓN CORRECTA: {"fecha_inicio": "2020-03", "fecha_fin": "Presente", "texto_original": "Mar 2020 - Actualidad"}
+
+TEXTO ORIGINAL: "2016 - 2019"
+EXTRACCIÓN CORRECTA: {"fecha_inicio": "2016", "fecha_fin": "2019", "texto_original": "2016 - 2019"}
+
+TEXTO ORIGINAL: "2018"
+EXTRACCIÓN CORRECTA: {"fecha_inicio": "2018", "fecha_fin": "2018", "texto_original": "2018"}
+
+TEXTO ORIGINAL: "Septiembre 2015 - Diciembre 2020"
+EXTRACCIÓN CORRECTA: {"fecha_inicio": "2015-09", "fecha_fin": "2020-12", "texto_original": "Septiembre 2015 - Diciembre 2020"}
+
+TEXTO ORIGINAL: "01/2018 - 07/2019"
+EXTRACCIÓN CORRECTA: {"fecha_inicio": "2018-01", "fecha_fin": "2019-07", "texto_original": "01/2018 - 07/2019"}
+</date_examples_few_shot>
+
+<skills_examples_few_shot>
+TEXTO: "Habilidades: Python, Java, SQL, Git"
+EXTRACCIÓN CORRECTA: {"habilidades_tecnicas": [{"skill": "Python", "level": "Intermedio"}, {"skill": "Java", "level": "Intermedio"}, {"skill": "SQL", "level": "Intermedio"}, {"skill": "Git", "level": "Intermedio"}], "idiomas": [], "habilidades_blandas": []}
+
+TEXTO: "Inglés (Avanzado) - TOEFL 105"
+EXTRACCIÓN CORRECTA: {"habilidades_tecnicas": [], "idiomas": [{"idioma": "Inglés", "nivel": "Avanzado", "certificacion": "TOEFL 105"}], "habilidades_blandas": []}
+</skills_examples_few_shot>
+
 <critical_rules>
+- ⛔ TEXTO LITERAL: Copia el texto original del CV sin resumir ni parafrasear. Las responsabilidades deben ser el texto exacto del CV, no bullet points condensados.
 - **Titular vs Cargo:** "Titular Profesional" es quién es la persona (ej: Ingeniero Civil). "Cargo" es qué puesto ocupó (ej: Jefe de Obra).
-- **Habilidades Estructuradas:** El campo 'habilidades' NO es un string. Es un objeto con 'habilidades_tecnicas', 'idiomas', 'habilidades_blandas'.
-- **Sanitización:** Nunca devuelvas valores como "N/A", "Unknown". Usa null o listas vacías. IMPORTANTE: Para campos de tipo string como 'email', 'telefono' o 'ubicacion', NUNCA devuelvas arreglos vacíos `[]`. Si la información no existe, debes devolver explícitamente `null`.
+- **Cargo y Empresa Separados:** Separa rigurosamente el Cargo de la Empresa. NUNCA unas la empresa al cargo.
+- **Cargo COMPLETO:** Extrae el nombre completo del puesto. "Gerente de Sucursal Valdivia", no solo "Gerente".
+- **Título e Institución Separados:** Separa rigurosamente el Título obtenido de la Institución.
+- **Habilidades:** El campo 'habilidades' SIEMPRE debe ser un objeto con 'habilidades_tecnicas', 'idiomas' y 'habilidades_blandas'. NUNCA devuelvas una lista plana de strings.
+- **Sanitización:** Nunca devuelvas valores como "N/A", "Unknown". Usa null o listas vacías. Para campos string como 'email', 'telefono' o 'ubicacion', NUNCA devuelvas arreglos vacíos `[]`. Usa `null`.
 </critical_rules>
 
 <output_schema>
 El output final debe corresponder exactamente al modelo ResumeData.
 </output_schema>
 """
-
-
-    def _customize_prompt_for_attempt(self, base_prompt: str, attempt: int, profile_info: Dict) -> str:
-        """
-        Personaliza el prompt según el intento y perfil
-        """
-        if attempt == 0:
-            # Primer intento: prompt base
-            return base_prompt
-        elif attempt == 1:
-            # Segundo intento: enfoque en experiencia
-            return base_prompt + "\n\nENFOQUE ESPECIAL: Presta atención extra a la experiencia laboral y fechas."
-        else:
-            # Tercer intento: enfoque en formación
-            return base_prompt + "\n\nENFOQUE ESPECIAL: Verifica cuidadosamente la clasificación de formación académica vs complementaria."
 
     def _validate_extraction_quality(self, extraction: Dict[str, Any]) -> float:
         """
@@ -551,6 +1058,9 @@ El output final debe corresponder exactamente al modelo ResumeData.
         # Validación de clasificación académica
         extraction = self._validate_academic_classification(extraction)
 
+        # Validación cruzada de fechas y consistencia entre secciones
+        extraction = self._validate_cross_field_consistency(extraction, request.archivo_contenido if hasattr(request, 'archivo_contenido') else None)
+
         # Limpieza y normalización
         extraction = self._clean_and_normalize(extraction)
 
@@ -721,175 +1231,17 @@ El output final debe corresponder exactamente al modelo ResumeData.
         return data
 
     def _post_process_dates(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Post-procesamiento inteligente de fechas
-        """
-        # Procesar experiencia laboral
         if data.get("experiencia_laboral") and isinstance(data["experiencia_laboral"], list):
             for exp in data["experiencia_laboral"]:
                 if isinstance(exp, dict) and exp.get("periodo"):
-                    exp["periodo"] = self._normalize_period(exp["periodo"])
+                    exp["periodo"] = DateParserService.normalize_period(exp["periodo"])
 
-        # Procesar formación académica
         if data.get("formacion_academica") and isinstance(data["formacion_academica"], list):
             for edu in data["formacion_academica"]:
                 if isinstance(edu, dict) and edu.get("periodo"):
-                    edu["periodo"] = self._normalize_period(edu["periodo"])
+                    edu["periodo"] = DateParserService.normalize_period(edu["periodo"])
 
         return data
-
-    def _normalize_period(self, period: Any) -> Dict[str, Any]:
-        """
-        Normalización robusta de períodos
-        """
-        p = {}
-        if isinstance(period, dict):
-            p = {
-                "fecha_inicio": period.get("fecha_inicio"),
-                "fecha_fin": period.get("fecha_fin"),
-                "texto_original": period.get("texto_original", "No especificado")
-            }
-        elif isinstance(period, str):
-            # Parsing inteligente de fechas
-            p = self._parse_period_string(period)
-        else:
-            p = {
-                "fecha_inicio": None,
-                "fecha_fin": None,
-                "texto_original": str(period) if period else "No especificado"
-            }
-            
-        # Clean NaN/Null strings from initial extraction
-        # Normalize to lower case for comparison but keep original strict check
-        bad_values = ["nan", "none", "null", "nat", "no especificado", "", "unknown", "n/a", "no extraído"]
-        
-        for k in ["fecha_inicio", "fecha_fin"]:
-            val = str(p.get(k, "")).lower().strip()
-            if val in bad_values:
-                p[k] = None
-        
-        # DEFINITIVE 'ACTUALIDAD' LIST
-        current_synonyms = [
-            "presente", "actualidad", "actual", "current", "now", "hoy", 
-            "vigente", "curso", "continuo", "ongoing", "present", "date"
-        ]
-
-        # AGGRESSIVE RECOVERY & CORRECTION:
-        # If we have texto_original, we TRUST regex parsing over LLM inference.
-        # LLM often drops months (YYYY) or hallucinates years.
-        # Regex is strict and grounded in the actual text chunk.
-        
-        if p.get("texto_original") and str(p["texto_original"]).lower() not in bad_values:
-            parsed = self._parse_period_string(p["texto_original"])
-            
-            # 1. Start Date Correction
-            # If regex successfully found a start date (e.g., "2024-01" or "2024"), use it.
-            if parsed.get("fecha_inicio"):
-                # Prefer parsed value (likely YYYY-MM) over likely LLM YYYY
-                p["fecha_inicio"] = parsed["fecha_inicio"]
-
-            # 2. End Date Correction
-            if parsed.get("fecha_fin"):
-                p["fecha_fin"] = parsed["fecha_fin"]
-            
-            # 3. Handle 'Actualidad' Logic explicitly again just in case regex missed it keying off specific words
-            # (Though _parse_period_string handles this now)
-            raw_text = str(p["texto_original"]).lower()
-            if any(syn in raw_text for syn in current_synonyms):
-                 p["fecha_fin"] = "Presente"
-        
-        # Final safety cleanup for 'Presente' normalization
-        if p.get("fecha_fin") and str(p["fecha_fin"]).lower() in current_synonyms:
-             p["fecha_fin"] = "Presente"
-             
-        return p
-
-    def _parse_period_string(self, period_str: str) -> Dict[str, Any]:
-        """
-        Parsing inteligente de strings de período
-        """
-        if not period_str or str(period_str).lower() in ['nan', 'none', 'null']:
-            return {"fecha_inicio": None, "fecha_fin": None, "texto_original": "No especificado"}
-            
-        import re
-
-        months = {
-            "enero": "01", "febrero": "02", "marzo": "03", "abril": "04",
-            "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
-            "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12",
-            "jan": "01", "feb": "02", "mar": "03", "apr": "04", "may": "05", "jun": "06",
-            "jul": "07", "aug": "08", "sep": "09", "oct": "10", "nov": "11", "dec": "12"
-        }
-
-        fecha_inicio = None
-        fecha_fin = None
-
-        # Patrón Normal: "Enero 2018 - Julio 2019"
-        # Patrón con texto extra: "Kibernum S.A. (Enero 2024 - Actualidad)"
-        
-        # 1. Limpiar strings envolventes
-        period_str_clean = period_str.replace('(', '').replace(')', '').strip()
-        
-        # 2. Buscar patrón principal (Mes Año - Mes Año) o (Mes Año - Texto)
-        # Regex explanation:
-        # Group 1 (Start Month): ([A-Za-z]+)
-        # Group 2 (Start Year): (\d{4})
-        # Separator: \s*[-–]\s*
-        # Group 3 (End): ([A-Za-z]+|\d{4}) -> Can be Month OR 'Actualidad'
-        # Group 4 (End Year - Optional): (\d{4})?
-        
-        match = re.search(r'([A-Za-z]+)\s+(\d{4})\s*[-–]\s*([A-Za-z0-9]+)(?:\s+(\d{4}))?', period_str_clean, re.IGNORECASE)
-        
-        if match:
-            start_month, start_year, end_part1, end_year = match.groups()
-            
-            # Parse Start Date
-            if start_month.lower() in months:
-                fecha_inicio = f"{start_year}-{months[start_month.lower()]}"
-                
-            # Parse End Date
-            is_current = any(syn in end_part1.lower() for syn in ["presente", "actualidad", "actual", "current", "hoy", "vigente"])
-            
-            if is_current:
-                fecha_fin = "Presente"
-            elif end_part1.lower() in months and end_year:
-                fecha_fin = f"{end_year}-{months[end_part1.lower()]}"
-            elif end_part1.isdigit() and len(end_part1) == 4:
-                 # Case: 2020 - 2021 (without months?)
-                 pass 
-        
-        # fallback for "2020 - 2021" simple format
-        if not fecha_inicio:
-             match_years = re.search(r'(\d{4})\s*[-–]\s*(\d{4}|Presente|Actualidad)', period_str_clean, re.IGNORECASE)
-             if match_years:
-                 s_year, e_part = match_years.groups()
-                 fecha_inicio = f"{s_year}-01"
-                 if e_part.lower() in ["presente", "actualidad"]:
-                     fecha_fin = "Presente"
-                 else:
-                     fecha_fin = f"{e_part}-12"
-
-
-        # Patrón: "Enero 2018 - Presente"
-        if not fecha_inicio:
-            match = re.search(r'(\w+)\s+(\d{4})\s*[-–]\s*(Presente|Actualidad|Actual|Current|Now)', period_str, re.IGNORECASE)
-            if match:
-                start_month, start_year = match.groups()[:2]
-                if start_month.lower() in months:
-                    fecha_inicio = f"{start_year}-{months[start_month.lower()]}"
-                    fecha_fin = "Presente"
-
-        # Patrón: "2016 - 2019"
-        if not fecha_inicio:
-            match = re.search(r'(\d{4})\s*[-–]\s*(\d{4})', period_str)
-            if match:
-                fecha_inicio, fecha_fin = match.groups()
-
-        return {
-            "fecha_inicio": fecha_inicio,
-            "fecha_fin": fecha_fin,
-            "texto_original": period_str
-        }
 
     def _validate_academic_classification(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -985,6 +1337,66 @@ El output final debe corresponder exactamente al modelo ResumeData.
             "ubicacion": None
         }
 
+    def _validate_cross_field_consistency(self, data: Dict[str, Any], cv_text: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Validación cruzada: verifica consistencia entre secciones.
+        - Previene fechas imposibles (fin < inicio)
+        - Detecta secciones vacías cuando el texto original sugiere que deberían tener datos
+        - Valida que experiencia_laboral y formacion_academica no estén vacíos si el CV es largo
+        """
+        import re
+
+        periods_to_check = []
+
+        if data.get("experiencia_laboral") and isinstance(data["experiencia_laboral"], list):
+            for exp in data["experiencia_laboral"]:
+                if isinstance(exp, dict) and isinstance(exp.get("periodo"), dict):
+                    p = exp["periodo"]
+                    validation_msg = DateParserService.validate_period(
+                        p.get("fecha_inicio"), p.get("fecha_fin")
+                    )
+                    if validation_msg:
+                        logger.warning(f"📅 Problema de fechas en experiencia '{exp.get('cargo')}': {validation_msg}")
+                        periods_to_check.append((exp, p))
+
+        if data.get("formacion_academica") and isinstance(data["formacion_academica"], list):
+            for edu in data["formacion_academica"]:
+                if isinstance(edu, dict) and isinstance(edu.get("periodo"), dict):
+                    p = edu["periodo"]
+                    validation_msg = DateParserService.validate_period(
+                        p.get("fecha_inicio"), p.get("fecha_fin")
+                    )
+                    if validation_msg:
+                        logger.warning(f"📅 Problema de fechas en educación '{edu.get('titulo')}': {validation_msg}")
+                        periods_to_check.append((edu, p))
+
+        if cv_text and len(cv_text) > 200:
+            lines = cv_text.split('\n')
+            non_empty_lines = [l for l in lines if l.strip()]
+            text_has_content = len(non_empty_lines) > 5
+
+            if text_has_content:
+                exp_empty = not data.get("experiencia_laboral") or (
+                    isinstance(data["experiencia_laboral"], list) and len(data["experiencia_laboral"]) == 0
+                )
+                edu_empty = not data.get("formacion_academica") or (
+                    isinstance(data["formacion_academica"], list) and len(data["formacion_academica"]) == 0
+                )
+
+                if exp_empty:
+                    job_keywords = ['experiencia', 'trabajo', 'empleo', 'cargo', 'empresa', 'laboral',
+                                    'experience', 'work', 'job', 'employment', 'position']
+                    if any(kw in cv_text.lower() for kw in job_keywords):
+                        logger.warning(f"📋 CV tiene sección de experiencia pero no se extrajeron datos")
+
+                if edu_empty:
+                    edu_keywords = ['formación', 'educación', 'título', 'universidad', 'instituto',
+                                    'education', 'degree', 'university', 'college', 'academic']
+                    if any(kw in cv_text.lower() for kw in edu_keywords):
+                        logger.warning(f"📋 CV tiene sección de educación pero no se extrajeron datos")
+
+        return data
+
     def _clean_and_normalize(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
         Limpieza y normalización final
@@ -1010,38 +1422,28 @@ El output final debe corresponder exactamente al modelo ResumeData.
         """
         Crear respuesta validada con modelo Pydantic
         """
-        try:
-            logger.info(f"🔧 Intentando crear ResumeData con datos: {list(structured_data.keys())}")
-            logger.info(f"🔧 Titular en structured_data: {structured_data.get('titular_profesional')}")
-            logger.info(f"🔧 Email en structured_data: {structured_data.get('datos_contacto', {}).get('email')}")
+        fixed_data = self._fix_missing_required_fields(structured_data, cv_text)
+        logger.info(f"🔧 Habilidades post-fix: {len(fixed_data.get('habilidades', {}).get('habilidades_tecnicas', []))} técnicas, {len(fixed_data.get('habilidades', {}).get('idiomas', []))} idiomas")
 
-            resume_data = ResumeData(**structured_data)
+        try:
+            logger.info(f"🔧 Intentando crear ResumeData con datos: {list(fixed_data.keys())}")
+            logger.info(f"🔧 Titular en datos: {fixed_data.get('titular_profesional')}")
+            logger.info(f"🔧 Email en datos: {fixed_data.get('datos_contacto', {}).get('email')}")
+            logger.info(f"🔧 Habilidades RAW: {type(fixed_data.get('habilidades')).__name__} = {json.dumps(fixed_data.get('habilidades'), default=str, ensure_ascii=False)[:500] if fixed_data.get('habilidades') else 'None/empty'}")
+
+            resume_data = ResumeData(**fixed_data)
+
             logger.info(f"🔧 ✅ ResumeData creado exitosamente!")
             logger.info(f"🔧 ✅ Titular final: {resume_data.titular_profesional.titular}")
             logger.info(f"🔧 ✅ Email final: {resume_data.datos_contacto.email}")
+            logger.info(f"🔧 ✅ Habilidades finales: t={len(resume_data.habilidades.habilidades_tecnicas)} i={len(resume_data.habilidades.idiomas)} b={len(resume_data.habilidades.habilidades_blandas)}")
             return resume_data
 
         except Exception as e:
             logger.error(f"Error validando con Pydantic: {e}")
-            logger.error(f"🔧 Datos que causaron error: {structured_data}")
-            logger.info("🔧 Intentando reparar datos antes de fallar...")
-
-            # Intentar reparar datos faltantes
-            fixed_data = self._fix_missing_required_fields(structured_data, cv_text)
-
-            try:
-                logger.info("🔧 Probando con datos reparados...")
-                logger.info(f"🔧 Titular en datos reparados: {fixed_data.get('titular_profesional')}")
-                resume_data_fixed = ResumeData(**fixed_data)
-                logger.info(f"🔧 ✅ ResumeData reparado exitosamente!")
-                logger.info(f"🔧 ✅ Titular final reparado: {resume_data_fixed.titular_profesional.titular}")
-                return resume_data_fixed
-            except Exception as e2:
-                logger.error(f"Error después de reparar datos: {e2}")
-                logger.error(f"🔧 Datos reparados que causaron error: {fixed_data}")
-                # Como último recurso, crear estructura mínima válida
-                logger.warning("🔧 ⚠️ FALLBACK: Usando respuesta mínima porque falló todo")
-                return self._create_minimal_valid_response()
+            logger.error(f"🔧 Datos que causaron error: {list(fixed_data.keys())}")
+            logger.warning("🔧 ⚠️ FALLBACK: Usando respuesta mínima porque falló todo")
+            return self._create_minimal_valid_response()
 
     def _fix_missing_required_fields(self, data: Dict[str, Any], cv_text: str = None) -> Dict[str, Any]:
         """
@@ -1109,38 +1511,121 @@ El output final debe corresponder exactamente al modelo ResumeData.
             # Fill in missing keys instead of overwriting the whole dict
             dc = fixed_data['datos_contacto']
             if not dc.get('nombre_completo'): dc['nombre_completo'] = 'No extraído'
-            if 'telefono' not in dc: dc['telefono'] = None
-            if not dc.get('email'): dc['email'] = 'no-extraido@example.com'
+            if 'telefono' not in dc or str(dc.get('telefono')).lower() in ('none', 'null', ''):
+                dc['telefono'] = None
+            if not dc.get('email') or str(dc.get('email')).lower() in ('none', 'null', ''):
+                dc['email'] = 'no-extraido@example.com'
             if 'ubicacion' not in dc: dc['ubicacion'] = None
 
         # --- MEJORA: Regex Fallback para Email y Teléfono ---
         if cv_text and isinstance(fixed_data.get('datos_contacto'), dict):
             dc = fixed_data['datos_contacto']
             texto_limpio = cv_text.strip()
-            
-            # 1. Fallback Email
-            if not dc.get('email') or 'no-extraido' in dc.get('email', '').lower():
-                # Buscar posibles correos en todo el texto
-                match_email = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', texto_limpio)
+
+            email_val = dc.get('email')
+            telefono_val = dc.get('telefono')
+            ubicacion_val = dc.get('ubicacion')
+
+            email_invalido = (
+                not email_val
+                or 'no-extraido' in str(email_val).lower()
+                or str(email_val).strip().lower() in ('none', 'null', '')
+            )
+            telefono_invalido = (
+                not telefono_val
+                or str(telefono_val).strip().lower() in ('none', 'null', '')
+            )
+
+            if email_invalido:
+                combined_text = texto_limpio
+                if ubicacion_val and isinstance(ubicacion_val, str):
+                    combined_text = f"{texto_limpio}\n{ubicacion_val}"
+                match_email = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', combined_text)
                 if match_email:
                     encontrado = match_email.group(0)
                     logger.info(f"🔧 [REGEX Fallback] Email recuperado del texto: {encontrado}")
                     dc['email'] = encontrado
 
-            # 2. Fallback Teléfono
-            if not dc.get('telefono'):
-                # Busca celulares típicos: (+569) 1234 5678, +56 9 1234 5678, 912345678
-                match_phone = re.search(r'(\+?56\s*9\s*\d{4}\s*\d{4}|\+?56\s*9\d{8}|(?<!\d)9\s*\d{4}\s*\d{4}(?!\d))', texto_limpio)
+            if telefono_invalido:
+                combined_text = texto_limpio
+                if ubicacion_val and isinstance(ubicacion_val, str):
+                    combined_text = f"{texto_limpio}\n{ubicacion_val}"
+                # Priorizar formato internacional con +, acepta (+XX) o +XX
+                match_phone = re.search(r'(?:\+\d{1,3}|\(\+\d{1,3}\))[\s\-.]?\d[\d\s\-.]{6,}', combined_text)
+                if not match_phone:
+                    # Fallback: buscar secuencias de dígitos con separadores
+                    # pero EXCLUIR patrones de RUT chileno (XX.XXX.XXX - X)
+                    rut_pattern = re.compile(r'\d{1,2}\.\d{3}\.\d{3}\s*[-–]\s*\d')
+                    candidates = []
+                    for m in re.finditer(r'(?<!\d)(\d[\d\s\-.]{7,}\d)(?!\d)', combined_text):
+                        candidate = m.group(0).strip()
+                        if not rut_pattern.search(candidate):
+                            candidates.append(candidate)
+                    if candidates:
+                        # Elegir el candidato con más dígitos (más probable que sea teléfono)
+                        match_phone = type('Match', (), {
+                            'group': lambda self, g=0: max(candidates, key=lambda x: sum(c.isdigit() for c in x))
+                        })()
+                    else:
+                        match_phone = None
                 if match_phone:
-                    encontrado = match_phone.group(0)
+                    encontrado = match_phone.group(0).strip()
                     logger.info(f"🔧 [REGEX Fallback] Teléfono recuperado del texto: {encontrado}")
                     dc['telefono'] = encontrado
 
+            # --- LIMPIAR UBICACION: extraer email/teléfono del campo y dejar solo dirección ---
+            if isinstance(dc.get('ubicacion'), str):
+                ubi = dc['ubicacion']
+                # Intentar rescatar email del string de ubicación
+                if email_invalido:
+                    match_e = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', ubi)
+                    if match_e:
+                        dc['email'] = match_e.group(0)
+                        logger.info(f"🔧 [UBICACION] Email rescatado de ubicación: {dc['email']}")
+                # Intentar rescatar teléfono del string de ubicación
+                if telefono_invalido or not dc.get('telefono'):
+                    match_p = re.search(r'(?:\+\d{1,3}|\(\+\d{1,3}\))[\s\-.]?\d[\d\s\-.]{6,}', ubi)
+                    if match_p:
+                        dc['telefono'] = match_p.group(0).strip()
+                        logger.info(f"🔧 [UBICACION] Teléfono rescatado de ubicación: {dc['telefono']}")
+                # Limpiar: remover email, teléfono, y el pipe separator, dejar solo dirección
+                ubi = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', '', ubi)
+                ubi = re.sub(r'(?:\+\d{1,3}|\(\+\d{1,3}\))[\s\-.]?\d[\d\s\-.]{6,}', '', ubi)
+                ubi = ubi.replace('|', ',').strip()
+                ubi = re.sub(r',\s*,', ',', ubi).strip(',').strip()
+                if ubi:
+                    dc['ubicacion'] = ubi
+
+        # --- HEURÍSTICA: Extracción de skills desde sección del CV ---
+        if cv_text and isinstance(fixed_data.get('habilidades'), dict):
+            hab = fixed_data['habilidades']
+            hab_tecnicas = hab.get('habilidades_tecnicas', [])
+            if not hab_tecnicas or len(hab_tecnicas) == 0:
+                extracted_skills, section_name = self._heuristic_skill_extraction(cv_text)
+                if extracted_skills:
+                    # Determinar si es sección de "competencias" (no-estándar) → otros_antecedentes
+                    is_competency_section = section_name and any(
+                        w in section_name.lower() for w in ['competencia', 'diferencial', 'competency']
+                    )
+                    if is_competency_section and 'habilidad' not in section_name.lower():
+                        logger.info(f"🔧 [HEURISTIC] Sección '{section_name}' → otros_antecedentes ({len(extracted_skills)} items)")
+                        otros = fixed_data.get('otros_antecedentes', [])
+                        if not isinstance(otros, list):
+                            otros = []
+                        otros.extend(extracted_skills)
+                        fixed_data['otros_antecedentes'] = otros
+                    else:
+                        logger.info(f"🔧 [HEURISTIC] Skills extraídas del texto: {len(extracted_skills)} items")
+                        for sk in extracted_skills:
+                            hab_tecnicas.append({"skill": sk, "level": "Intermedio"})
+                        hab['habilidades_tecnicas'] = hab_tecnicas
+
         # Asegurar titular_profesional
+        GENERIC_TITLES = {'no extraído', 'profesional', 'no especificado', 'sin título', 'n/a', ''}
         if ('titular_profesional' not in fixed_data or
             not fixed_data['titular_profesional'] or
             not fixed_data['titular_profesional'].get('titular') or
-            fixed_data['titular_profesional'].get('titular') == 'No extraído'):
+            str(fixed_data['titular_profesional'].get('titular', '')).strip().lower() in GENERIC_TITLES):
             
             logger.info("🔧 Reparando titular_profesional faltante o vacío")
             logger.info(f"🔧 Estado actual titular_profesional: {fixed_data.get('titular_profesional', 'No existe')}")
@@ -1154,16 +1639,41 @@ El output final debe corresponder exactamente al modelo ResumeData.
                     logger.info(f"🔧 Titular extraído del texto en fallback: '{titular_extraido_texto}'")
                     titular_extraido = titular_extraido_texto
             
-            # 2. Fallback semántico: Tratar de extraer el cargo más reciente (el que esté en "Presente" o el primero de la lista) SOLO si falló lo anterior
+            # 2. Fallback semántico: Tratar de extraer el cargo más reciente
             if titular_extraido == 'No extraído':
                 experiencias = fixed_data.get("experiencia_laboral", [])
-                cargo_reciente = None
                 if experiencias and isinstance(experiencias, list) and len(experiencias) > 0:
                     first_exp = experiencias[0]
                     if isinstance(first_exp, dict) and first_exp.get("cargo"):
                         cargo_reciente = str(first_exp["cargo"])
-                        logger.info(f"🔧 [Semantic Fallback] Titular_profesional inferido desde la experiencia más reciente: {cargo_reciente}")
+                        logger.info(f"🔧 [Semantic Fallback] Titular desde experiencia: {cargo_reciente}")
                         titular_extraido = cargo_reciente
+
+            # 3. Fallback: extraer título de formación académica (no magíster/licenciatura/diplomado)
+            if titular_extraido == 'No extraído':
+                formacion = fixed_data.get("formacion_academica", [])
+                if isinstance(formacion, list):
+                    for edu in formacion:
+                        if isinstance(edu, dict):
+                            titulo_str = str(edu.get('titulo') or '')
+                            t_lower = titulo_str.lower()
+                            if (titulo_str and len(titulo_str) > 3 and
+                                not any(w in t_lower for w in ['magíster', 'magister', 'máster', 'master', 'licenciad', 'diplomad', 'doctorad', 'phd', 'mba', 'bachiller']) and
+                                not any(w in t_lower for w in ['curso', 'taller', 'seminario', 'certific'])):
+                                # Busca parte después de "/" que suele ser el título profesional
+                                if '/' in titulo_str:
+                                    parts = [p.strip() for p in titulo_str.split('/')]
+                                    for p in parts:
+                                        p_lower = p.lower()
+                                        if not any(w in p_lower for w in ['licenciad', 'magíster', 'magister']):
+                                            titular_extraido = p
+                                            logger.info(f"🔧 [Education Fallback] Titular desde formación (split): {titular_extraido}")
+                                            break
+                                if titular_extraido == 'No extraído':
+                                    titular_extraido = titulo_str
+                                    logger.info(f"🔧 [Education Fallback] Titular desde formación: {titular_extraido}")
+                            if titular_extraido != 'No extraído':
+                                break
 
             if 'titular_profesional' not in fixed_data or not fixed_data['titular_profesional']:
                 fixed_data['titular_profesional'] = {'titular': titular_extraido}
@@ -1191,6 +1701,16 @@ El output final debe corresponder exactamente al modelo ResumeData.
                 else:
                     sanitized_edu.append({"titulo": str(edu), "institucion": "No especificado"})
             fixed_data['formacion_academica'] = sanitized_edu
+
+            # --- HEURÍSTICA: Extracción de instituciones desde el texto del CV ---
+            if cv_text:
+                for edu in fixed_data['formacion_academica']:
+                    if isinstance(edu, dict) and edu.get('institucion') == 'No especificado':
+                        titulo = str(edu.get('titulo', ''))
+                        inst = self._heuristic_institution_extraction(cv_text, titulo)
+                        if inst:
+                            edu['institucion'] = inst
+                            logger.info(f"🔧 [HEURISTIC] Institución recuperada para '{titulo[:50]}...': {inst}")
             
         # Sanitizar experiencia_laboral
         if isinstance(fixed_data.get('experiencia_laboral'), list):
@@ -1212,8 +1732,15 @@ El output final debe corresponder exactamente al modelo ResumeData.
                     sanitized_exp.append({"cargo": str(exp), "empresa": "No especificado"})
             fixed_data['experiencia_laboral'] = sanitized_exp
 
-        # Asegurar habilidades
-        if 'habilidades' not in fixed_data or not fixed_data['habilidades']:
+        # Asegurar habilidades (solo si realmente no hay datos o es una lista plana vacía)
+        habilidades = fixed_data.get('habilidades')
+        if not isinstance(habilidades, dict) or (
+            not habilidades.get('habilidades_tecnicas') and
+            not habilidades.get('idiomas') and
+            not habilidades.get('habilidades_blandas') and
+            not any(isinstance(habilidades.get(k), list) and len(habilidades[k]) > 0
+                   for k in ['habilidades_tecnicas', 'idiomas', 'habilidades_blandas'])
+        ):
             logger.info("🔧 Agregando habilidades faltantes")
             fixed_data['habilidades'] = {
                 'habilidades_tecnicas': [],
@@ -1234,11 +1761,211 @@ El output final debe corresponder exactamente al modelo ResumeData.
         logger.info(f"🔧 Datos reparados: {list(fixed_data.keys())}")
         return fixed_data
 
+    def _heuristic_skill_extraction(self, cv_text: str) -> Tuple[List[str], Optional[str]]:
+        """
+        Extrae habilidades técnicas del texto crudo del CV mediante heurística.
+        Busca secciones de tipo 'Habilidades'/'Skills'/'Competencias' y parsea
+        bullet points, listas separadas por comas/pipes, y líneas con formato de lista.
+        """
+        import re
+
+        text = cv_text.replace('\r', '\n')
+        lines = text.split('\n')
+
+        section_keywords = [
+            r'(habilidades|competencias|skills|capacidades|conocimientos|aptitudes|destrezas|herramientas?|technologies?|tools?)',
+        ]
+
+        section_start = None
+        for i, line in enumerate(lines):
+            line_clean = line.strip().lower()
+            for pat in section_keywords:
+                if re.search(pat, line_clean):
+                    # Heurística: títulos de sección suelen ser cortos y en mayúsculas o con formato
+                    if len(line_clean) < 60 and not line_clean.startswith(('http', 'www')):
+                        section_start = i
+                        break
+            if section_start is not None:
+                break
+
+        if section_start is None:
+            return [], None
+
+        section_name = lines[section_start].strip()
+        section_lines = []
+        for i in range(section_start + 1, min(section_start + 40, len(lines))):
+            line = lines[i].strip()
+            # Detener en siguiente sección (línea corta en mayúsculas o con keyword de sección)
+            if line and len(line) < 60 and (
+                line.isupper() or
+                any(re.search(r'(?:experiencia|formaci[oó]n|educaci[oó]n|idiomas?|intereses|referencias|proyectos|certificaciones?|contacto)', line.lower()) for _ in [1])
+            ):
+                break
+            if line:
+                section_lines.append(line)
+
+        if not section_lines:
+            return [], section_name
+
+        raw_skills_text = ' '.join(section_lines)
+        logger.info(f"🔧 [HEURISTIC] Contenido sección skills: {raw_skills_text[:200]}...")
+
+        skills = []
+
+        # Estrategia 1: Bullet points como delimitadores primarios
+        bullet_split = re.split(r'\n\s*[•\-*>·○▪◆◇‣◦]\s*', '\n' + raw_skills_text)
+        for item in bullet_split:
+            item = item.strip()
+            if not item:
+                continue
+            # Remover el bullet character si quedó al inicio
+            item = re.sub(r'^[•\-*>·○▪◆◇‣◦]\s*', '', item)
+            item = item.strip()
+            if len(item) < 2 or len(item) > 250:
+                continue
+            if item.startswith(('http://', 'https://', 'www.')):
+                continue
+            cleaned = re.sub(r'\s{2,}', ' ', item).strip()
+            cleaned = cleaned.rstrip(',').rstrip(';').rstrip('.').strip()
+
+            if cleaned and len(cleaned) > 2:
+                if self._is_not_skill(cleaned):
+                    continue
+                # Saltar items que son categorías (terminan en : sin contenido después)
+                skills.append(cleaned)
+
+        # Estrategia 2: Si no hay bullets, líneas completas
+        if not skills:
+            for s in section_lines:
+                s = s.strip().lstrip('•-*>·○▪◆◇‣◦').strip()
+                s = re.sub(r'\s{2,}', ' ', s).rstrip(',').rstrip(';').rstrip('.')
+                if 2 < len(s) < 250 and not self._is_not_skill(s):
+                    skills.append(s)
+
+        # Deduplicar
+        unique = []
+        seen = set()
+        for s in skills:
+            s_clean = s.strip().lower()
+            if s_clean and s_clean not in seen:
+                seen.add(s_clean)
+                unique.append(s.strip())
+
+        # Filtrar: remover items que son encabezados de categoría (ej: "Estratégicas:")
+        filtered = []
+        for s in unique:
+            # Si es un encabezado tipo "Categoría:" sin más contenido relevante
+            if re.match(r'^[A-Za-zÁÉÍÓÚáéíóúñÑ\s]+:\s*$', s):
+                continue
+            # Si contiene "Idioma:" es un idioma, no skill técnica
+            if re.match(r'^idiomas?\s*:', s.lower()):
+                continue
+            filtered.append(s)
+
+        return filtered[:30], section_name
+
+    def _heuristic_institution_extraction(self, cv_text: str, education_title: str) -> Optional[str]:
+        """
+        Busca el nombre de la institución educativa en el texto del CV,
+        cerca de donde aparece el título educativo.
+        """
+        import re
+
+        if not education_title or len(education_title) < 5:
+            return None
+
+        text = cv_text.replace('\r', '\n')
+        lines = text.split('\n')
+
+        institution_keywords = [
+            r'universidad', r'university', r'instituto', r'institute',
+            r'pontificia', r'facultad', r'faculty', r'escuela', r'school',
+            r'colegio', r'college', r'centro', r'center',
+            r'U\.\s*[A-Z]', r'Universidad\s+[A-Z]',
+        ]
+
+        title_words = set(re.findall(r'\b\w{4,}\b', education_title.lower()))
+
+        best_match = None
+        best_score = 0
+
+        for i, line in enumerate(lines):
+            line_clean = line.strip()
+            if not line_clean or len(line_clean) < 4:
+                continue
+
+            line_lower = line_clean.lower()
+
+            # Checar si la línea contiene el título educativo o palabras clave del título
+            title_proximity_score = sum(
+                1 for w in title_words if w in line_lower.replace('\n', ' ')
+            )
+
+            # Buscar en líneas cercanas (±3 líneas) al título
+            nearby_lines = []
+            for offset in range(-3, 4):
+                idx = i + offset
+                if 0 <= idx < len(lines):
+                    nearby_lines.append(lines[idx].strip())
+
+            nearby_text = ' '.join(nearby_lines)
+
+            # Buscar keywords de institución
+            for pat in institution_keywords:
+                inst_match = re.search(pat, nearby_text, re.IGNORECASE)
+                if inst_match:
+                    # Extraer el nombre completo de la institución (desde la keyword hacia los costados)
+                    match_start = inst_match.start()
+                    context = nearby_text[max(0, match_start - 5):match_start + 80]
+                    inst_name = context.strip()
+
+                    # Limpiar: tomar hasta el primer punto, coma, o pipe
+                    inst_name = re.split(r'[,.;:|]\s*', inst_name)[0]
+                    inst_name = inst_name.strip()
+
+                    # Score basado en keyword match y proximity al título
+                    inst_words = len(re.findall(r'\b\w{3,}\b', inst_name))
+                    score = (2 if inst_match.group(0).lower() in ['universidad', 'university'] else 1)
+                    score += title_proximity_score
+                    score += min(inst_words, 5)
+
+                    if score > best_score and len(inst_name) > 4 and len(inst_name) < 120:
+                        best_match = inst_name
+                        best_score = score
+
+        # Fallback: buscar líneas que contengan keywords de institución + palabras del título
+        if not best_match:
+            for i, line in enumerate(lines):
+                line_clean = line.strip()
+                if len(line_clean) < 4 or len(line_clean) > 120:
+                    continue
+
+                has_inst_kw = any(re.search(pat, line_clean, re.IGNORECASE) for pat in institution_keywords)
+                if has_inst_kw and not any(w in line_clean.lower() for w in ['experiencia', 'habilidad', 'contacto']):
+                    best_match = line_clean.strip()
+                    break
+
+        return best_match
+
+    def _is_not_skill(self, text: str) -> bool:
+        """Filtra líneas que claramente no son habilidades"""
+        import re
+        t = text.lower()
+        no_skill_patterns = [
+            r'^\d{4}', r'^(enero|febrero|marzo|abril|mayo|junio|julio|agosto|sept|oct|nov|dic)',
+            r'^[a-z]+ \d{4}$', r'^tel[ée]fono', r'^correo', r'^email', r'^direcci[oó]n',
+            r'^linkedin', r'^github', r'^www\.', r'^http',
+        ]
+        for pat in no_skill_patterns:
+            if re.search(pat, t):
+                return True
+        return len(t) < 2
+
     def _create_minimal_valid_response(self) -> ResumeData:
         """
-        Crear respuesta mínima válida
+        Crear respuesta mínima válida sin valores None en colecciones requeridas
         """
-        from app.models.resume import ContactInfo, ProfessionalTitle, ProfessionalSummary, Skills
+        from app.models.resume import ContactInfo, ProfessionalTitle, ProfessionalSummary, Skills, AdditionalTraining, Recognition, OnlineProfiles, ExtracurricularActivities, Interests, Projects
 
         return ResumeData(
             datos_contacto=ContactInfo(
@@ -1250,7 +1977,14 @@ El output final debe corresponder exactamente al modelo ResumeData.
             resumen_profesional=ProfessionalSummary(resumen="No extraído"),
             experiencia_laboral=[],
             formacion_academica=[],
-            habilidades=Skills()
+            habilidades=Skills(),
+            perfiles_online=OnlineProfiles(linkedin=None, github=None, portfolio=None, otros=[]),
+            formacion_complementaria=AdditionalTraining(certificaciones_cursos=[]),
+            reconocimientos=Recognition(logros_premios=[]),
+            proyectos=Projects(proyectos=[]),
+            actividades_extracurriculares=ExtracurricularActivities(voluntariado=[]),
+            intereses=Interests(hobbies_intereses=[]),
+            otros_antecedentes=[]
         )
 
     def _calculate_confidence(self, data: Dict[str, Any]) -> float:
@@ -1298,12 +2032,6 @@ El output final debe corresponder exactamente al modelo ResumeData.
         logger.info(f"   🎓 Formación académica: {len(resume_data.formacion_academica)} items")
         logger.info(f"   🔧 Habilidades técnicas: {len(resume_data.habilidades.habilidades_tecnicas)} items")
 
-    def _create_empty_extraction(self) -> Dict[str, Any]:
-        """
-        Crear extracción vacía
-        """
-        return self._create_empty_structure()
-
     def _create_empty_structure(self) -> Dict[str, Any]:
         """
         Crear estructura vacía inicial
@@ -1326,7 +2054,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
             }
         }
 
-    def _create_error_response(self, error_msg: str, processing_time: float) -> ResumeExtractionResponse:
+    def _create_error_response(self, error_msg: str, processing_time: float, request_id: str = "unknown") -> ResumeExtractionResponse:
         """
         Crear respuesta de error
         """
@@ -1340,13 +2068,73 @@ El output final debe corresponder exactamente al modelo ResumeData.
         )
         
     def _extract_titular_from_text(self, text: str) -> str:
-        """Helper para extraer titular simple del texto"""
-        lines = text.split('\n')
-        for line in lines[:20]: # Buscar en las primeras líneas
+        """Helper para extraer titular profesional del texto, saltando nombres personales"""
+        import re
+
+        lines = text.strip().split('\n')
+
+        # Patrones que indican que una línea NO es un titular profesional
+        name_pattern = re.compile(
+            r'^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+'  # Nombre Apellido
+            r'(?:\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+)?$'                      # Apellido2 opcional
+        )
+        contact_patterns = [
+            r'@',                           # email
+            r'\+\d{1,3}\s',                # teléfono internacional
+            r'\b\d{7,}\b',                 # número largo
+            r'linkedin\.com', r'github\.com',  # URL perfil
+            r'^www\.', r'^https?://',
+        ]
+
+        # Keywords que sugieren un rol/titular profesional
+        role_keywords = re.compile(
+            r'\b('
+            r'ingeniero|ingeniera|engineer|developer|desarrollador|desarrolladora|'
+            r'analista|analyst|consultor|consultora|consultant|'
+            r'arquitecto|arquitecta|architect|'
+            r'especialista|specialist|técnico|técnica|technician|'
+            r'programador|programadora|programmer|'
+            r'administrador|administradora|administrator|'
+            r'coordinador|coordinadora|coordinator|'
+            r'jefe|jefa|chief|head|'
+            r'director|directora|'
+            r'gerente|manager|'
+            r'líder|lider|leader|'
+            r'diseñador|diseñadora|designer|'
+            r'científico|científica|scientist|'
+            r'profesor|profesora|professor|teacher|'
+            r'asesor|asesora|advisor|'
+            r'supervisor|supervisora|'
+            r'auditor|auditora|'
+            r'contador|contadora|accountant|'
+            r'abogado|abogada|lawyer|attorney|'
+            r'médico|médica|doctor'
+            r')\b',
+            re.IGNORECASE
+        )
+
+        for line in lines[:20]:
             line = line.strip()
-            if len(line) > 5 and len(line) < 100:
-                # Heurística simple: líneas cortas al principio suelen ser el nombre o el titular
+            if len(line) < 5 or len(line) > 100:
+                continue
+
+            # Saltar líneas que parecen ser nombre personal
+            if name_pattern.match(line):
+                continue
+
+            # Saltar líneas con info de contacto
+            if any(re.search(p, line, re.IGNORECASE) for p in contact_patterns):
+                continue
+
+            # Saltar líneas que son puramente fechas o números
+            if re.match(r'^[\d\s/\-–—.]+$', line):
+                continue
+
+            # Si la línea contiene una keyword de rol profesional → titular
+            if role_keywords.search(line):
                 return line
+
+        # Si no se encuentra nada, retornar "No extraído" para que la cascada continúe
         return "No extraído"
 
     def _create_emergency_response(self, partial_data: Dict, cv_text: str) -> Optional[ResumeData]:
@@ -1354,389 +2142,13 @@ El output final debe corresponder exactamente al modelo ResumeData.
         # Implementación simple de recuperación
         return self._create_validated_response(partial_data, cv_text)
 
-    # -------------------------------------------------------------------------
-    # ESTRATEGIA CHUNKED (Para textos largos)
-    # -------------------------------------------------------------------------
-
-    async def _execute_chunked_extraction(self, cv_text: str, profile_info: Dict, request_id: str = "unknown") -> Dict[str, Any]:
-        """
-        Estrategia para CVs muy largos que exceden el contexto
-        """
-        logger.info("🔪 Ejecutando extracción por chunks")
-        
-        chunks = self._create_intelligent_chunks(cv_text)
-        logger.info(f"🔪 Texto dividido en {len(chunks)} chunks")
-        
-        chunk_results = []
-        
-        for i, chunk in enumerate(chunks):
-            logger.info(f"🔪 Procesando chunk {i+1}/{len(chunks)}")
-            
-            prompt = f"""
-<system_role>
-Estás analizando el FRAGMENTO {i+1} de {len(chunks)} de un currículum extenso.
-</system_role>
-
-<instructions>
-1. Extrae únicamente la información presente en este fragmento.
-2. Si una sección está cortada (ej: empieza en el anterior), extrae lo que veas aquí.
-3. Mantén la estructura JSON exacta de ChunkResumeData.
-4. IMPORTANTE: Si en este fragmento logras identificar el título profesional principal del candidato, extráelo en `titular_profesional`.
-5. IMPORTANTE: Para la experiencia laboral, desglosa las descripciones de los cargos en viñetas dentro del arreglo `responsabilidades`. NO debes devolver un párrafo de texto largo en el campo `descripcion`.
-</instructions>
-
-<context_hint>
-Este fragmento tiene un solapamiento de 600 caracteres con el anterior para asegurar continuidad.
-Evita duplicar si es redundante, pero ante la duda, EXTRAE.
-</context_hint>
-
-{self._create_robust_extraction_prompt()}
-"""
-            
-            try:
-                # 1. Intentar Instructor
-                from app.models.resume import PartialResumeData
-                result = await self.llm_service.call_agent_structured(
-                    prompt=prompt,
-                    input_data=chunk,
-                    response_model=PartialResumeData,
-                    stage_name=f"chunk_{i+1}",
-                    request_id=request_id
-                )
-                if result:
-                    chunk_results.append(result.model_dump())
-                    continue
-                
-                # 2. Fallback JSON local para el chunk
-                logger.warning(f"⚠️ Chunk {i+1}: Falló estructurado, intentando fallback JSON...")
-                json_result = await self._execute_fallback_extraction(chunk, prompt)
-                if json_result:
-                    chunk_results.append(json_result)
-                    
-            except Exception as e:
-                logger.error(f"❌ Error procesando chunk {i+1}: {e}")
-                # Último intento con fallback
-                try:
-                    json_result = await self._execute_fallback_extraction(chunk, prompt)
-                    if json_result:
-                        chunk_results.append(json_result)
-                except:
-                    pass
-                
-        if not chunk_results:
-            return self._create_empty_extraction()
-            
-        # Fusionar resultados
-        merged = self._merge_chunk_results(chunk_results)
-        return await self._reduce_experiences_with_llm(merged)
-
-    async def _reduce_experiences_with_llm(self, merged_data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Usa el LLM para deduplicar inteligentemente y unificar las experiencias
-        y formaciones que pudieron quedar divididas entre chunks.
-        """
-        exps = merged_data.get("experiencia_laboral", [])
-        edus = merged_data.get("formacion_academica", [])
-        
-        if not exps and not edus:
-            return merged_data
-            
-        import json
-        data_to_reduce = {}
-        if exps: data_to_reduce["experiencia_laboral"] = exps
-        if edus: data_to_reduce["formacion_academica"] = edus
-        
-        prompt = """
-<system_role>
-Eres un experto en integración de datos (Data Reducer). Tu tarea es fusionar fragmentos redundantes.
-</system_role>
-
-<instructions>
-Se te entregarán listas de 'experiencia_laboral' y 'formacion_academica' recopiladas al fragmentar un CV largo.
-Al particionar el CV, un mismo rol o escuela pudo dividirse en dos entradas (ej: la empresa en la entidad 1, y parte de la descripción en la entidad 2; o el mismo rol aparece dos veces).
-Tu tarea es DE-DUPLICAR y FUSIONAR la información.
-1. NO inventes ni resumas datos. Combina la información (ej. fusionando bullet points de responsabilidades) si pertenecen genuinamente a la misma empresa/institución y cargo.
-2. Mantén la estructura rígida de arrays JSON que recibirás.
-3. Si algo está duplicado exactamente, elimina el duplicado.
-4. Devuelve el JSON con las mismas llaves provistas ('experiencia_laboral', 'formacion_academica'), pero unificado limpiamente.
-</instructions>
-"""
-        try:
-            logger.info("🔪 Iniciando LLM Reducer para limpiar duplicados de chunks...")
-            result = await self.llm_service.call_agent(
-                prompt=prompt,
-                input_data=json.dumps(data_to_reduce, ensure_ascii=False),
-                stage_name="chunk_reduce",
-                temperature=0.0
-            )
-            
-            if result:
-                parsed = None
-                if isinstance(result, str):
-                    parsed = self.llm_service._extract_json_from_response(result, stage="chunk_reduce")
-                elif isinstance(result, dict):
-                    parsed = result
-                    
-                if parsed and isinstance(parsed, dict):
-                    if "experiencia_laboral" in parsed and isinstance(parsed["experiencia_laboral"], list):
-                        merged_data["experiencia_laboral"] = parsed["experiencia_laboral"]
-                    if "formacion_academica" in parsed and isinstance(parsed["formacion_academica"], list):
-                        merged_data["formacion_academica"] = parsed["formacion_academica"]
-                    logger.info(f"✅ Reducción LLM exitosa: {len(parsed.get('experiencia_laboral', []))} experiencias, {len(parsed.get('formacion_academica', []))} educaciones resultantes.")
-
-        except Exception as e:
-            logger.error(f"❌ Error en Reducción LLM (fallback a heurística base): {e}")
-            
-        return merged_data
-
-    def _create_intelligent_chunks(self, text: str) -> List[str]:
-        """
-        Dividir texto en chunks respetando saltos de línea y contexto
-        """
-        chunks = []
-        lines = text.split('\n')
-        current_chunk = []
-        current_len = 0
-        
-        for line in lines:
-            line_len = len(line) + 1 # +1 por newline
-            
-            if current_len + line_len > self.max_text_length:
-                # Chunk lleno, guardar y empezar nuevo con overlap
-                chunks.append('\n'.join(current_chunk))
-                # Mantener últimas lineas para overlap context
-                overlap_size = 0
-                overlap_lines = []
-                for prev_line in reversed(current_chunk):
-                    if overlap_size + len(prev_line) < self.chunk_overlap:
-                        overlap_lines.insert(0, prev_line)
-                        overlap_size += len(prev_line)
-                    else:
-                        break
-                
-                current_chunk = overlap_lines
-                current_len = overlap_size
-            
-            current_chunk.append(line)
-            current_len += line_len
-            
-        if current_chunk:
-            chunks.append('\n'.join(current_chunk))
-            
-        return chunks
-
-    def _merge_chunk_results(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Fusionar inteligentemente los resultados de múltiples chunks
-        """
-        logger.info("🔄 Fusionando resultados de chunks...")
-        merged = results[0].copy()
-        
-        for i in range(1, len(results)):
-            current = results[i]
-            
-            # Fusionar titular_profesional si el actual está vacío
-            merged_titular_obj = merged.get("titular_profesional")
-            merged_titular = merged_titular_obj.get("titular", "") if isinstance(merged_titular_obj, dict) else str(merged_titular_obj or "")
-            if not merged_titular or merged_titular == "No extraído" or merged_titular == "None":
-                curr_titular_obj = current.get("titular_profesional")
-                curr_titular = curr_titular_obj.get("titular", "") if isinstance(curr_titular_obj, dict) else str(curr_titular_obj or "")
-                if curr_titular and curr_titular != "No extraído" and curr_titular != "None":
-                    merged["titular_profesional"] = current["titular_profesional"]
-
-            # Fusionar resumen_profesional si el actual está vacío
-            merged_resumen_obj = merged.get("resumen_profesional")
-            merged_resumen = merged_resumen_obj.get("resumen", "") if isinstance(merged_resumen_obj, dict) else str(merged_resumen_obj or "")
-            if not merged_resumen or merged_resumen == "No extraído" or merged_resumen == "None":
-                curr_resumen_obj = current.get("resumen_profesional")
-                curr_resumen = curr_resumen_obj.get("resumen", "") if isinstance(curr_resumen_obj, dict) else str(curr_resumen_obj or "")
-                if curr_resumen and curr_resumen != "No extraído" and curr_resumen != "None":
-                    merged["resumen_profesional"] = current["resumen_profesional"]
-
-            # Fusionar experiencia laboral con deduplicación/combinación al vuelo
-            if current.get("experiencia_laboral"):
-                merged_exp_list = merged.get("experiencia_laboral", [])
-                for curr_exp in current["experiencia_laboral"]:
-                    curr_empresa = (curr_exp.get("empresa") or "").strip().lower()
-                    curr_cargo = (curr_exp.get("cargo") or "").strip().lower()
-                    
-                    found_match = False
-                    # Only try to merge if we actually have fields to match on
-                    if curr_empresa and curr_cargo:
-                        for existing_exp in merged_exp_list:
-                            existing_empresa = (existing_exp.get("empresa") or "").strip().lower()
-                            existing_cargo = (existing_exp.get("cargo") or "").strip().lower()
-                            
-                            # Si empresa y cargo coinciden (ignorando mayúsculas/espacios), combinamos
-                            if curr_empresa == existing_empresa and curr_cargo == existing_cargo:
-                                found_match = True
-                                
-                                # Combine responsabilidades
-                                existing_resp = existing_exp.get("responsabilidades", [])
-                                if not isinstance(existing_resp, list):
-                                    existing_resp = [existing_resp] if existing_resp else []
-                                    
-                                curr_resp = curr_exp.get("responsabilidades", [])
-                                if not isinstance(curr_resp, list):
-                                    # Might be a description string, just append it
-                                    curr_resp = [curr_resp] if curr_resp else []
-
-                                for r in curr_resp:
-                                    if r not in existing_resp:
-                                        existing_resp.append(r)
-                                existing_exp["responsabilidades"] = existing_resp
-
-                                # Fallback: Combine descriptions if present and responsibilities are missing
-                                existing_desc = existing_exp.get("descripcion")
-                                curr_desc = curr_exp.get("descripcion")
-                                if curr_desc and not existing_desc:
-                                    existing_exp["descripcion"] = curr_desc
-
-                                # Merge Period if one is missing data
-                                existing_period = existing_exp.get("periodo", {})
-                                curr_period = curr_exp.get("periodo", {})
-                                if isinstance(existing_period, dict) and isinstance(curr_period, dict):
-                                    if not existing_period.get("fecha_inicio") and curr_period.get("fecha_inicio"):
-                                        existing_period["fecha_inicio"] = curr_period["fecha_inicio"]
-                                    if not existing_period.get("fecha_fin") and curr_period.get("fecha_fin"):
-                                        existing_period["fecha_fin"] = curr_period["fecha_fin"]
-                                    if not existing_period.get("texto_original") and curr_period.get("texto_original"):
-                                        existing_period["texto_original"] = curr_period["texto_original"]
-                                    
-                                break
-
-                    if not found_match:
-                        merged_exp_list.append(curr_exp)
-                
-                merged["experiencia_laboral"] = merged_exp_list
-                
-            # Fusionar formación (concatenar, ya existe un paso de deduplicación después)
-            if current.get("formacion_academica"):
-                merged.setdefault("formacion_academica", []).extend(current["formacion_academica"])
-                
-            # Fusionar habilidades (unir sets)
-            if current.get("habilidades"):
-                # Técnicas - Deduplicación manual por nombre
-                curr_tech = current["habilidades"].get("habilidades_tecnicas", [])
-                merged_tech = merged["habilidades"].get("habilidades_tecnicas", [])
-                
-                # Crear set de nombres existentes para búsqueda rápida
-                existing_names = set()
-                for skill in merged_tech:
-                    if isinstance(skill, dict):
-                        existing_names.add(str(skill.get("skill", "")).lower())
-                    elif isinstance(skill, str):
-                        existing_names.add(skill.lower())
-                
-                # Agregar skills nuevas si no existen
-                for skill in curr_tech:
-                    skill_name = ""
-                    if isinstance(skill, dict):
-                        skill_name = str(skill.get("skill", "")).lower()
-                    elif isinstance(skill, str):
-                        skill_name = skill.lower()
-                        
-                    if skill_name and skill_name not in existing_names:
-                        merged_tech.append(skill)
-                        existing_names.add(skill_name)
-                        
-                merged["habilidades"]["habilidades_tecnicas"] = merged_tech
-                
-                # Idiomas - Deduplicación manual por nombre
-                curr_lang = current["habilidades"].get("idiomas", [])
-                merged_lang = merged["habilidades"].get("idiomas", [])
-                
-                existing_langs = set()
-                for lang in merged_lang:
-                    if isinstance(lang, dict):
-                        existing_langs.add(str(lang.get("idioma", "")).lower())
-                    elif isinstance(lang, str):
-                        existing_langs.add(lang.lower())
-                        
-                for lang in curr_lang:
-                    lang_name = ""
-                    if isinstance(lang, dict):
-                        lang_name = str(lang.get("idioma", "")).lower()
-                    elif isinstance(lang, str):
-                        lang_name = lang.lower()
-                        
-                    if lang_name and lang_name not in existing_langs:
-                        merged_lang.append(lang)
-                        existing_langs.add(lang_name)
-                        
-                merged["habilidades"]["idiomas"] = merged_lang
-            
-            # Actualizar contacto si el chunk actual tiene más info
-            curr_contact = current.get("datos_contacto", {})
-            if curr_contact:
-                merged_contact = merged.setdefault("datos_contacto", {})
-                for field in ["nombre_completo", "email", "telefono", "ubicacion", "linkedin"]:
-                    curr_val = curr_contact.get(field)
-                    if curr_val and "no-extraido" not in str(curr_val).lower() and "no extraído" not in str(curr_val).lower():
-                        if not merged_contact.get(field) or "no-extraido" in str(merged_contact.get(field)).lower() or "no extraído" in str(merged_contact.get(field)).lower():
-                            merged_contact[field] = curr_val
-                    
-        return merged
-
-    def _create_minimal_valid_response(self) -> Dict[str, Any]:
-        """
-        Crear estructura vacía válida
-        """
-        return {
-            "datos_contacto": {
-                "nombre_completo": "No extraído",
-                "telefono": None,
-                "email": "no-extraido@example.com",
-                "ubicacion": None
-            },
-            "titular_profesional": {"titular": "No extraído"},
-            "resumen_profesional": {"resumen": "No extraído"},
-            "experiencia_laboral": [],
-            "formacion_academica": [],
-            "habilidades": {
-                "habilidades_tecnicas": [],
-                "idiomas": [],
-                "habilidades_blandas": []
-            },
-            "formacion_complementaria": {"certificaciones_cursos": []},
-            "reconocimientos": {"logros_premios": []}
-        }
-
-    def _create_error_response(self, error_msg: str, processing_time: float, request_id: str = "unknown") -> ResumeExtractionResponse:
-        """
-        Crear respuesta de error
-        """
-        return ResumeExtractionResponse(
-            datos_cv=self._create_minimal_valid_response(),
-            confianza_general=0.0,
-            advertencias=[f"Error en procesamiento: {error_msg}"],
-            campos_faltantes=["todos"],
-            request_id=request_id,
-            tiempo_procesamiento=processing_time,
-            timestamp=datetime.now().isoformat()
-        )
-
     async def extract_from_file(self, file_content: bytes, filename: str,
                                config: Optional[Dict[str, Any]] = None, request_id: str = "unknown") -> ResumeExtractionResponse:
-        """
-        Extrae datos estructurados de un archivo de CV usando el servicio robusto
-
-        Args:
-            file_content: Contenido del archivo en bytes
-            filename: Nombre del archivo
-            config: Configuraciones opcionales de extracción
-
-        Returns:
-            ResumeExtractionResponse con datos estructurados
-        """
         try:
-            # Importar parser de archivos
             from app.services.file_parser_service import FileParserService
 
-            # Crear parser
             file_parser = FileParserService()
 
-            # Validar archivo (puede ser síncrono o asíncrono dependiendo de la implementación)
             validation_result = file_parser.validate_file(file_content, filename)
             if asyncio.iscoroutine(validation_result):
                  validation_result = await validation_result
@@ -1744,12 +2156,9 @@ Tu tarea es DE-DUPLICAR y FUSIONAR la información.
             if not validation_result["is_valid"]:
                 raise ValueError(f"Archivo inválido: {', '.join(validation_result['issues'])}")
 
-            # Extraer texto del archivo (ES ASÍNCRONO)
             parse_result = await file_parser.parse_file(file_content, filename)
-            
-            # Defensa contra retorno de corutina inesperada
+
             if asyncio.iscoroutine(parse_result):
-                logger.warning("⚠️ parse_result returned a coroutine despite await. Double awaiting...")
                 parse_result = await parse_result
 
             if not parse_result["success"]:
@@ -1759,76 +2168,17 @@ Tu tarea es DE-DUPLICAR y FUSIONAR la información.
             if not extracted_text.strip():
                 raise ValueError("No se pudo extraer texto del archivo")
 
-            # Obtener tipo de archivo
             file_extension = filename.split('.')[-1].lower() if '.' in filename else 'txt'
 
-            # Crear request para extracción robusta
             request = ResumeExtractionRequest(
                 nombre_archivo=filename,
                 tipo_archivo=file_extension,
                 archivo_contenido=extracted_text,
-                config=config or {}
+                configuracion=config or {}
             )
 
-            # Usar extracción robusta
             return await self.extract_from_text(request, request_id=request_id)
 
         except Exception as e:
             logger.error(f"Error en extract_from_file: {e}")
-            return self._create_error_response(str(e), 0.0, request_id=request_id)
-
-    def _extract_titular_from_text(self, cv_text: str) -> str:
-        """
-        Extraer titular profesional del texto usando patrones específicos
-        """
-        import re
-
-        lines = cv_text.strip().split('\n')
-
-        # Buscar titular después del nombre (estructura típica de CV)
-        # Nombre completo generalmente está en la primera línea
-        # Titular en la segunda línea o cerca del inicio
-
-        for i, line in enumerate(lines[:10]):  # Solo revisar primeras 10 líneas
-            line = line.strip()
-
-            # Patrones para identificar titular profesional
-            titular_patterns = [
-                r'^([A-Za-zÁÉÍÓÚáéíóúñÑ\s]+(?:Ingenier[oa]|Developer|Analista|Consultor|Arquitecto|Especialista|Técnico|Programador|Administrador|Coordinador|Jefe|Director|Gerente|Líder)[A-Za-zÁÉÍÓÚáéíóúñÑ\s]*)$',
-                r'^(Ingenier[oa].*?)$',
-                r'^(Developer.*?)$',
-                r'^(Analista.*?)$',
-                r'^(Consultor.*?)$',
-                r'^(Arquitecto.*?)$',
-                r'^(Especialista.*?)$',
-                r'^(Técnico.*?)$',
-                r'^(Programador.*?)$',
-                r'^(Administrador.*?)$'
-            ]
-
-            # Si la línea parece ser un nombre (tiene mayúsculas y espacios), saltar
-            if i == 0 and re.match(r'^[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\s+[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+', line):
-                continue
-
-            # Verificar si la línea actual coincide con algún patrón de titular
-            for pattern in titular_patterns:
-                match = re.match(pattern, line, re.IGNORECASE)
-                if match:
-                    titular = match.group(1).strip()
-                    # Verificar que no sea demasiado largo (probablemente no es un titular)
-                    if len(titular) < 100 and titular:
-                        return titular
-
-        # Si no encuentra nada específico, intentar buscar palabras clave comunes
-        text_lower = cv_text.lower()
-        keywords = ['ingeniero', 'developer', 'analista', 'consultor', 'arquitecto']
-
-        for keyword in keywords:
-            if keyword in text_lower:
-                # Buscar el contexto alrededor de la palabra clave
-                sentences = cv_text.split('\n')[:15]  # Primeras 15 líneas
-                for sentence in sentences:
-                    if keyword in sentence.lower() and len(sentence.strip()) < 50:
-                        return sentence.strip()
-
-        return 'No extraído'
+            return self._create_error_response(str(e), 0.0)

@@ -3,9 +3,10 @@ import { CampaignsService } from './campaigns.service';
 import { CampaignsController } from './campaigns.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { EmailModule } from '../email/email.module';
+import { ScoringModule } from '../scoring/scoring.module';
 
 @Module({
-  imports: [PrismaModule, EmailModule],
+  imports: [PrismaModule, EmailModule, ScoringModule],
   controllers: [CampaignsController],
   providers: [CampaignsService],
   exports: [CampaignsService],

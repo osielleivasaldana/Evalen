@@ -238,6 +238,17 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
     setCurrentStep((prev) => Math.max(prev - 1, 1) as Step);
   };
 
+  const handleStepClick = (stepNumber: Step) => {
+    if (stepNumber === currentStep) return;
+
+    if (stepNumber > currentStep) {
+      if (!validateStep(currentStep)) return;
+    }
+
+    setCurrentStep(stepNumber);
+    window.scrollTo(0, 0);
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -479,9 +490,11 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                 const isAiHydrated = aiHydratedSteps.includes(step.number);
 
                 return (
-                  <React.Fragment key={step.number}>
+                    <React.Fragment key={step.number}>
                     <div className="flex flex-col items-center flex-1">
                       <div
+                        onClick={() => handleStepClick(step.number as Step)}
+                        title={step.title}
                         className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
                           isAiHydrated
                             ? 'bg-purple-100 border border-purple-400 text-purple-600 animate-pulse'
@@ -490,7 +503,7 @@ const CreateCampaign: React.FC<CreateCampaignProps> = ({
                               : isActive
                                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg scale-110'
                                 : 'bg-gray-200 text-gray-400'
-                        }`}
+                        } ${!isActive ? 'cursor-pointer hover:scale-110' : ''}`}
                       >
                         {isAiHydrated ? (
                           <SparklesIcon className="w-6 h-6 text-purple-600" />
