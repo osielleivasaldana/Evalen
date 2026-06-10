@@ -17,6 +17,8 @@ class RubricEducation(BaseModel):
     required_degrees: List[str] = Field(default_factory=list, description="Lista de títulos requeridos para el puesto. SI NO ESTÁ EXPLÍCITO, INFERIR DEL TÍTULO DEL CARGO (ej: 'Enfermero' -> ['Enfermería']).")
     academic_level: str = Field(default="Técnico", description="Nivel académico mínimo (Universitario, Técnico, Postgrado)")
     kill_clause: bool = Field(default=True, description="Si es True, la falta de título anula el puntaje de Educación (0 pts)")
+    inferred_field: Optional[str] = Field(None, description="Campo profesional inferido del título del puesto (ej: SALUD, INGENIERIA)")
+    is_inferred_degree: bool = Field(default=False, description="Si el grado fue inferido (no explícito en la descripción del puesto)")
 
 class RubricExperience(BaseModel):
     min_years: int = Field(default=0, description="Años mínimos de experiencia requerida")
