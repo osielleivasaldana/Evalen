@@ -103,3 +103,8 @@ Thumbs.db
 .terraform/
 *.tfvars
 nul
+cookies.txt
+.continue/
+opencode.json
+
+

@@ -81,23 +81,31 @@ class DynamicRubricService:
                         if skill.lower() not in current_mandatory:
                             rubric.skills.mandatory_skills.append(skill)
             
-            # If Job Description was too vague and LLM didn't extract degrees,
-            # we MUST inject the Job Title itself as a required degree logic.
-            # e.g. Job: "Medical Technologist" -> Req: ["Medical Technologist"]
-            
             # CRITICAL: Do NOT inject the generic fallback title, as it will cause FALSE NEGATIVES (0 Score)
             GENERIC_FALLBACK = "Requerimientos Técnicos Generales"
-            
+
             if not rubric.education.required_degrees and job_title != GENERIC_FALLBACK:
-                logger.info(f"🧩 Empty Required Degrees. Injecting Job Title '{job_title}' as mandatory requirement.")
-                rubric.education.required_degrees = [job_title]
-                rubric.education.kill_clause = True # Enforce strictness
+                # En lugar de inyectar job_title como grado requerido (autocirculación),
+                # inferir el campo de estudio real desde el título del cargo usando LLM.
+                inferred_degree = await self._infer_degree_from_title(job_title)
+                if inferred_degree:
+                    logger.info(f"🧩 Inferred degree '{inferred_degree}' from job title '{job_title}'.")
+                    rubric.education.required_degrees = [inferred_degree]
+                    rubric.education.kill_clause = False  # No kill clause porque es inferido
+                    rubric.education.is_inferred_degree = True
+                else:
+                    logger.info(f"🧩 No degree inferred from '{job_title}'. Leaving empty (scoring will infer from level).")
+                    # scoring_service se encargará de inferir desde job_title usando nivel académico + campo
 
             # Likewise for Experience Roles
             if not rubric.experience.key_roles and job_title != GENERIC_FALLBACK:
                 logger.info(f"🧩 Empty Key Roles. Injecting Job Title '{job_title}' as mandatory role for experience.")
                 rubric.experience.key_roles = [job_title]
-                rubric.experience.industry_mandatory = True # Assume strict industry match needed if we had to force it
+                rubric.experience.industry_mandatory = False  # No forzar industria si es inferido
+
+            # Ensure the is_inferred_degree field exists (backward compat)
+            if not hasattr(rubric.education, 'is_inferred_degree'):
+                rubric.education.is_inferred_degree = False
 
             logger.info(f"🧩 Rubric Generated Successfully. Mandatory Skills: {len(rubric.skills.mandatory_skills)}")
             return rubric
@@ -105,3 +113,49 @@ class DynamicRubricService:
         except Exception as e:
             logger.error(f"Error generating dynamic rubric: {e}")
             return StructuredRubric()
+
+    async def _infer_degree_from_title(self, job_title: str) -> Optional[str]:
+        """
+        Usa el LLM para inferir qué título académico estándar requiere un puesto.
+        Ej: 'Médico Veterinario' → 'Medicina Veterinaria'
+            'Desarrollador Full Stack' → 'Ingeniería Informática o afín'
+            'Recepcionista' → None (no requiere título específico)
+        """
+        try:
+            prompt = f"""
+            Eres un orientador vocacional y experto en RRHH.
+
+            Dado el siguiente título de puesto de trabajo, infiere cuál es el TÍTULO
+            ACADÉMICO estándar que normalmente se requiere para ejercerlo.
+
+            Reglas:
+            - Sé preciso. No generalices a 'cualquier título universitario'.
+            - Si el puesto no requiere un título específico
+              (ej. 'Recepcionista', 'Vendedor'), responde 'NONE'.
+            - Si el puesto típicamente requiere una carrera
+              (ej. 'Médico Veterinario' requiere 'Medicina Veterinaria'),
+              responde SOLO el nombre del título en español.
+            - No incluyas niveles (técnico/universitario), solo el nombre del título.
+
+            Título del puesto: {job_title}
+
+            Respuesta (nombre del título o 'NONE'):
+            """
+
+            result = await self.llm_service.call_agent(
+                prompt=prompt,
+                input_data="",
+                stage_name="INFER_DEGREE_FROM_TITLE",
+                temperature=0.0
+            )
+
+            if isinstance(result, str):
+                cleaned = result.strip().strip('"').strip("'").strip()
+                if cleaned.upper() == "NONE" or not cleaned:
+                    return None
+                return cleaned
+            return None
+
+        except Exception as e:
+            logger.error(f"Error inferring degree from title '{job_title}': {e}")
+            return None

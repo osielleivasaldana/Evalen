@@ -71,24 +71,43 @@ class SemanticService:
             logger.info(f"🧠 Expanding {len(unique_skills)} skills: {unique_skills[:5]}...")
 
             prompt = f"""
-            You are a Technical Dependency Analyzer.
-            
-            INPUT: A list of professional skills/technologies.
-            OUTPUT: A JSON list containing the original skills PLUS strictly implied technical prerequisites.
+            You are a Technical Dependency Analyzer operating in STRICT MODE.
 
-            RULES (STRICT MODE):
-            1. INCLUDE only HARD DEPENDENCIES. A "Hard Dependency" is a technology that underlies the skill (e.g., Python underlies Django).
-            2. INCLUDE supersets/categories if they are technically accurate (e.g., React -> Frontend).
-            3. REJECT probabilistic associations. (e.g., Accounting -> Excel is REJECTED because you can do accounting without Excel).
-            4. REJECT soft skills or vague concepts.
-            5. Output must be a flat list of strings in lowercase.
+            TASK: Expand each skill to include ONLY its hard technical prerequisites.
+
+            HARD DEPENDENCY RULES (ABSOLUTE):
+            1. A "Hard Dependency" means the skill CANNOT EXIST without the prerequisite.
+               Example: Django cannot exist without Python. Therefore Python IS included.
+            2. INCLUDE the SKILL ITSELF in the output list.
+            3. REJECT categories, domains, or fields of application.
+               Example: "React" → "frontend" is REJECTED (frontend is a category).
+               Example: "Python" → "data science" is REJECTED (data science is a field).
+               Example: "Excel" → "spreadsheets" is REJECTED (Excel IS the tool itself).
+            4. REJECT probabilistic associations.
+               Example: "Accounting" → "Excel" is REJECTED (accounting can be done without Excel).
+               Example: "Management" → "leadership" is REJECTED (not a technical dependency).
+            5. REJECT soft skills, vague concepts, or industries.
+            6. Output must be a flat JSON list of strings in lowercase.
+            7. When in doubt, DO NOT include it.
 
             EXAMPLES:
             Input: ["Django", "React"]
-            Output: ["django", "python", "backend", "react", "javascript", "frontend"]
+            Output: ["django", "python", "react", "javascript"]
+            (Explanation: Python is hard dependency of Django. JavaScript is hard dependency of React.
+             "frontend" and "backend" are REJECTED because they are CATEGORIES, not dependencies.)
 
             Input: ["Chofer", "Contabilidad"]
-            Output: ["chofer", "contabilidad"] (No hard dependencies added)
+            Output: ["chofer", "contabilidad"]
+            (No hard dependencies added. "Conducir" is already the skill itself.
+             "Excel" is REJECTED because you can do accounting without Excel.)
+
+            Input: ["Docker"]
+            Output: ["docker", "containerization", "linux"]
+            (Linux is hard dependency of Docker. Containerization IS the technology.)
+
+            Input: ["TensorFlow"]
+            Output: ["tensorflow", "python"]
+            (Python is hard dependency. "machine learning" is REJECTED because it's a field, not dependency.)
 
             TARGET SKILLS:
             {unique_skills}

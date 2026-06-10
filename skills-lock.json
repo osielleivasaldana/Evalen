@@ -31,6 +31,12 @@
       "sourceType": "github",
       "computedHash": "a982b2a15dc9d4223be7844f082e6481e1e24df1f379fbcf66b82d5b58e80bec"
     },
+    "prompt-engineering-patterns": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/llm-application-dev/skills/prompt-engineering-patterns/SKILL.md",
+      "computedHash": "02098f8a63f10c8700df6c042346c170a121cd54905d8009f13528bad8eb8e53"
+    },
     "pydantic": {
       "source": "bobmatnyc/claude-mpm-skills",
       "sourceType": "github",
