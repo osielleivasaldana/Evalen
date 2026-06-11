@@ -18,7 +18,7 @@ const DemoSection: React.FC = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[150px] animate-blob transition-colors duration-1000 ${
-            isDark ? 'bg-cyan-500/15' : 'bg-blue-400/15'
+            isDark ? 'bg-teal-500/15' : 'bg-teal-400/15'
           }`}
         ></div>
       </div>
@@ -36,9 +36,9 @@ const DemoSection: React.FC = () => {
               isDark ? 'text-slate-50' : 'text-slate-900'
             }`}
           >
-            Mira cómo <span className="text-gradient-vibrant">funciona</span>
+            Mira cómo <span className="text-brand-emphasis">funciona</span>
           </h2>
-          <p className={`text-lg max-w-2xl mx-auto ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <p className={`text-lg max-w-2xl mx-auto ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Arrastra un CV y deja que la IA haga el trabajo pesado por ti
           </p>
         </div>
@@ -46,7 +46,7 @@ const DemoSection: React.FC = () => {
         {/* Dashboard Mockup */}
         <div className="relative group cursor-pointer max-w-5xl mx-auto">
           {/* Aurora Glow Exterior */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-600 rounded-3xl opacity-0 group-hover:opacity-20 blur-lg transition-all duration-500"></div>
+          <div className="absolute -inset-1 bg-gradient-to-r from-teal-500 via-teal-400 to-amber-500 rounded-3xl opacity-0 group-hover:opacity-20 blur-lg transition-all duration-500"></div>
 
           {/* Main Glass Card */}
           <div
@@ -149,27 +149,27 @@ const DemoSection: React.FC = () => {
                         isDark ? 'bg-slate-600/40' : 'bg-slate-200/60'
                       }`}
                     ></div>
-                    <div className="h-8 bg-gradient-to-r from-rose-500 to-violet-600 rounded-lg w-24 flex items-center justify-center">
+                    <div className="h-8 bg-[#0d9488] rounded-lg w-24 flex items-center justify-center">
                       <div className="h-2 w-12 bg-white/40 rounded"></div>
                     </div>
                   </div>
 
                   {/* Drop Zone */}
                   <div
-                    className={`border-2 border-dashed rounded-2xl p-10 text-center transition-colors group-hover:border-rose-500/50 ${
+                    className={`border-2 border-dashed rounded-2xl p-10 text-center transition-colors group-hover:border-teal-500/50 ${
                       isDark
-                        ? 'border-slate-600/40 hover:bg-rose-500/5'
-                        : 'border-slate-300/60 hover:bg-rose-50/50'
+                        ? 'border-slate-600/40 hover:bg-teal-500/5'
+                        : 'border-slate-300/60 hover:bg-teal-50/50'
                     }`}
                   >
                     <div
                       className={`font-medium mb-2 text-lg ${
-                        isDark ? 'text-rose-400' : 'text-rose-500'
+                        isDark ? 'text-teal-400' : 'text-teal-600'
                       }`}
                     >
                       📄 Arrastra un CV aquí
                     </div>
-                    <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                       o haz clic para seleccionar archivo
                     </div>
                   </div>
@@ -232,7 +232,7 @@ const DemoSection: React.FC = () => {
           <a
             href="/login?plan=free"
             className={`inline-flex items-center gap-2 font-medium transition-colors ${
-              isDark ? 'text-rose-400 hover:text-rose-300' : 'text-rose-500 hover:text-rose-600'
+              isDark ? 'text-teal-400 hover:text-teal-300' : 'text-teal-600 hover:text-teal-700'
             }`}
           >
             Prueba Evalen gratis

@@ -10,7 +10,7 @@ const testimonials = [
     name: 'Ana Martínez',
     role: 'Head of Talent, TechCorp',
     initials: 'AM',
-    gradient: 'from-rose-500 to-fuchsia-500',
+    gradient: 'from-teal-500 to-teal-600',
   },
   {
     quote:
@@ -18,7 +18,7 @@ const testimonials = [
     name: 'Carlos Ruiz',
     role: 'CTO, Innovatech',
     initials: 'CR',
-    gradient: 'from-violet-500 to-purple-500',
+    gradient: 'from-teal-600 to-teal-500',
   },
   {
     quote:
@@ -26,7 +26,7 @@ const testimonials = [
     name: 'Laura Gómez',
     role: 'RRHH Director, FutureLabs',
     initials: 'LG',
-    gradient: 'from-cyan-500 to-blue-500',
+    gradient: 'from-amber-500 to-orange-500',
   },
 ];
 
@@ -45,8 +45,8 @@ const TestimonialCard: React.FC<{
         isVisible ? 'animate-fade-in-up' : 'opacity-0'
       } ${
         isDark
-          ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-fuchsia-500/50'
-          : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-rose-400/50'
+          ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-teal-500/50'
+          : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-teal-400/50'
       }`}
       style={{ animationDelay: `${index * 150}ms` }}
     >
@@ -80,7 +80,7 @@ const TestimonialCard: React.FC<{
           <div className={`font-bold ${isDark ? 'text-slate-50' : 'text-slate-900'}`}>
             {testimonial.name}
           </div>
-          <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <div className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             {testimonial.role}
           </div>
         </div>
@@ -104,7 +104,7 @@ const Testimonials: React.FC = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className={`absolute top-0 right-1/4 w-96 h-96 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] animate-blob animation-delay-2000 transition-colors duration-1000 ${
-            isDark ? 'bg-rose-500/15' : 'bg-rose-400/15'
+            isDark ? 'bg-teal-500/15' : 'bg-teal-400/15'
           }`}
         ></div>
       </div>
@@ -123,9 +123,9 @@ const Testimonials: React.FC = () => {
             }`}
           >
             Lo que dicen nuestros{' '}
-            <span className="text-gradient-vibrant">clientes</span>
+            <span className="text-brand-emphasis">clientes</span>
           </h2>
-          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Historias reales de equipos que transformaron su reclutamiento
           </p>
         </div>

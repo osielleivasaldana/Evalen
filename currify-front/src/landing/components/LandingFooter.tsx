@@ -40,9 +40,9 @@ const LandingFooter: React.FC = React.memo(() => {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="text-2xl font-black tracking-tighter mb-4">
-              <span className="text-gradient-vibrant">Evalen</span>
+              <span className="text-brand-emphasis">Evalen</span>
             </div>
-            <p className={`mb-6 max-w-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            <p className={`mb-6 max-w-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               Automatiza tu reclutamiento con inteligencia artificial. Encuentra al candidato ideal
               en segundos.
             </p>
@@ -172,7 +172,7 @@ const LandingFooter: React.FC = React.memo(() => {
             {/* CTA in Footer */}
             <a
               href="/login?plan=free"
-              className="group inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-600 text-white text-sm font-bold rounded-full transition-transform hover:scale-105"
+              className="group inline-flex items-center gap-2 px-5 py-2.5 bg-[#0d9488] text-white text-sm font-bold rounded-full transition-all hover:bg-[#0f766e] hover:shadow-[0_0_20px_rgba(13,148,136,0.3)] hover:scale-105"
             >
               Comenzar Gratis
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

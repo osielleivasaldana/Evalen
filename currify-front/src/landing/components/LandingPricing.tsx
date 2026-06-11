@@ -72,11 +72,11 @@ const PricingCard: React.FC<{
         isVisible ? 'animate-fade-in-up' : 'opacity-0'
       } ${
         plan.featured
-          ? 'bg-gradient-to-br from-rose-500 via-fuchsia-500 to-violet-600 text-white shadow-2xl shadow-rose-500/20 scale-[1.02] z-10'
+          ? 'bg-[#0d9488] text-white shadow-2xl shadow-teal-500/20 scale-[1.02] z-10'
           : `glass-effect ${
               isDark
-                ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-fuchsia-500/50'
-                : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-rose-400/50'
+                ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-teal-500/50'
+                : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-teal-400/50'
             }`
       }`}
       style={{ animationDelay: `${index * 150}ms` }}
@@ -84,7 +84,7 @@ const PricingCard: React.FC<{
       {/* Badge */}
       {plan.badge && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full border text-xs font-bold uppercase tracking-widest backdrop-blur-md border-rose-500/30 bg-rose-500/10 text-rose-300">
+          <span className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full border text-xs font-bold uppercase tracking-widest backdrop-blur-md border-amber-500/30 bg-amber-500/10 text-amber-400">
             {plan.badge}
           </span>
         </div>
@@ -111,7 +111,7 @@ const PricingCard: React.FC<{
         <span
           className={`ml-1 ${
             plan.featured
-              ? 'text-rose-200'
+              ? 'text-amber-200'
               : isDark
               ? 'text-slate-400'
               : 'text-slate-500'
@@ -125,8 +125,8 @@ const PricingCard: React.FC<{
       <p
         className={`mb-6 ${
           plan.featured
-            ? 'text-rose-100'
-            : isDark
+          ? 'text-teal-100'
+          : isDark
             ? 'text-slate-400'
             : 'text-slate-500'
         }`}
@@ -141,10 +141,10 @@ const PricingCard: React.FC<{
             <Check
               className={`w-5 h-5 mr-2 flex-shrink-0 ${
                 plan.featured
-                  ? 'text-rose-200'
+                  ? 'text-amber-200'
                   : isDark
-                  ? 'text-fuchsia-400'
-                  : 'text-rose-500'
+                  ? 'text-teal-400'
+                  : 'text-teal-600'
               }`}
             />
             <span
@@ -167,7 +167,7 @@ const PricingCard: React.FC<{
         href={plan.ctaLink}
         className={`block w-full py-3 px-6 text-center font-bold rounded-full transition-all ${
           plan.featured
-            ? 'bg-white text-rose-600 hover:bg-rose-50 shadow-lg hover:shadow-xl'
+            ? 'bg-white text-[#0d9488] hover:bg-teal-50 shadow-lg hover:shadow-xl'
             : `glass-effect ${
                 isDark
                   ? 'bg-slate-900/40 border border-white/10 text-slate-50 hover:scale-105'
@@ -220,7 +220,7 @@ const LandingPricing: React.FC = () => {
           setPlans(formatted);
         }
       } catch (error) {
-        console.error('Error fetching plans in landing:', error);
+        // Silently handle fetch error; fall back to default plans
       }
     };
     fetchPlans();
@@ -237,7 +237,7 @@ const LandingPricing: React.FC = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className={`absolute top-1/3 left-0 w-96 h-96 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] animate-blob animation-delay-4000 transition-colors duration-1000 ${
-            isDark ? 'bg-fuchsia-600/15' : 'bg-rose-400/15'
+            isDark ? 'bg-teal-600/15' : 'bg-teal-400/15'
           }`}
         ></div>
       </div>
@@ -256,9 +256,9 @@ const LandingPricing: React.FC = () => {
             }`}
           >
             Planes para cada{' '}
-            <span className="text-gradient-vibrant">etapa</span>
+            <span className="text-brand-emphasis">etapa</span>
           </h2>
-          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Elige el plan que mejor se adapte a tus necesidades de reclutamiento
           </p>
         </div>

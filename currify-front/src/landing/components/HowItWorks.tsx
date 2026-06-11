@@ -43,7 +43,7 @@ const HowItWorks: React.FC = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className={`absolute bottom-0 right-0 w-96 h-96 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] animate-blob animation-delay-2000 transition-colors duration-1000 ${
-            isDark ? 'bg-cyan-500/15' : 'bg-blue-400/15'
+            isDark ? 'bg-teal-500/15' : 'bg-teal-400/15'
           }`}
         ></div>
       </div>
@@ -62,9 +62,9 @@ const HowItWorks: React.FC = () => {
             }`}
           >
             Tan simple como{' '}
-            <span className="text-gradient-vibrant">1, 2, 3</span>
+            <span className="text-brand-emphasis">1, 2, 3</span>
           </h2>
-          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Empieza a reclutar de manera inteligente en minutos
           </p>
         </div>
@@ -72,7 +72,7 @@ const HowItWorks: React.FC = () => {
         {/* Steps */}
         <div className="relative">
           {/* Connection Line */}
-          <div className="hidden lg:block absolute top-16 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-rose-500 via-violet-500 to-cyan-500 opacity-30"></div>
+          <div className="hidden lg:block absolute top-16 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-teal-500 via-teal-400 to-amber-500 opacity-30"></div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
             {steps.map((step, index) => (
@@ -85,7 +85,7 @@ const HowItWorks: React.FC = () => {
         <div className="mt-16 text-center">
           <a
             href="/login?plan=free"
-            className="group inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-600 text-white font-bold rounded-full transition-transform hover:scale-105 hover:shadow-[0_0_40px_rgba(244,63,94,0.4)]"
+            className="group inline-flex items-center gap-2 px-8 py-4 bg-[#0d9488] text-white font-bold rounded-full transition-all hover:bg-[#0f766e] hover:shadow-[0_0_40px_rgba(13,148,136,0.4)] hover:scale-105"
           >
             Empieza ahora gratis
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -115,13 +115,13 @@ const StepCard: React.FC<{
       <div
         className={`glass-effect p-8 rounded-3xl transition-all duration-500 group relative overflow-hidden ${
           isDark
-            ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-fuchsia-500/50'
-            : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-rose-400/50'
+            ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-teal-500/50'
+            : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-teal-400/50'
         }`}
       >
         {/* Step Number */}
         <div className="absolute -top-3 left-8">
-          <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-rose-500 to-violet-600 text-white font-black text-sm rounded-xl shadow-lg">
+          <div className="flex items-center justify-center w-10 h-10 bg-[#0d9488] text-white font-black text-sm rounded-xl shadow-lg">
             {step.number}
           </div>
         </div>
@@ -133,7 +133,7 @@ const StepCard: React.FC<{
               isDark ? 'bg-slate-800/60' : 'bg-slate-100/80'
             }`}
           >
-            <Icon className={`w-8 h-8 ${isDark ? 'text-fuchsia-400' : 'text-rose-500'}`} />
+            <Icon className={`w-8 h-8 ${isDark ? 'text-teal-400' : 'text-teal-600'}`} />
           </div>
         </div>
 
@@ -143,7 +143,7 @@ const StepCard: React.FC<{
         >
           {step.title}
         </h3>
-        <p className={isDark ? 'text-slate-400' : 'text-slate-500'}>{step.description}</p>
+        <p className={isDark ? 'text-slate-400' : 'text-slate-600'}>{step.description}</p>
       </div>
     </div>
   );

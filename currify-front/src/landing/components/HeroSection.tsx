@@ -33,17 +33,17 @@ const HeroSection: React.FC = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className={`absolute top-10 left-10 w-96 h-96 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] animate-blob transition-colors duration-1000 ${
-            isDark ? 'bg-fuchsia-600/30' : 'bg-rose-400/30'
+            isDark ? 'bg-teal-500/25' : 'bg-teal-400/20'
           }`}
         ></div>
         <div
           className={`absolute top-20 right-10 w-96 h-96 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] animate-blob animation-delay-2000 transition-colors duration-1000 ${
-            isDark ? 'bg-cyan-500/30' : 'bg-blue-400/30'
+            isDark ? 'bg-amber-500/25' : 'bg-amber-400/20'
           }`}
         ></div>
         <div
           className={`absolute bottom-10 left-1/3 w-96 h-96 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] animate-blob animation-delay-4000 transition-colors duration-1000 ${
-            isDark ? 'bg-violet-600/30' : 'bg-amber-300/30'
+            isDark ? 'bg-emerald-500/25' : 'bg-teal-300/20'
           }`}
         ></div>
       </div>
@@ -52,16 +52,16 @@ const HeroSection: React.FC = () => {
         <div className="text-center max-w-5xl mx-auto">
           {/* Neon Badge */}
           <div className="flex justify-center mb-8">
-            <div
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-widest backdrop-blur-md ${
-                isDark
-                  ? 'border-rose-500/30 bg-rose-500/10 text-rose-300'
-                  : 'border-rose-500/20 bg-white shadow-sm text-rose-600'
-              }`}
-            >
-              <ZapIcon className="w-4 h-4" />
-              Nuevo — Smart Match con IA
-            </div>
+          <div
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-widest backdrop-blur-md ${
+              isDark
+                ? 'border-amber-500/30 bg-amber-500/10 text-amber-400'
+                : 'border-amber-500/20 bg-white shadow-sm text-amber-600'
+            }`}
+          >
+            <ZapIcon className="w-4 h-4" />
+            Nuevo — Smart Match con IA
+          </div>
           </div>
 
           {/* Carousel Heading */}
@@ -73,7 +73,7 @@ const HeroSection: React.FC = () => {
               <span className={isDark ? 'text-slate-50' : 'text-slate-900'}>
                 {phrase.first}{' '}
               </span>
-              <span className="text-gradient-vibrant">{phrase.highlight}</span>
+              <span className="text-brand-emphasis">{phrase.highlight}</span>
               <span className={isDark ? 'text-slate-50' : 'text-slate-900'}>
                 {' '}
                 {phrase.last}
@@ -89,7 +89,7 @@ const HeroSection: React.FC = () => {
                 onClick={() => goToSlide(index)}
                 className={`rounded-full transition-all duration-300 ${
                   index === currentSlide
-                    ? 'w-8 h-2 bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-600'
+                    ? 'w-8 h-2 bg-[#0d9488]'
                     : `w-2 h-2 ${isDark ? 'bg-slate-600 hover:bg-slate-500' : 'bg-slate-300 hover:bg-slate-400'}`
                 }`}
                 aria-label={`Ver frase ${index + 1}`}
@@ -100,7 +100,7 @@ const HeroSection: React.FC = () => {
           {/* Subtitle */}
           <p
             className={`text-xl mb-12 max-w-2xl mx-auto ${
-              isDark ? 'text-slate-400' : 'text-slate-500'
+              isDark ? 'text-slate-400' : 'text-slate-600'
             }`}
           >
             Automatiza la extracción de datos de CVs, crea campañas al instante y encuentra al
@@ -112,7 +112,7 @@ const HeroSection: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
               href="/login?plan=free"
-              className="group w-full sm:w-auto bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-600 text-white px-8 py-4 rounded-full text-lg font-bold transition-transform hover:scale-105 hover:shadow-[0_0_40px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2"
+              className="group w-full sm:w-auto bg-[#0d9488] text-white px-8 py-4 rounded-full text-lg font-bold transition-all hover:bg-[#0f766e] hover:shadow-[0_0_40px_rgba(13,148,136,0.4)] hover:scale-105 flex items-center justify-center gap-2"
             >
               Empezar gratis
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

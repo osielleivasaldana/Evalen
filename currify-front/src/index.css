@@ -183,18 +183,14 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
-
-/* Títulos con brillo en movimiento */
-.text-gradient-vibrant {
-  background: linear-gradient(to right, #f43f5e, #8b5cf6, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 200% auto;
-  animation: shine 5s linear infinite;
+/* Título destacado con color sólido (sin gradient) */
+.text-brand-emphasis {
+  color: #0d9488;
 }
 
-@keyframes shine {
-  to { background-position: 200% center; }
+/* Glow decorativo */
+.glow-teal {
+  box-shadow: 0 0 20px rgba(13, 148, 136, 0.3);
 }
 
 /* Animación fade-in-up para scroll */

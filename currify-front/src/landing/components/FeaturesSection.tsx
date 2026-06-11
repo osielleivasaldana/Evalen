@@ -9,21 +9,21 @@ const features = [
     title: 'Lectura de CVs con IA',
     description:
       'Olvídate de leer currículums uno por uno. Nuestra IA extrae las habilidades, experiencia y datos clave en tiempo real.',
-    gradient: 'from-rose-500 to-fuchsia-500',
+    gradient: 'from-teal-500 to-emerald-500',
   },
   {
     icon: Zap,
     title: 'Campañas en Automático',
     description:
       'Selecciona el área (Ventas, Tecnología, etc.) y deja que Evalen estructure la campaña por ti.',
-    gradient: 'from-violet-500 to-purple-500',
+    gradient: 'from-teal-600 to-teal-500',
   },
   {
     icon: BarChart3,
     title: 'Smart Match',
     description:
       'Algoritmos avanzados que comparan los requerimientos de tu oferta con el perfil del candidato, mostrándote el porcentaje de compatibilidad exacto.',
-    gradient: 'from-cyan-500 to-blue-500',
+    gradient: 'from-amber-500 to-orange-500',
   },
 ];
 
@@ -42,9 +42,9 @@ const FeatureCard: React.FC<{
       className={`glass-effect p-8 rounded-3xl transition-all duration-500 group relative overflow-hidden ${
         isVisible ? 'animate-fade-in-up' : 'opacity-0'
       } ${
-        isDark
-          ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-fuchsia-500/50'
-          : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-rose-400/50'
+          isDark
+            ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-teal-500/50'
+            : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-teal-400/50'
       }`}
       style={{ animationDelay: `${index * 150}ms` }}
     >
@@ -65,7 +65,7 @@ const FeatureCard: React.FC<{
       </h3>
 
       {/* Description */}
-      <p className={`leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+      <p className={`leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
         {feature.description}
       </p>
 
@@ -93,7 +93,7 @@ const FeaturesSection: React.FC = () => {
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div
           className={`absolute -top-40 -right-40 w-96 h-96 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] animate-blob transition-colors duration-1000 ${
-            isDark ? 'bg-violet-600/20' : 'bg-rose-400/20'
+            isDark ? 'bg-teal-600/20' : 'bg-teal-400/20'
           }`}
         ></div>
       </div>
@@ -112,9 +112,9 @@ const FeaturesSection: React.FC = () => {
             }`}
           >
             ¿Por qué{' '}
-            <span className="text-gradient-vibrant">Evalen</span>?
+            <span className="text-brand-emphasis">Evalen</span>?
           </h2>
-          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Descubre cómo la inteligencia artificial transforma tu proceso de reclutamiento
           </p>
         </div>
