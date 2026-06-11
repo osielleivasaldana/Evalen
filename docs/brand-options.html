@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Currify — Opciones de Marca</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f8f8f6;
+      color: #1a1a1a;
+      padding: 40px 24px;
+    }
+    .intro {
+      max-width: 1100px;
+      margin: 0 auto 48px;
+      text-align: center;
+    }
+    .intro h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+    .intro p {
+      font-size: 1.125rem;
+      color: #666;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto 40px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      border-radius: 16px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+    }
+    .hero-preview {
+      padding: 48px 32px 40px;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .hero-preview .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 24px;
+    }
+    .hero-preview h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .hero-preview h2 .highlight {
+      display: inline;
+    }
+    .hero-preview p {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      max-width: 320px;
+      margin-bottom: 24px;
+    }
+    .hero-preview .cta-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .hero-preview .btn {
+      padding: 12px 28px;
+      border-radius: 999px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: inline-block;
+    }
+    .hero-preview .btn:hover {
+      transform: scale(1.03);
+    }
+    .hero-preview .btn-secondary {
+      border: 1px solid;
+      font-weight: 600;
+    }
+    .info {
+      padding: 20px 24px 24px;
+      border-top: 1px solid #eee;
+    }
+    .info h3 {
+      font-size: 0.9375rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .info .tagline {
+      font-size: 0.8125rem;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    .info .palette {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .info .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .info .desc {
+      font-size: 0.8125rem;
+      color: #444;
+      line-height: 1.5;
+    }
+    .selected-indicator {
+      display: none;
+      margin-top: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .card.selected .selected-indicator { display: block; }
+
+    /* Option A: Copper & Midnight */
+    .opt-a .hero-preview { background: #faf7f2; }
+    .opt-a .badge { background: rgba(194, 65, 12, 0.1); color: #C2410C; border: 1px solid rgba(194, 65, 12, 0.2); }
+    .opt-a h2 { color: #0F172A; }
+    .opt-a .highlight { color: #C2410C; }
+    .opt-a p { color: #57534E; }
+    .opt-a .btn-primary { background: #C2410C; color: white; box-shadow: 0 2px 8px rgba(194, 65, 12, 0.25); }
+    .opt-a .btn-secondary { border-color: #D6D3D1; color: #44403C; }
+    .opt-a .swatch:nth-child(1) { background: #C2410C; }
+    .opt-a .swatch:nth-child(2) { background: #0F172A; }
+    .opt-a .swatch:nth-child(3) { background: #D97706; }
+    .opt-a .swatch:nth-child(4) { background: #FAF7F2; }
+    .opt-a .swatch:nth-child(5) { background: #57534E; }
+    .opt-a .selected-indicator { color: #C2410C; }
+
+    /* Option B: Teal & Amber */
+    .opt-b .hero-preview { background: #F0FDFA; }
+    .opt-b .badge { background: rgba(13, 148, 136, 0.1); color: #0D9488; border: 1px solid rgba(13, 148, 136, 0.2); }
+    .opt-b h2 { color: #0F172A; }
+    .opt-b .highlight { color: #0D9488; }
+    .opt-b p { color: #64748B; }
+    .opt-b .btn-primary { background: #0D9488; color: white; box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25); }
+    .opt-b .btn-secondary { border-color: #CBD5E1; color: #334155; }
+    .opt-b .swatch:nth-child(1) { background: #0D9488; }
+    .opt-b .swatch:nth-child(2) { background: #0F172A; }
+    .opt-b .swatch:nth-child(3) { background: #F59E0B; }
+    .opt-b .swatch:nth-child(4) { background: #F0FDFA; }
+    .opt-b .swatch:nth-child(5) { background: #64748B; }
+    .opt-b .selected-indicator { color: #0D9488; }
+
+    /* Option C: Slate & Violet */
+    .opt-c .hero-preview { background: #FAFAF9; }
+    .opt-c .badge { background: rgba(124, 58, 237, 0.1); color: #7C3AED; border: 1px solid rgba(124, 58, 237, 0.2); }
+    .opt-c h2 { color: #0C0A09; }
+    .opt-c .highlight { color: #7C3AED; }
+    .opt-c p { color: #78716C; }
+    .opt-c .btn-primary { background: #1C1917; color: white; }
+    .opt-c .btn-secondary { border-color: #D6D3D1; color: #44403C; }
+    .opt-c .swatch:nth-child(1) { background: #1C1917; }
+    .opt-c .swatch:nth-child(2) { background: #7C3AED; }
+    .opt-c .swatch:nth-child(3) { background: #A8A29E; }
+    .opt-c .swatch:nth-child(4) { background: #FAFAF9; }
+    .opt-c .swatch:nth-child(5) { background: #78716C; }
+    .opt-c .selected-indicator { color: #7C3AED; }
+
+    /* Option D: Burgundy & Stone */
+    .opt-d .hero-preview { background: #FFF1F2; }
+    .opt-d .badge { background: rgba(157, 23, 77, 0.1); color: #9D174D; border: 1px solid rgba(157, 23, 77, 0.2); }
+    .opt-d h2 { color: #1C1917; }
+    .opt-d .highlight { color: #9D174D; }
+    .opt-d p { color: #78716C; }
+    .opt-d .btn-primary { background: #9D174D; color: white; box-shadow: 0 2px 8px rgba(157, 23, 77, 0.25); }
+    .opt-d .btn-secondary { border-color: #E7E5E4; color: #44403C; }
+    .opt-d .swatch:nth-child(1) { background: #9D174D; }
+    .opt-d .swatch:nth-child(2) { background: #1C1917; }
+    .opt-d .swatch:nth-child(3) { background: #D97706; }
+    .opt-d .swatch:nth-child(4) { background: #FFF1F2; }
+    .opt-d .swatch:nth-child(5) { background: #78716C; }
+    .opt-d .selected-indicator { color: #9D174D; }
+
+    /* Option E: Olive & Cream */
+    .opt-e .hero-preview { background: #F7FEE7; }
+    .opt-e .badge { background: rgba(77, 124, 15, 0.1); color: #4D7C0F; border: 1px solid rgba(77, 124, 15, 0.2); }
+    .opt-e h2 { color: #1C1917; }
+    .opt-e .highlight { color: #4D7C0F; }
+    .opt-e p { color: #78716C; }
+    .opt-e .btn-primary { background: #4D7C0F; color: white; box-shadow: 0 2px 8px rgba(77, 124, 15, 0.25); }
+    .opt-e .btn-secondary { border-color: #D6D3D1; color: #44403C; }
+    .opt-e .swatch:nth-child(1) { background: #4D7C0F; }
+    .opt-e .swatch:nth-child(2) { background: #3F3D56; }
+    .opt-e .swatch:nth-child(3) { background: #D97706; }
+    .opt-e .swatch:nth-child(4) { background: #F7FEE7; }
+    .opt-e .swatch:nth-child(5) { background: #78716C; }
+    .opt-e .selected-indicator { color: #4D7C0F; }
+
+    /* Option F: Ink Blue & Gold */
+    .opt-f .hero-preview { background: #F0F4F8; }
+    .opt-f .badge { background: rgba(30, 58, 95, 0.1); color: #1E3A5F; border: 1px solid rgba(30, 58, 95, 0.2); }
+    .opt-f h2 { color: #0F172A; }
+    .opt-f .highlight { color: #1E3A5F; }
+    .opt-f p { color: #64748B; }
+    .opt-f .btn-primary { background: #1E3A5F; color: white; box-shadow: 0 2px 8px rgba(30, 58, 95, 0.25); }
+    .opt-f .btn-secondary { border-color: #CBD5E1; color: #334155; }
+    .opt-f .swatch:nth-child(1) { background: #1E3A5F; }
+    .opt-f .swatch:nth-child(2) { background: #B45309; }
+    .opt-f .swatch:nth-child(3) { background: #D97706; }
+    .opt-f .swatch:nth-child(4) { background: #F0F4F8; }
+    .opt-f .swatch:nth-child(5) { background: #64748B; }
+    .opt-f .selected-indicator { color: #1E3A5F; }
+  </style>
+</head>
+<body>
+
+<div class="intro">
+  <h1>Currify — Dirección de Marca</h1>
+  <p>Seis direcciones visuales para la plataforma de reclutamiento. Cada una evita el "AI SaaS gradient look" y se siente propia del recruitment.</p>
+</div>
+
+<div class="grid">
+
+  <!-- Option A: Copper & Midnight -->
+  <div class="card opt-a">
+    <div class="hero-preview">
+      <div class="badge">✨ Smart Match con IA</div>
+      <h2>Encuentra al candidato<br><span class="highlight">perfecto en segundos</span></h2>
+      <p>Automatiza la extracción de CVs y descubre al talento ideal con inteligencia artificial.</p>
+      <div class="cta-group">
+        <a class="btn btn-primary" href="#">Empezar gratis</a>
+        <a class="btn btn-secondary" href="#">Ver demo</a>
+      </div>
+    </div>
+    <div class="info">
+      <h3>A. Cobre & Medianoche</h3>
+      <div class="tagline">Cálido, audaz, humano — único en HR tech</div>
+      <div class="palette">
+        <div class="swatch" title="Terracota - Primario"></div>
+        <div class="swatch" title="Navy - Secundario"></div>
+        <div class="swatch" title="Ámbar - Acento"></div>
+        <div class="swatch" title="Cáscara de huevo - Fondo"></div>
+        <div class="swatch" title="Muted cálido - Texto secundario"></div>
+      </div>
+      <div class="desc">
+        Terracota como color principal — nadie en recruitment usa este color. Comunica calidez humana sin caer en rosa. Navy lo ancla profesionalmente. Ámbar como acento secundario para highlights.
+      </div>
+      <div class="selected-indicator">✓ Seleccionar</div>
+    </div>
+  </div>
+
+  <!-- Option B: Teal & Amber -->
+  <div class="card opt-b">
+    <div class="hero-preview">
+      <div class="badge">✨ Smart Match con IA</div>
+      <h2>Encuentra al candidato<br><span class="highlight">perfecto en segundos</span></h2>
+      <p>Automatiza la extracción de CVs y descubre al talento ideal con inteligencia artificial.</p>
+      <div class="cta-group">
+        <a class="btn btn-primary" href="#">Empezar gratis</a>
+        <a class="btn btn-secondary" href="#">Ver demo</a>
+      </div>
+    </div>
+    <div class="info">
+      <h3>B. Teal & Ámbar</h3>
+      <div class="tagline">Confiable, fresco, sereno — destaca sin gritar</div>
+      <div class="palette">
+        <div class="swatch" title="Teal - Primario"></div>
+        <div class="swatch" title="Navy - Secundario"></div>
+        <div class="swatch" title="Ámbar - Acento"></div>
+        <div class="swatch" title="Menta claro - Fondo"></div>
+        <div class="swatch" title="Slate - Texto secundario"></div>
+      </div>
+      <div class="desc">
+        Teal profundo comunica crecimiento y confianza. El fondo menta claro se siente fresco y humano. Ámbar añade calidez. Es profesional sin ser frío — perfecto para HR.
+      </div>
+      <div class="selected-indicator">✓ Seleccionar</div>
+    </div>
+  </div>
+
+  <!-- Option C: Slate & Violet -->
+  <div class="card opt-c">
+    <div class="hero-preview">
+      <div class="badge">✨ Smart Match con IA</div>
+      <h2>Encuentra al candidato<br><span class="highlight">perfecto en segundos</span></h2>
+      <p>Automatiza la extracción de CVs y descubre al talento ideal con inteligencia artificial.</p>
+      <div class="cta-group">
+        <a class="btn btn-primary" href="#">Empezar gratis</a>
+        <a class="btn btn-secondary" href="#">Ver demo</a>
+      </div>
+    </div>
+    <div class="info">
+      <h3>C. Pizarra & Violeta</h3>
+      <div class="tagline">Editorial, premium, contenido — el más sobrio</div>
+      <div class="palette">
+        <div class="swatch" title="Casi negro - Primario"></div>
+        <div class="swatch" title="Violeta - Acento"></div>
+        <div class="swatch" title="Gris cálido - Neutro"></div>
+        <div class="swatch" title="Cáscara de huevo - Fondo"></div>
+        <div class="swatch" title="Muted cálido - Texto secundario"></div>
+      </div>
+      <div class="desc">
+        Casi negro como dominante + violeta como el único color. Minimalista, editorial, como Stripe o Linear. El violeta aparece dosificado y sólido (nunca gradient). Se ve caro y serio.
+      </div>
+      <div class="selected-indicator">✓ Seleccionar</div>
+    </div>
+  </div>
+
+  <!-- Option D: Burgundy & Stone -->
+  <div class="card opt-d">
+    <div class="hero-preview">
+      <div class="badge">✨ Smart Match con IA</div>
+      <h2>Encuentra al candidato<br><span class="highlight">perfecto en segundos</span></h2>
+      <p>Automatiza la extracción de CVs y descubre al talento ideal con inteligencia artificial.</p>
+      <div class="cta-group">
+        <a class="btn btn-primary" href="#">Empezar gratis</a>
+        <a class="btn btn-secondary" href="#">Ver demo</a>
+      </div>
+    </div>
+    <div class="info">
+      <h3>D. Borgoña & Piedra</h3>
+      <div class="tagline">Lujoso, cálido, sofisticado — como un hotel boutique</div>
+      <div class="palette">
+        <div class="swatch" title="Borgoña - Primario"></div>
+        <div class="swatch" title="Casi negro - Secundario"></div>
+        <div class="swatch" title="Ámbar - Acento"></div>
+        <div class="swatch" title="Rosa pálido - Fondo"></div>
+        <div class="swatch" title="Piedra - Texto secundario"></div>
+      </div>
+      <div class="desc">
+        Borgoña/vino tinto como color principal — absolutamente único en SaaS. Comunica sofisticación, calidez y confianza. El fondo rosa pálido se siente humano sin ser infantil. Ámbar como acento cálido.
+      </div>
+      <div class="selected-indicator">✓ Seleccionar</div>
+    </div>
+  </div>
+
+  <!-- Option E: Olive & Cream -->
+  <div class="card opt-e">
+    <div class="hero-preview">
+      <div class="badge">✨ Smart Match con IA</div>
+      <h2>Encuentra al candidato<br><span class="highlight">perfecto en segundos</span></h2>
+      <p>Automatiza la extracción de CVs y descubre al talento ideal con inteligencia artificial.</p>
+      <div class="cta-group">
+        <a class="btn btn-primary" href="#">Empezar gratis</a>
+        <a class="btn btn-secondary" href="#">Ver demo</a>
+      </div>
+    </div>
+    <div class="info">
+      <h3>E. Oliva & Crema</h3>
+      <div class="tagline">Natural, tranquilo, estable — crecimiento orgánico</div>
+      <div class="palette">
+        <div class="swatch" title="Oliva - Primario"></div>
+        <div class="swatch" title="Taupe profundo - Secundario"></div>
+        <div class="swatch" title="Ámbar - Acento"></div>
+        <div class="swatch" title="Verde pálido - Fondo"></div>
+        <div class="swatch" title="Piedra - Texto secundario"></div>
+      </div>
+      <div class="desc">
+        Oliva/verde tierra — nadie en SaaS usa este color. Comunica estabilidad, crecimiento y confianza natural. Se siente orgánico y humano, no industrial. Perfecto para una plataforma que conecta personas con oportunidades.
+      </div>
+      <div class="selected-indicator">✓ Seleccionar</div>
+    </div>
+  </div>
+
+  <!-- Option F: Ink Blue & Gold -->
+  <div class="card opt-f">
+    <div class="hero-preview">
+      <div class="badge">✨ Smart Match con IA</div>
+      <h2>Encuentra al candidato<br><span class="highlight">perfecto en segundos</span></h2>
+      <p>Automatiza la extracción de CVs y descubre al talento ideal con inteligencia artificial.</p>
+      <div class="cta-group">
+        <a class="btn btn-primary" href="#">Empezar gratis</a>
+        <a class="btn btn-secondary" href="#">Ver demo</a>
+      </div>
+    </div>
+    <div class="info">
+      <h3>F. Azul Tinta & Oro</h3>
+      <div class="tagline">Clásico, premium, establecido — como un banco suizo</div>
+      <div class="palette">
+        <div class="swatch" title="Azul tinta - Primario"></div>
+        <div class="swatch" title="Ocre - Secundario"></div>
+        <div class="swatch" title="Ámbar - Acento"></div>
+        <div class="swatch" title="Hielo - Fondo"></div>
+        <div class="swatch" title="Slate - Texto secundario"></div>
+      </div>
+      <div class="desc">
+        Azul tinta profundo — no es el indigo "AI SaaS", es un azul clásico de institución financiera. Ocre/dorado como acento secundario para calidez. Se siente establecido, premium, para empresas que toman RRHH en serio.
+      </div>
+      <div class="selected-indicator">✓ Seleccionar</div>
+    </div>
+  </div>
+
+</div>
+
+<p style="text-align: center; color: #888; font-size: 0.8125rem; max-width: 600px; margin: 0 auto;">
+  Abre este archivo en el navegador para ver las 6 opciones. Cada una usa colores sólidos (sin gradients),
+  evita el "AI SaaS look", y se siente apropiada para reclutamiento profesional.
+</p>
+
+</body>
+</html>

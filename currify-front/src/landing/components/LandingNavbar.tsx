@@ -30,7 +30,7 @@ const LandingNavbar: React.FC = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <a href="/" className="text-2xl font-black tracking-tighter">
-              <span className="text-gradient-vibrant">Evalen</span>
+              <span className="text-brand-emphasis">Evalen</span>
             </a>
           </div>
 
@@ -86,7 +86,7 @@ const LandingNavbar: React.FC = () => {
             {isAuthenticated ? (
               <a
                 href="/dashboard"
-                className="hidden sm:inline-flex px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-600 rounded-full transition-transform hover:scale-105"
+                className="hidden sm:inline-flex px-5 py-2 text-sm font-bold text-white bg-[#0d9488] rounded-full transition-transform hover:bg-[#0f766e] hover:shadow-[0_0_20px_rgba(13,148,136,0.3)]"
               >
                 Ir al Dashboard
               </a>
@@ -104,7 +104,7 @@ const LandingNavbar: React.FC = () => {
                 </a>
                 <a
                   href="/login?plan=free"
-                  className="hidden sm:inline-flex px-5 py-2 text-sm font-bold text-white bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-600 rounded-full transition-transform hover:scale-105"
+                  className="hidden sm:inline-flex px-5 py-2 text-sm font-bold text-white bg-[#0d9488] rounded-full transition-transform hover:bg-[#0f766e] hover:shadow-[0_0_20px_rgba(13,148,136,0.3)]"
                 >
                   Comenzar Gratis
                 </a>
@@ -174,7 +174,7 @@ const LandingNavbar: React.FC = () => {
               )}
               <a
                 href={isAuthenticated ? '/dashboard' : '/login?plan=free'}
-                className="block w-full text-center px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-600 rounded-full transition-transform hover:scale-105"
+                className="block w-full text-center px-4 py-3 text-sm font-bold text-white bg-[#0d9488] rounded-full transition-transform hover:bg-[#0f766e]"
               >
                 {isAuthenticated ? 'Ir al Dashboard' : 'Comenzar Gratis'}
               </a>

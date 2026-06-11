@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-10T21:00:00.000Z",
+  "title": "Design System: Currify",
+  "extensions": {
+    "colorMeta": {
+      "deep-navy": {
+        "role": "neutral",
+        "displayName": "Deep Navy",
+        "canonical": "#0f172a",
+        "tonalRamp": ["#050810", "#0a1225", "#0f1c3a", "#142650", "#193065", "#1e3a7a", "#23448f", "#284ea5"]
+      },
+      "deep-teal": {
+        "role": "primary",
+        "displayName": "Deep Teal",
+        "canonical": "#0d9488",
+        "tonalRamp": ["#04201e", "#064a43", "#097468", "#0d9488", "#1dab9d", "#4dc0b5", "#7ed5cd", "#aee9e4"]
+      },
+      "deep-teal-hover": {
+        "role": "primary",
+        "displayName": "Deep Teal Hover",
+        "canonical": "#0f766e",
+        "tonalRamp": ["#051d1b", "#094a44", "#0c786d", "#0f766e", "#29948a", "#53b2a8", "#7ed0c6", "#a9ede5"]
+      },
+      "pale-mint": {
+        "role": "neutral",
+        "displayName": "Pale Mint",
+        "canonical": "#f0fdfa",
+        "tonalRamp": ["#98c0b8", "#a8cec6", "#b8dcd4", "#c8eae2", "#d8f8f0", "#e8fcf6", "#f4fdfa", "#fafffd"]
+      },
+      "warm-amber": {
+        "role": "secondary",
+        "displayName": "Warm Amber",
+        "canonical": "#f59e0b",
+        "tonalRamp": ["#2e1a00", "#543300", "#7a4d00", "#a06600", "#c68000", "#f59e0b", "#f7b33d", "#f9c86f"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#0a0f1d",
+        "tonalRamp": ["#020306", "#050812", "#070d1e", "#0a122a", "#0c1736", "#0f1c42", "#11214e", "#14265a"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#ffffff",
+        "tonalRamp": ["#e6e6e6", "#ebebeb", "#f0f0f0", "#f5f5f5", "#fafafa", "#fcfcfc", "#fdfdfd", "#ffffff"]
+      },
+      "muted-slate": {
+        "role": "neutral",
+        "displayName": "Muted Slate",
+        "canonical": "#64748b",
+        "tonalRamp": ["#1a2028", "#28303d", "#364152", "#445267", "#51637c", "#64748b", "#7e8da2", "#99a6b8"]
+      },
+      "cool-border": {
+        "role": "neutral",
+        "displayName": "Cool Border",
+        "canonical": "#e2e8f0",
+        "tonalRamp": ["#727c8a", "#8893a3", "#9eaabc", "#b4c1d5", "#cad7ee", "#dce5f2", "#eef2f7", "#f5f7fa"]
+      },
+      "cool-surface": {
+        "role": "neutral",
+        "displayName": "Cool Surface",
+        "canonical": "#f1f5f9",
+        "tonalRamp": ["#7a879a", "#8f9db0", "#a4b3c7", "#b9c9de", "#cedff5", "#e2edf7", "#f0f4f9", "#f8fafc"]
+      },
+      "signal-green": {
+        "role": "tertiary",
+        "displayName": "Signal Green",
+        "canonical": "#16a34a",
+        "tonalRamp": ["#052012", "#0a3f23", "#0f5e34", "#147d45", "#16a34a", "#21c45d", "#4dd57e", "#7ae69f"]
+      },
+      "signal-red": {
+        "role": "tertiary",
+        "displayName": "Signal Red",
+        "canonical": "#ef4444",
+        "tonalRamp": ["#3b0707", "#5f0e0e", "#831515", "#a71b1b", "#cb2222", "#ef4444", "#f36d6d", "#f79696"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headlines. Landing page y títulos de alto impacto." },
+      "headline": { "displayName": "Headline", "purpose": "Títulos de página interna y secciones del dashboard." },
+      "title": { "displayName": "Title", "purpose": "Títulos de cards, headers de tabla." },
+      "body": { "displayName": "Body", "purpose": "Texto corrido. Máximo 75ch." },
+      "label": { "displayName": "Label", "purpose": "Botones, badges, inputs." }
+    },
+    "shadows": [
+      { "name": "card-rest", "value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)", "purpose": "Cards en reposo." },
+      { "name": "card-hover", "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)", "purpose": "Hover de cards interactivas." },
+      { "name": "dropdown", "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)", "purpose": "Menús, popovers." },
+      { "name": "modal", "value": "0 25px 50px -12px rgb(0 0 0 / 0.25)", "purpose": "Modales." },
+      { "name": "glow-teal", "value": "0 0 20px rgb(13 148 136 / 0.3)", "purpose": "Glow en botones primarios hover." },
+      { "name": "stat", "value": "0 4px 14px 0 rgb(13 148 136 / 0.25)", "purpose": "Stat cards del dashboard." }
+    ],
+    "motion": [
+      { "name": "transition-default", "value": "200ms ease-out", "purpose": "Default para color de fondo." },
+      { "name": "transition-fade", "value": "300ms ease-out", "purpose": "Fade-in para modales, dropdowns." },
+      { "name": "duration-score", "value": "1000ms ease-out", "purpose": "Score circle animation." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary CTA button with solid Deep Teal background. No gradients.",
+      "html": "<button class=\"ds-btn-primary\">Crear Campaña</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 32px; background: #0d9488; color: #ffffff; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; font-weight: 600; line-height: 1.25; letter-spacing: 0.02em; border: none; border-radius: 6px; cursor: pointer; transition: background 200ms ease-out, box-shadow 200ms ease-out; } .ds-btn-primary:hover { background: #0f766e; box-shadow: 0 0 20px rgba(13, 148, 136, 0.3); } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #0a0f1d, 0 0 0 4px #ffffff; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary/outline button for less prominent actions.",
+      "html": "<button class=\"ds-btn-outline\">Cancelar</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 30px; background: transparent; color: #0a0f1d; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; font-weight: 600; line-height: 1.25; letter-spacing: 0.02em; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; transition: background 200ms ease-out; } .ds-btn-outline:hover { background: #f1f5f9; } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 2px #0a0f1d, 0 0 0 4px #ffffff; } .ds-btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Standard Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Default card container.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><h3 class=\"ds-card-title\">Campañas Activas</h3><p class=\"ds-card-desc\">3 campañas en progreso</p></div><div class=\"ds-card-content\"><p>Contenido del card aquí.</p></div></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1); } .ds-card-header { display: flex; flex-direction: column; gap: 6px; padding: 24px 24px 0; } .ds-card-title { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 18px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; color: #0a0f1d; margin: 0; } .ds-card-desc { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; line-height: 1.6; color: #64748b; margin: 0; } .ds-card-content { padding: 24px; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "button-primary",
+      "description": "Status badge with pill shape.",
+      "html": "<span class=\"ds-badge ds-badge-success\">Completado</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 2.5px 10px; border-radius: 9999px; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 13px; font-weight: 600; line-height: 1.25; border: 1px solid transparent; } .ds-badge-default { background: #0f172a; color: #f8fafc; } .ds-badge-success { background: #16a34a; color: #ffffff; } .ds-badge-warning { background: #f59e0b; color: #ffffff; } .ds-badge-destructive { background: #ef4444; color: #ffffff; } .ds-badge-secondary { background: #f1f5f9; color: #0f172a; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Laboratorio de Talento",
+    "overview": "Currify es una plataforma de reclutamiento que combina precisión técnica con calidez humana. El diseño usa teal y ámbar — una combinación única en el espacio de HR tech que comunica confianza y crecimiento sin caer en los clichés del 'AI SaaS'. La interfaz es precisa como un instrumento de laboratorio pero acogedora como una conversación humana.",
+    "keyCharacteristics": [
+      "Colores sólidos, sin gradients decorativos en CTAs ni textos",
+      "Teal como identidad de confianza; ámbar como chispa de calidez humana",
+      "Neutros fríos (slate) para mantener profesionalismo",
+      "Táctil y seguro: botones con peso visual, hover evidente, feedback inmediato",
+      "Modo oscuro nativo"
+    ],
+    "rules": [
+      { "name": "The Solid Color Rule", "body": "Todos los botones, links y CTAs usan colores sólidos. Sin gradients, sin text-gradient, sin glassmorphism en elementos interactivos.", "section": "colors" },
+      { "name": "The Teal-Amber Axis", "body": "El teal es el color dominante (60-70%). El ámbar aparece dosificado (10-15%) como acento cálido en badges, highlights, y elementos de celebración.", "section": "colors" },
+      { "name": "The One-Family Rule", "body": "Plus Jakarta Sans en todos los roles.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "Superficies planas en reposo. Sombras solo como respuesta a interacción.", "section": "elevation" },
+      { "name": "The Colored Shadow Rule", "body": "Sombras con tinte solo en elementos que refuerzan la identidad de marca.", "section": "elevation" }
+    ],
+    "dos": [
+      "Usar Deep Teal (#0d9488) como color sólido en botones, links, y elementos interactivos principales.",
+      "Usar Warm Amber (#f59e0b) como acento cálido dosificado en badges, highlights, testimonios.",
+      "Usar colores sólidos en CTAs — sin gradients, sin text-gradient.",
+      "Usar Signal Green / Red / Amber semánticos."
+    ],
+    "donts": [
+      "Usar gradients en botones, CTAs, o texto (background-clip: text).",
+      "Usar indigo, púrpura, rosa, o fuchsia.",
+      "Usar glassmorphism decorativo dentro del dashboard.",
+      "Usar side-stripe borders como acento.",
+      "Usar tiny uppercase tracked eyebrow sobre cada sección.",
+      "Usar placeholders con bajo contraste."
+    ]
+  }
+}

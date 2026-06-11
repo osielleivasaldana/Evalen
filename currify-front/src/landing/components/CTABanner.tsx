@@ -26,12 +26,12 @@ const CTABanner: React.FC = React.memo(() => {
           }`}
         >
           {/* Corner Aurora Accents */}
-          <div className="absolute -top-20 -left-20 w-64 h-64 bg-gradient-to-br from-rose-500/20 to-fuchsia-500/20 rounded-full blur-[80px] pointer-events-none"></div>
-          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-gradient-to-br from-violet-500/20 to-cyan-500/20 rounded-full blur-[80px] pointer-events-none"></div>
+          <div className="absolute -top-20 -left-20 w-64 h-64 bg-gradient-to-br from-teal-500/20 to-teal-400/20 rounded-full blur-[80px] pointer-events-none"></div>
+          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-gradient-to-br from-amber-500/20 to-teal-500/20 rounded-full blur-[80px] pointer-events-none"></div>
 
           {/* Content */}
           <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-300 text-xs font-bold uppercase tracking-widest backdrop-blur-md mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-bold uppercase tracking-widest backdrop-blur-md mb-8">
               <Sparkles className="w-4 h-4" />
               Empieza hoy
             </div>
@@ -42,12 +42,12 @@ const CTABanner: React.FC = React.memo(() => {
               }`}
             >
               ¿Listo para transformar tu{' '}
-              <span className="text-gradient-vibrant">reclutamiento</span>?
+              <span className="text-brand-emphasis">reclutamiento</span>?
             </h2>
 
             <p
               className={`text-lg max-w-2xl mx-auto mb-10 ${
-                isDark ? 'text-slate-400' : 'text-slate-500'
+                isDark ? 'text-slate-400' : 'text-slate-600'
               }`}
             >
               Únete a cientos de empresas que ya encuentran al candidato perfecto en segundos con
@@ -58,20 +58,20 @@ const CTABanner: React.FC = React.memo(() => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a
                 href="/login?plan=free"
-                className="group w-full sm:w-auto bg-gradient-to-r from-rose-500 via-fuchsia-500 to-violet-600 text-white px-8 py-4 rounded-full text-lg font-bold transition-transform hover:scale-105 hover:shadow-[0_0_40px_rgba(244,63,94,0.4)] flex items-center justify-center gap-2"
+                className="group w-full sm:w-auto bg-[#0d9488] text-white px-8 py-4 rounded-full text-lg font-bold transition-all hover:bg-[#0f766e] hover:shadow-[0_0_40px_rgba(13,148,136,0.4)] hover:scale-105 flex items-center justify-center gap-2"
               >
                 Comenzar Gratis
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </a>
               <a
                 href="/login?plan=pro"
-                className={`glass-effect w-full sm:w-auto px-8 py-4 rounded-full text-lg font-semibold transition-all hover:scale-105 flex items-center justify-center gap-2 ${
-                  isDark
-                    ? 'bg-slate-900/40 border border-white/10 text-slate-50'
-                    : 'bg-white/60 border border-slate-200/80 text-slate-900'
-                }`}
-              >
-                Probar EvalenPro
+              className={`glass-effect w-full sm:w-auto px-8 py-4 rounded-full text-lg font-semibold transition-all hover:scale-105 flex items-center justify-center gap-2 ${
+                isDark
+                  ? 'bg-slate-900/40 border border-white/10 text-slate-50 hover:border-teal-500/50'
+                  : 'bg-white/60 border border-slate-200/80 text-slate-900 hover:border-teal-400/50'
+              }`}
+            >
+              Probar EvalenPro
               </a>
             </div>
           </div>
