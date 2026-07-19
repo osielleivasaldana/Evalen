@@ -1,20 +1,15 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
-// Mock the apiService — Hero is now a self-contained maqueta, no network calls.
 jest.mock('../services/api', () => ({
-  apiService: {
-    isAuthenticated: () => false,
-  },
+  apiService: { isAuthenticated: () => false },
 }));
 
-// Mock the ThemeContext
 jest.mock('../contexts/ThemeContext', () => ({
   ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   useTheme: () => ({ theme: 'light', toggleTheme: jest.fn() }),
 }));
 
-// Mock IntersectionObserver globally (used by useScrollAnimation and the navbar sentinel)
 global.IntersectionObserver = class {
   constructor() {}
   observe() {}
@@ -22,12 +17,10 @@ global.IntersectionObserver = class {
   disconnect() {}
 } as any;
 
-// Mock the carousel hook
 jest.mock('./hooks/useCarousel', () => ({
   useCarousel: () => ({ currentSlide: 0, goToSlide: jest.fn(), totalSlides: 3 }),
 }));
 
-// Import LandingPage AFTER mocks are set up
 import LandingPage from './LandingPage';
 
 describe('LandingPage', () => {
@@ -38,20 +31,53 @@ describe('LandingPage', () => {
 
   it('renders the navbar with Evalen branding', () => {
     render(<LandingPage />);
-    const evalenText = screen.getAllByText(/Evalen/i);
-    expect(evalenText.length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Evalen/i).length).toBeGreaterThan(0);
   });
 
-  it('renders the hero with the main heading', () => {
-    render(<LandingPage />);
-    expect(screen.getByText(/Reclutamiento inteligente/i)).toBeInTheDocument();
-  });
+  describe('Hero demo modal', () => {
+    it('renders the hero with the main heading', () => {
+      render(<LandingPage />);
+      expect(screen.getByText(/Reclutamiento inteligente/i)).toBeInTheDocument();
+    });
 
-  it('renders the hero with an explicit demo CTA that opens the modal walkthrough', () => {
-    render(<LandingPage />);
-    expect(screen.getByRole('button', { name: /Ver demo en vivo/i })).toBeInTheDocument();
-    // The preview card teases the full flow
-    expect(screen.getByText(/Ver el flujo completo/i)).toBeInTheDocument();
+    it('renders the demo CTA button', () => {
+      render(<LandingPage />);
+      expect(screen.getByRole('button', { name: /Ver demo en vivo/i })).toBeInTheDocument();
+      expect(screen.getByText(/Ver el flujo completo/i)).toBeInTheDocument();
+    });
+
+    it('opens the DemoModal when the CTA button is clicked', () => {
+      render(<LandingPage />);
+      fireEvent.click(screen.getByRole('button', { name: /Ver demo en vivo/i }));
+      expect(screen.getByRole('dialog', { name: /Demostración de Evalen/i })).toBeInTheDocument();
+    });
+
+    it('shows the input phase with CV and campaign data', () => {
+      render(<LandingPage />);
+      fireEvent.click(screen.getByRole('button', { name: /Ver demo en vivo/i }));
+      expect(screen.getAllByText(/Ana María Alarcón/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Senior Python Developer/i).length).toBeGreaterThan(0);
+      expect(screen.getByRole('button', { name: /Iniciar demo/i })).toBeInTheDocument();
+    });
+
+    it('starts processing phase on "Iniciar demo" click', async () => {
+      render(<LandingPage />);
+      fireEvent.click(screen.getByRole('button', { name: /Ver demo en vivo/i }));
+      fireEvent.click(screen.getByRole('button', { name: /Iniciar demo/i }));
+      await waitFor(() => {
+        expect(screen.getByText(/Conectando con el parser/i)).toBeInTheDocument();
+      });
+    });
+
+    it('closes the modal on Escape key', async () => {
+      render(<LandingPage />);
+      fireEvent.click(screen.getByRole('button', { name: /Ver demo en vivo/i }));
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      await waitFor(() => {
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+    });
   });
 
   it('renders the features section', () => {
@@ -86,11 +112,8 @@ describe('LandingPage', () => {
   });
 
   it('does not ship fake "TrustedBy" company logos', () => {
-    // Regression: the previous landing listed Stripe/Spotify/Notion as "customers".
-    // The Whole TrustedBy component must not render.
     const { container } = render(<LandingPage />);
-    const trustedByText = screen.queryByText(/Empresas que confían/i);
-    expect(trustedByText).toBeNull();
+    expect(screen.queryByText(/Empresas que confían/i)).toBeNull();
     expect(container.textContent).not.toMatch(/Stripe|Spotify|Notion|Vercel|Shopify|Linear/i);
   });
 
