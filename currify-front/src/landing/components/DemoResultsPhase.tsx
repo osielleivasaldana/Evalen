@@ -22,7 +22,7 @@ const RADIUS = 54;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 const DemoResultsPhase: React.FC = () => {
-  const { extraction: ex, scoring: sc, campaign: ca } = SAMPLE;
+  const { extraction: ex, scoring: sc } = SAMPLE;
   const prefersReduced = useReducedMotion();
   const [animated, setAnimated] = useState(prefersReduced);
 
@@ -63,6 +63,7 @@ const DemoResultsPhase: React.FC = () => {
                         r={RADIUS}
                         fill="none"
                         stroke="#e5e7eb"
+                        className="dark:stroke-slate-700"
                         strokeWidth="8"
                       />
                       <circle
@@ -90,7 +91,7 @@ const DemoResultsPhase: React.FC = () => {
                       >
                         {sc.overall_score}
                       </span>
-                      <span className="text-xs text-slate-500 font-medium">de 100</span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">de 100</span>
                     </div>
                   </div>
                   <p className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
@@ -243,7 +244,7 @@ const DemoResultsPhase: React.FC = () => {
             >
               <div className="space-y-4">
                 {ex.experiencia_laboral.map((exp, i) => (
-                  <div key={i} className="border-l-2 border-[#0891b2]/30 pl-4">
+                  <div key={i} className="border-l-2 border-[#0891b2]/30 dark:border-[#06b6d4]/30 pl-4">
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
@@ -334,7 +335,7 @@ const DemoResultsPhase: React.FC = () => {
                     key={i}
                     className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2"
                   >
-                    <Globe className="w-4 h-4 text-[#9333ea]" weight="duotone" />
+                    <Globe className="w-4 h-4 text-[#9333ea] dark:text-[#a855f7]" weight="duotone" />
                     <div>
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                         {idioma.idioma}
