@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import DemoInputPhase from './DemoInputPhase';
@@ -12,19 +12,38 @@ interface DemoModalProps {
   onClose: () => void;
 }
 
+const FOCUSABLE = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
 const DemoModal: React.FC<DemoModalProps> = ({ open, onClose }) => {
   const [phase, setPhase] = useState<DemoPhase>('input');
+  const onCloseRef = useRef(onClose);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (open) setPhase('input');
   }, [open]);
 
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    },
-    [onClose],
-  );
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onCloseRef.current();
+      return;
+    }
+    if (e.key === 'Tab' && panelRef.current) {
+      const focusable = panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -55,11 +74,12 @@ const DemoModal: React.FC<DemoModalProps> = ({ open, onClose }) => {
         >
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
+            onClick={onCloseRef.current}
             aria-hidden="true"
           />
 
           <motion.div
+            ref={panelRef}
             className="relative w-full max-w-[1400px] h-[90vh] max-h-[900px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -71,7 +91,8 @@ const DemoModal: React.FC<DemoModalProps> = ({ open, onClose }) => {
           >
             <button
               type="button"
-              onClick={onClose}
+              autoFocus
+              onClick={onCloseRef.current}
               className="absolute top-4 right-4 z-30 w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4f46e5]"
               aria-label="Cerrar demo"
             >
