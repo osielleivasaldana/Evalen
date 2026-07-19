@@ -45,8 +45,10 @@ export interface DemoHabilidades {
 
 export interface DemoCampaign {
   titulo: string;
+  empresa: string;
   modalidad: string;
   experiencia_minima: string;
+  descripcion: string;
   habilidades_requeridas: string[];
   habilidades_deseables: string[];
   nivel_educacion: string;
@@ -191,8 +193,10 @@ Google Cloud Professional Cloud Developer (2022)`,
   },
   campaign: {
     titulo: 'Senior Python Developer',
-    modalidad: 'Remoto Global',
+    empresa: 'Evalen Inc.',
+    modalidad: 'Remoto Global · Tiempo Completo',
     experiencia_minima: '3 años',
+    descripcion: 'En Evalen Inc. estamos buscando un Senior Python Developer para integrarse a nuestro equipo de backend. Buscamos a alguien con experiencia sólida en Python, FastAPI y PostgreSQL, que haya trabajado con arquitecturas distribuidas y procesamiento de transacciones de alto volumen. La posición es 100% remota con equipo distribuido en LATAM.',
     habilidades_requeridas: ['Python', 'FastAPI', 'PostgreSQL', 'Docker'],
     habilidades_deseables: ['Kafka', 'AWS', 'TypeScript'],
     nivel_educacion: 'Ingeniería o título técnico afín',
