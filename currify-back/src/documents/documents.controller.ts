@@ -11,6 +11,7 @@ import {
   UseGuards
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { DocumentsService } from './documents.service';
 import { UploadDocumentDto } from './dto/upload-document.dto';
@@ -20,6 +21,10 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
+  // Public upload (no auth) — stricter per-IP throttle than the global 100/min.
+  // 10 uploads/min/IP limits abuse while still allowing a recruiter visiting a
+  // public campaign page to submit a small batch of CVs.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', {
     limits: {

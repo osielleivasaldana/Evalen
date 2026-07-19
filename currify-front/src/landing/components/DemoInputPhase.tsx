@@ -18,7 +18,7 @@ const DemoInputPhase: React.FC<DemoInputPhaseProps> = ({ onStart }) => {
               <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50 uppercase tracking-wider">
                 {e.contacto.nombre_completo}
               </h2>
-              <p className="text-base font-semibold text-[#4f46e5] mt-1">
+              <p className="text-base font-semibold text-[#4f46e5] dark:text-[#a5b4fc] mt-1">
                 {e.titular_profesional.titular}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">

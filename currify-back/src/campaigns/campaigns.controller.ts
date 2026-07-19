@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { CampaignsService } from './campaigns.service';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { UpdateCampaignDto } from './dto/update-campaign.dto';
@@ -47,6 +48,10 @@ export class CampaignsController {
     return this.campaignsService.getStats(req.user.id, req.user.company);
   }
 
+  // Public read (no auth) — stricter per-IP throttle to slow publicId enumeration.
+  // 30 reads/min/IP is enough for a recruiter previewing the public campaign page
+  // but stops someone from iterating publicIds to scrape campaign metadata.
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get('public/:publicId')
   findByPublicId(@Param('publicId') publicId: string) {
     return this.campaignsService.findByPublicId(publicId);

@@ -18,11 +18,32 @@ from _deprecated.resume_extraction_service_v2 import ResumeExtractionServiceV2
 from app.services.robust_extraction_service import RobustExtractionService
 from app.services.llm_service import LLMService, token_usage_var
 from app.services.profile_detection_service import ProfileDetectionService
+from app.services.file_parser_service import FileParserService
 from app.core.security import verify_token
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/resume", tags=["resume extraction"])
+
+# Magic-bytes validator shared across upload endpoints. Fails fast before any
+# LLM work runs, returns clean 400 instead of a downstream 500.
+_file_parser = FileParserService()
+
+
+def _validate_magic_bytes(file_content: bytes, filename: str) -> None:
+    """Validate uploaded file by magic bytes. Raises 400 if invalid."""
+    try:
+        validation = _file_parser.validate_file(file_content, filename)
+    except Exception as exc:
+        logger.warning(f"validate_file crashed on {filename}: {exc}")
+        raise HTTPException(
+            status_code=400,
+            detail="No se pudo validar el formato del archivo. Verifica que el PDF o DOCX no esté corrupto.",
+        )
+    if not validation.get("is_valid", False):
+        issues = validation.get("issues") or ["Formato no soportado"]
+        message = " ".join(issues) if isinstance(issues, list) else str(issues)
+        raise HTTPException(status_code=400, detail=f"Archivo no válido: {message}")
 
 # Rate limiter
 limiter = Limiter(key_func=get_remote_address)
@@ -91,6 +112,11 @@ async def extract_resume(
 
         if len(file_content) == 0:
             raise HTTPException(status_code=400, detail="Archivo vacío")
+
+        # Magic-bytes validation as a fast, clean-failure gate before any LLM work.
+        # validate_file() is also called transitively inside RobustExtractionService,
+        # but at that point failures surface as opaque 500s. Calling it here returns 400.
+        _validate_magic_bytes(file_content, file.filename)
 
         # Parsear configuración
         extraction_config = {}
@@ -332,11 +358,17 @@ async def analyze_profile(
         if len(file_content) == 0:
             raise HTTPException(status_code=400, detail="Archivo vacío")
 
+        # Magic-bytes validation before parsing — clean 400 instead of downstream errors.
+        _validate_magic_bytes(file_content, file.filename)
+
         # Extraer texto básico (simplificado)
         from app.services.file_parser_service import FileParserService
         parser = FileParserService()
 
-        parse_result = parser.parse_file(file_content, file.filename)
+        # parse_file is async — must await. (Bugfix: previously called without await,
+        # assigning a coroutine to parse_result and causing TypeError on subsequent
+        # subscript access.)
+        parse_result = await parser.parse_file(file_content, file.filename)
         if not parse_result["success"]:
             raise HTTPException(status_code=400, detail=f"Error procesando archivo: {parse_result['error']}")
 
@@ -477,7 +509,11 @@ async def process_batch_files(job_id: str, files: List[UploadFile], config: Dict
                 # Intentaremos leer dentro controlando errores.
                 
                 content = await file.read()
-                
+
+                # Magic-bytes gate before any LLM work. In batch context this
+                # invalidates the individual file without aborting the whole job.
+                _validate_magic_bytes(content, file.filename or "unknown")
+
                 result = await extraction_service.extract_from_file(
                     file_content=content,
                     filename=file.filename,

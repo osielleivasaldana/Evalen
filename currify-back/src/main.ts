@@ -1,10 +1,16 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Trust the first proxy hop (Nginx in prod, dev proxy locally) so req.ip
+  // reflects the real client IP. Required by ThrottlerGuard's default tracker
+  // to make per-IP rate limits effective behind reverse proxies.
+  app.set('trust proxy', 1);
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,

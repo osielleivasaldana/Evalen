@@ -1,272 +1,126 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
-import { Check } from 'lucide-react';
-import { apiService } from '../../services/api';
+import { Check } from '@phosphor-icons/react';
 
 const defaultPlans = [
   {
     name: 'Starter',
     price: '$0',
     period: '/mes',
-    description: 'Ideal para probar la magia.',
-    features: [
-      '1 campaña activa',
-      '3 CVs por mes',
-      '3 créditos de Smart Fill por mes',
-      'Análisis de candidatos',
-      'Extracción básica de datos',
-    ],
-    cta: 'Comenzar Gratis',
-    ctaLink: '/login?plan=free',
-    featured: false,
+    description: 'Perfecto para probar la tecnología.',
+    features: ['1 campaña activa', '3 CVs procesados al mes', '3 créditos de Smart Fill', 'Análisis básico de candidatos', 'Extracción estándar'],
+    cta: 'Comenzar Gratis', ctaLink: '/login?plan=free', featured: false,
   },
   {
     name: 'EvalenPro',
     price: '$19.990',
     period: '/mes',
-    description: 'Para equipos de RR.HH. que buscan escalar.',
-    features: [
-      'Campañas ilimitadas',
-      'Procesamiento ilimitado de CVs',
-      'Smart Fill ilimitado',
-      'Smart Match avanzado',
-      'Exportación de reportes',
-      'Soporte prioritario',
-    ],
-    cta: 'Probar EvalenPro',
-    ctaLink: '/login?plan=pro',
-    featured: true,
-    badge: 'Recomendado',
+    description: 'Para equipos de reclutamiento activos.',
+    features: ['Campañas ilimitadas', 'Procesamiento ilimitado de CVs', 'Smart Fill ilimitado', 'Smart Match avanzado', 'Exportación de reportes', 'Soporte prioritario'],
+    cta: 'Probar EvalenPro', ctaLink: '/login?plan=pro', featured: true, badge: 'Más popular',
   },
   {
     name: 'Enterprise',
     price: 'Personalizado',
     period: '',
-    description: 'Para grandes corporativos.',
-    features: [
-      'Todo lo de EvalenPro',
-      'SSO corporativo',
-      'API de integración',
-      'Onboarding personalizado',
-      'SLA garantizado',
-    ],
-    cta: 'Contactar Ventas',
-    ctaLink: '/login?plan=enterprise',
-    featured: false,
+    description: 'Para corporaciones y gran volumen.',
+    features: ['Todo lo de EvalenPro', 'SSO corporativo', 'API de integración', 'Onboarding dedicado', 'SLA garantizado de servicio'],
+    cta: 'Contactar Ventas', ctaLink: '/login?plan=enterprise', featured: false,
   },
 ];
 
-const PricingCard: React.FC<{
-  plan: (typeof defaultPlans)[0];
-  index: number;
-}> = React.memo(({ plan, index }) => {
+const PricingCard: React.FC<{ plan: typeof defaultPlans[0] }> = React.memo(({ plan }) => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { ref, isVisible } = useScrollAnimation(0.1);
 
   return (
     <div
-      ref={ref}
-      className={`relative rounded-3xl p-8 transition-all duration-500 ${
-        isVisible ? 'animate-fade-in-up' : 'opacity-0'
-      } ${
+      className={`relative rounded-2xl p-[1px] transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 ${
         plan.featured
-          ? 'bg-[#0d9488] text-white shadow-2xl shadow-teal-500/20 scale-[1.02] z-10'
-          : `glass-effect ${
-              isDark
-                ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-teal-500/50'
-                : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-teal-400/50'
-            }`
-      }`}
-      style={{ animationDelay: `${index * 150}ms` }}
-    >
-      {/* Badge */}
-      {plan.badge && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full border text-xs font-bold uppercase tracking-widest backdrop-blur-md border-amber-500/30 bg-amber-500/10 text-amber-400">
-            {plan.badge}
-          </span>
-        </div>
-      )}
-
-      {/* Plan Name */}
-      <h3
-        className={`text-xl font-bold mb-2 ${
-          plan.featured ? 'text-white' : isDark ? 'text-slate-50' : 'text-slate-900'
-        }`}
-      >
-        {plan.name}
-      </h3>
-
-      {/* Price */}
-      <div className="flex items-baseline mb-4">
-        <span
-          className={`text-4xl font-extrabold ${
-            plan.featured ? 'text-white' : isDark ? 'text-slate-50' : 'text-slate-900'
-          }`}
-        >
-          {plan.price}
-        </span>
-        <span
-          className={`ml-1 ${
-            plan.featured
-              ? 'text-amber-200'
-              : isDark
-              ? 'text-slate-400'
-              : 'text-slate-500'
-          }`}
-        >
-          {plan.period}
-        </span>
-      </div>
-
-      {/* Description */}
-      <p
-        className={`mb-6 ${
-          plan.featured
-          ? 'text-teal-100'
+          ? 'ring-2 ring-[#4f46e5] shadow-[0_4px_30px_rgba(79,70,229,0.12)]'
           : isDark
-            ? 'text-slate-400'
-            : 'text-slate-500'
-        }`}
-      >
-        {plan.description}
-      </p>
+            ? 'bg-white/[0.06]'
+            : 'bg-slate-200/60'
+      }`}
+    >
+      <div className={`rounded-[calc(1rem-1px)] p-8 h-full flex flex-col justify-between ${
+        plan.featured
+          ? 'bg-white dark:bg-slate-900/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]'
+          : isDark
+            ? 'bg-slate-900/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]'
+            : 'bg-white shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]'
+      }`}>
+        <div>
+          {plan.badge && (
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <span className="inline-flex px-4 py-0.5 rounded-full text-[10px] font-bold text-white bg-[#4f46e5] shadow-sm">
+                {plan.badge}
+              </span>
+            </div>
+          )}
 
-      {/* Features */}
-      <ul className="space-y-3 mb-8">
-        {plan.features.map((feature, i) => (
-          <li key={i} className="flex items-start">
-            <Check
-              className={`w-5 h-5 mr-2 flex-shrink-0 ${
-                plan.featured
-                  ? 'text-amber-200'
-                  : isDark
-                  ? 'text-teal-400'
-                  : 'text-teal-600'
-              }`}
-            />
-            <span
-              className={
-                plan.featured
-                  ? 'text-white'
-                  : isDark
-                  ? 'text-slate-400'
-                  : 'text-slate-500'
-              }
-            >
-              {feature}
+          <h3 className="text-lg font-bold mb-2 text-slate-900 dark:text-slate-50">
+            {plan.name}
+          </h3>
+
+          <div className="flex items-baseline mb-4">
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-slate-50">
+              {plan.price}
             </span>
-          </li>
-        ))}
-      </ul>
+            <span className="ml-1 text-slate-400 dark:text-slate-500 text-xs">
+              {plan.period}
+            </span>
+          </div>
 
-      {/* CTA Button */}
-      <a
-        href={plan.ctaLink}
-        className={`block w-full py-3 px-6 text-center font-bold rounded-full transition-all ${
-          plan.featured
-            ? 'bg-white text-[#0d9488] hover:bg-teal-50 shadow-lg hover:shadow-xl'
-            : `glass-effect ${
-                isDark
-                  ? 'bg-slate-900/40 border border-white/10 text-slate-50 hover:scale-105'
-                  : 'bg-white/60 border border-slate-200/80 text-slate-900 hover:scale-105'
-              }`
-        }`}
-      >
-        {plan.cta}
-      </a>
+          <p className="mb-6 text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+            {plan.description}
+          </p>
+
+          <ul className="space-y-3.5 mb-8">
+            {plan.features.map((feature, i) => (
+              <li key={i} className="flex items-start">
+                <Check weight="bold" className="w-4 h-4 mr-2.5 flex-shrink-0 text-[#4f46e5] mt-0.5" />
+                <span className="text-slate-600 dark:text-slate-400 text-xs leading-normal">
+                  {feature}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <a
+          href={plan.ctaLink}
+          className={`block w-full py-2.5 px-6 text-center text-sm font-bold rounded-full transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] active:scale-[0.98] ${
+            plan.featured
+              ? 'bg-[#4f46e5] text-white hover:bg-[#4338ca] hover:shadow-[0_0_20px_rgba(79,70,229,0.25)]'
+              : isDark
+                ? 'border border-white/[0.08] text-slate-50 hover:bg-white/[0.04]'
+                : 'border border-slate-200 text-slate-900 hover:bg-slate-50 hover:border-slate-300'
+          }`}
+        >
+          {plan.cta}
+        </a>
+      </div>
     </div>
   );
 });
 
 const LandingPricing: React.FC = () => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const { ref, isVisible } = useScrollAnimation(0.1);
-  const [plans, setPlans] = useState<any[]>(defaultPlans);
-
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const data = await apiService.getPlans();
-        if (data && data.length > 0) {
-          const tierOrder: Record<string, number> = { 'FREE': 1, 'PRO': 2, 'ENTERPRISE': 3 };
-          const sorted = [...data].sort((a, b) => (tierOrder[a.tier] || 99) - (tierOrder[b.tier] || 99));
-          const formatted = sorted.map((p) => {
-            const customFeatures = (p.features || []).filter((f: string) => {
-              const lower = f.toLowerCase();
-              return !lower.includes('campaña') && !lower.includes('cv') && !lower.includes('smart fill') && !lower.includes('procesamiento');
-            });
-            const dynamicFeatures = [
-              p.campaignLimit >= 999 ? 'Campañas ilimitadas' : `${p.campaignLimit} campaña${p.campaignLimit > 1 ? 's' : ''} mensual${p.campaignLimit > 1 ? 'es' : ''}`,
-              p.cvCredits >= 999 ? 'Procesamiento ilimitado de CVs' : `${p.cvCredits} CV${p.cvCredits > 1 ? 's' : ''} por mes`,
-              p.smartFillCredits >= 999 ? 'Smart Fill ilimitado' : `${p.smartFillCredits} crédito${p.smartFillCredits > 1 ? 's' : ''} de Smart Fill por mes`,
-              ...customFeatures
-            ];
-            return {
-              name: p.name,
-              price: p.price === 0 ? '$0' : p.price === -1 ? 'Personalizado' : `$${p.price.toLocaleString('es-CL')}`,
-              period: p.price === -1 ? '' : '/mes',
-              description: p.description,
-              features: dynamicFeatures,
-              cta: p.tier === 'FREE' ? 'Comenzar Gratis' : p.tier === 'PRO' ? 'Probar EvalenPro' : 'Contactar Ventas',
-              ctaLink: p.tier === 'FREE' ? '/login?plan=free' : p.tier === 'PRO' ? '/login?plan=pro' : '/login?plan=enterprise',
-              featured: p.tier === 'PRO',
-              badge: p.tier === 'PRO' ? 'Recomendado' : undefined
-            };
-          });
-          setPlans(formatted);
-        }
-      } catch (error) {
-        // Silently handle fetch error; fall back to default plans
-      }
-    };
-    fetchPlans();
-  }, []);
-
   return (
-    <section
-      id="pricing"
-      className={`py-24 relative overflow-hidden transition-colors duration-300 ${
-        isDark ? 'bg-[#030014]' : 'bg-[#fdfdfd]'
-      }`}
-    >
-      {/* Subtle Aurora */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className={`absolute top-1/3 left-0 w-96 h-96 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] animate-blob animation-delay-4000 transition-colors duration-1000 ${
-            isDark ? 'bg-teal-600/15' : 'bg-teal-400/15'
-          }`}
-        ></div>
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div
-          ref={ref}
-          className={`text-center max-w-3xl mx-auto mb-16 transition-all duration-500 ${
-            isVisible ? 'animate-fade-in-up' : 'opacity-0'
-          }`}
-        >
-          <h2
-            className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter mb-4 ${
-              isDark ? 'text-slate-50' : 'text-slate-900'
-            }`}
-          >
-            Planes para cada{' '}
-            <span className="text-brand-emphasis">etapa</span>
+    <section id="pricing" className="py-24 lg:py-32 relative bg-[#f8fafc] dark:bg-[#0f172a] transition-colors duration-500">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 mb-4">
+            Planes para cada etapa
           </h2>
-          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            Elige el plan que mejor se adapte a tus necesidades de reclutamiento
+          <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+            Elige el plan ideal para automatizar tu flujo de reclutamiento.
           </p>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-6 items-start">
-          {plans.map((plan, index) => (
-            <PricingCard key={index} plan={plan} index={index} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-6 items-stretch max-w-5xl mx-auto">
+          {defaultPlans.map((plan, index) => (
+            <PricingCard key={index} plan={plan} />
           ))}
         </div>
       </div>

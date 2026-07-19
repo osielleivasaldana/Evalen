@@ -1,129 +1,86 @@
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useScrollAnimation } from '../hooks/useScrollAnimation';
-import { FileText, Zap, BarChart3 } from 'lucide-react';
+import { FileText, Lightning, ChartBar, ArrowRight } from '@phosphor-icons/react';
 
 const features = [
   {
     icon: FileText,
-    title: 'Lectura de CVs con IA',
-    description:
-      'Olvídate de leer currículums uno por uno. Nuestra IA extrae las habilidades, experiencia y datos clave en tiempo real.',
-    gradient: 'from-teal-500 to-emerald-500',
+    title: 'Extracción Inteligente',
+    description: 'Sube múltiples currículums en un solo lote. Nuestro procesador extrae de forma estructurada toda la información laboral, educativa y de habilidades.',
+    large: true,
   },
   {
-    icon: Zap,
-    title: 'Campañas en Automático',
-    description:
-      'Selecciona el área (Ventas, Tecnología, etc.) y deja que Evalen estructure la campaña por ti.',
-    gradient: 'from-teal-600 to-teal-500',
+    icon: Lightning,
+    title: 'Campañas en un Clic',
+    description: 'Establece los criterios de contratación y deja que Evalen auto-configure la campaña de reclutamiento.',
   },
   {
-    icon: BarChart3,
-    title: 'Smart Match',
-    description:
-      'Algoritmos avanzados que comparan los requerimientos de tu oferta con el perfil del candidato, mostrándote el porcentaje de compatibilidad exacto.',
-    gradient: 'from-amber-500 to-orange-500',
+    icon: ChartBar,
+    title: 'Smart Match Score',
+    description: 'Visualiza la compatibilidad exacta de cada candidato contra los requisitos específicos de tu puesto.',
   },
 ];
 
-const FeatureCard: React.FC<{
-  feature: (typeof features)[0];
-  index: number;
-}> = React.memo(({ feature, index }) => {
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
-  const { ref, isVisible } = useScrollAnimation(0.1);
-  const Icon = feature.icon;
-
-  return (
-    <div
-      ref={ref}
-      className={`glass-effect p-8 rounded-3xl transition-all duration-500 group relative overflow-hidden ${
-        isVisible ? 'animate-fade-in-up' : 'opacity-0'
-      } ${
-          isDark
-            ? 'bg-slate-900/40 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:border-teal-500/50'
-            : 'bg-white/60 border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:border-teal-400/50'
-      }`}
-      style={{ animationDelay: `${index * 150}ms` }}
-    >
-      {/* Icon */}
-      <div
-        className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 bg-gradient-to-br ${feature.gradient} group-hover:scale-110 transition-transform duration-300`}
-      >
-        <Icon className="w-7 h-7 text-white" />
+const FeatureCard: React.FC<{ feature: typeof features[0]; index: number; isDark: boolean }> = ({ feature, index, isDark }) => (
+  <div
+    className={`group relative transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] hover:-translate-y-1 ${
+      feature.large ? 'lg:col-span-2 lg:row-span-1' : 'lg:col-span-1'
+    }`}
+  >
+    <div className={`h-full rounded-2xl p-[1px] ${
+      isDark ? 'bg-white/[0.06]' : 'bg-slate-200/60'
+    }`}>
+      <div className={`h-full rounded-[calc(1rem-1px)] p-8 transition-all duration-700 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+        isDark
+          ? 'bg-slate-900/40 group-hover:bg-slate-900/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]'
+          : 'bg-white group-hover:shadow-[0_8px_30px_rgba(79,70,229,0.06)] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]'
+      }`}>
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-6 bg-[#4f46e5]/10">
+          <feature.icon weight="bold" className="w-5 h-5 text-[#4f46e5]" />
+        </div>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-50 mb-3">
+          {feature.title}
+        </h3>
+        <p className={`leading-relaxed ${feature.large ? 'text-base' : 'text-sm'} ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          {feature.description}
+        </p>
       </div>
-
-      {/* Title */}
-      <h3
-        className={`text-xl font-bold mb-3 ${
-          isDark ? 'text-slate-50' : 'text-slate-900'
-        }`}
-      >
-        {feature.title}
-      </h3>
-
-      {/* Description */}
-      <p className={`leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-        {feature.description}
-      </p>
-
-      {/* Hover Glow */}
-      <div
-        className={`absolute -bottom-1 -right-1 w-32 h-32 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-10 rounded-full blur-3xl transition-opacity duration-500`}
-      ></div>
     </div>
-  );
-});
+  </div>
+);
 
 const FeaturesSection: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { ref, isVisible } = useScrollAnimation(0.1);
 
   return (
-    <section
-      id="features"
-      className={`py-24 relative overflow-hidden transition-colors duration-300 ${
-        isDark ? 'bg-[#030014]' : 'bg-[#fdfdfd]'
-      }`}
-    >
-      {/* Subtle Aurora */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className={`absolute -top-40 -right-40 w-96 h-96 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] animate-blob transition-colors duration-1000 ${
-            isDark ? 'bg-teal-600/20' : 'bg-teal-400/20'
-          }`}
-        ></div>
-      </div>
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div
-          ref={ref}
-          className={`text-center max-w-3xl mx-auto mb-16 transition-all duration-500 ${
-            isVisible ? 'animate-fade-in-up' : 'opacity-0'
-          }`}
-        >
-          <h2
-            className={`text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter mb-4 ${
-              isDark ? 'text-slate-50' : 'text-slate-900'
-            }`}
-          >
-            ¿Por qué{' '}
-            <span className="text-brand-emphasis">Evalen</span>?
+    <section id="features" className="py-24 lg:py-32 relative bg-[#ffffff] dark:bg-[#0f172a] transition-colors duration-500">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 mb-4">
+            Tu flujo de trabajo optimizado
           </h2>
-          <p className={`text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            Descubre cómo la inteligencia artificial transforma tu proceso de reclutamiento
+          <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed">
+            Elimina la revisión manual de currículums. Diseñado para simplificar cada etapa del proceso de contratación.
           </p>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <FeatureCard key={index} feature={feature} index={index} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          {features.map((feature, i) => (
+            <FeatureCard key={i} feature={feature} index={i} isDark={isDark} />
           ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <a
+            href="/login?plan=free"
+            className="group inline-flex items-center bg-[#4f46e5] text-white pl-5 pr-2 py-2 rounded-full text-sm font-bold transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] hover:bg-[#4338ca] hover:shadow-[0_0_30px_rgba(79,70,229,0.3)] active:scale-[0.98]"
+          >
+            <span className="mr-3">Crear campaña de prueba</span>
+            <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-px transition-all duration-300">
+              <ArrowRight weight="bold" className="w-4 h-4" />
+            </span>
+          </a>
         </div>
       </div>
     </section>

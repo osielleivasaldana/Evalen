@@ -3,19 +3,16 @@ import { ThemeProvider } from '../contexts/ThemeContext';
 import ErrorBoundary from '../components/common/ErrorBoundary';
 import LandingNavbar from './components/LandingNavbar';
 import HeroSection from './components/HeroSection';
-import LogoCloud from './components/LogoCloud';
 import FeaturesSection from './components/FeaturesSection';
-import DemoSection from './components/DemoSection';
-import HowItWorks from './components/HowItWorks';
-import Testimonials from './components/Testimonials';
+import GallerySection from './components/GallerySection';
 import LandingPricing from './components/LandingPricing';
-import CTABanner from './components/CTABanner';
 import LandingFooter from './components/LandingFooter';
+import BackToTop from './components/BackToTop';
 
 const LandingPage: React.FC = () => {
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-[#fdfdfd] dark:bg-[#030014] transition-colors duration-300">
+      <div className="landing-page min-h-screen bg-[#ffffff] dark:bg-[#0f172a] transition-colors duration-500">
         <ErrorBoundary>
           <LandingNavbar />
         </ErrorBoundary>
@@ -24,30 +21,19 @@ const LandingPage: React.FC = () => {
             <HeroSection />
           </ErrorBoundary>
           <ErrorBoundary>
-            <LogoCloud />
-          </ErrorBoundary>
-          <ErrorBoundary>
             <FeaturesSection />
           </ErrorBoundary>
           <ErrorBoundary>
-            <DemoSection />
-          </ErrorBoundary>
-          <ErrorBoundary>
-            <HowItWorks />
-          </ErrorBoundary>
-          <ErrorBoundary>
-            <Testimonials />
+            <GallerySection />
           </ErrorBoundary>
           <ErrorBoundary>
             <LandingPricing />
-          </ErrorBoundary>
-          <ErrorBoundary>
-            <CTABanner />
           </ErrorBoundary>
         </main>
         <ErrorBoundary>
           <LandingFooter />
         </ErrorBoundary>
+        <BackToTop />
       </div>
     </ThemeProvider>
   );
