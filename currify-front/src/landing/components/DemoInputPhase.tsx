@@ -1,6 +1,5 @@
 import React from 'react';
-import { Briefcase, Clock, GraduationCap, Globe, Target } from '@phosphor-icons/react';
-import { Sparkle } from '@phosphor-icons/react';
+import { Briefcase, Clock, GraduationCap, Globe, Sparkle, Target } from '@phosphor-icons/react';
 import { SAMPLE, isSkillMatch } from './demo-data';
 
 interface DemoInputPhaseProps {
@@ -13,40 +12,40 @@ const DemoInputPhase: React.FC<DemoInputPhaseProps> = ({ onStart }) => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 min-h-0">
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-y-auto p-6 font-serif text-slate-800 space-y-5">
-            <div className="text-center border-b border-slate-200 pb-4 mb-4">
-              <h2 className="text-xl font-bold text-slate-900 uppercase tracking-wider">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/[0.08] shadow-sm overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto p-6 font-serif text-slate-800 dark:text-slate-200 space-y-5">
+            <div className="text-center border-b border-slate-200 dark:border-white/[0.08] pb-4 mb-4">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50 uppercase tracking-wider">
                 {e.contacto.nombre_completo}
               </h2>
               <p className="text-base font-semibold text-[#4f46e5] mt-1">
                 {e.titular_profesional.titular}
               </p>
-              <p className="text-xs text-slate-500 mt-2">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                 {e.contacto.ubicacion} · {e.contacto.telefono} · {e.contacto.email}
               </p>
             </div>
 
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Extracto Profesional</h3>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-1">Extracto Profesional</h3>
               <p className="text-sm leading-relaxed">{e.resumen_profesional.resumen}</p>
             </div>
 
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Experiencia Laboral</h3>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Experiencia Laboral</h3>
               {e.experiencia_laboral.map((exp, i) => (
                 <div key={i} className="mb-3 last:mb-0">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-sm font-bold text-slate-900">{exp.cargo}</p>
-                      <p className="text-xs text-slate-500">{exp.empresa} · {exp.ubicacion}</p>
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{exp.cargo}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{exp.empresa} · {exp.ubicacion}</p>
                     </div>
-                    <p className="text-[11px] text-slate-400 whitespace-nowrap ml-2">{exp.periodo}</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 whitespace-nowrap ml-2">{exp.periodo}</p>
                   </div>
                   <ul className="mt-1 space-y-0.5">
                     {exp.responsabilidades.map((r, j) => (
-                      <li key={j} className="text-xs text-slate-600 flex items-start gap-1.5">
-                        <span className="text-slate-300 mt-0.5">•</span>
+                      <li key={j} className="text-xs text-slate-600 dark:text-slate-300 flex items-start gap-1.5">
+                        <span className="text-slate-300 dark:text-slate-600 mt-0.5">•</span>
                         <span>{r}</span>
                       </li>
                     ))}
@@ -56,30 +55,30 @@ const DemoInputPhase: React.FC<DemoInputPhaseProps> = ({ onStart }) => {
             </div>
 
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Formación</h3>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Formación</h3>
               {e.formacion_academica.map((f, i) => (
                 <div key={i}>
-                  <p className="text-sm font-bold text-slate-900">{f.titulo}</p>
-                  <p className="text-xs text-slate-500">{f.institucion} · {f.periodo}</p>
-                  {f.detalle && <p className="text-xs text-slate-500 italic">{f.detalle}</p>}
+                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{f.titulo}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{f.institucion} · {f.periodo}</p>
+                  {f.detalle && <p className="text-xs text-slate-500 dark:text-slate-400 italic">{f.detalle}</p>}
                 </div>
               ))}
             </div>
 
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Habilidades Técnicas</h3>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">Habilidades Técnicas</h3>
               <div className="flex flex-wrap gap-1.5">
                 {e.habilidades.tecnicas.map((h, i) => (
                   <span
                     key={i}
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${
                       isSkillMatch(h)
-                        ? 'bg-green-100 text-green-800 ring-1 ring-green-300'
-                        : 'bg-slate-100 text-slate-600'
+                        ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 ring-1 ring-green-300 dark:ring-green-700'
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                     }`}
                   >
                     {h}
-                    {isSkillMatch(h) && <span className="text-[10px] text-green-600 font-bold">✓</span>}
+                    {isSkillMatch(h) && <span className="text-[10px] text-green-600 dark:text-green-400 font-bold">✓</span>}
                   </span>
                 ))}
               </div>
@@ -92,7 +91,7 @@ const DemoInputPhase: React.FC<DemoInputPhaseProps> = ({ onStart }) => {
             <div className="flex items-center gap-2 mb-4">
               <Target className="w-5 h-5 text-[#4f46e5]" weight="fill" />
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{c.titulo}</h3>
-              <span className="ml-auto text-[10px] font-semibold text-[#4f46e5] bg-[#4f46e5]/10 px-2 py-0.5 rounded-full">Campaña</span>
+              <span className="ml-auto text-[10px] font-semibold text-[#4f46e5] dark:text-[#a5b4fc] bg-[#4f46e5]/10 dark:bg-[#4f46e5]/20 px-2 py-0.5 rounded-full">Campaña</span>
             </div>
 
             <div className="space-y-4">
