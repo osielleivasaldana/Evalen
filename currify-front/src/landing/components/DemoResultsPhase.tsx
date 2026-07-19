@@ -10,7 +10,6 @@ import {
   Sparkle,
   User,
   Briefcase,
-  GraduationCap,
   Code,
   Globe,
 } from '@phosphor-icons/react';
@@ -141,6 +140,7 @@ const DemoResultsPhase: React.FC = () => {
                 </div>
 
                 {/* Strengths */}
+                {sc.strengths.length > 0 && (
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-600" weight="fill" />
@@ -158,6 +158,7 @@ const DemoResultsPhase: React.FC = () => {
                     ))}
                   </ul>
                 </div>
+                )}
 
                 {/* Gaps */}
                 {sc.gaps.length > 0 && (
