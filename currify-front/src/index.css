@@ -3,6 +3,20 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Evalen brand tokens — indigo + purple (OKLCH). See DESIGN.md. */
+  --brand: #4f46e5;
+  --brand-hover: #4338ca;
+  --brand-foreground: #a5b4fc;
+  --brand-soft: #eef2ff;
+  --accent: #9333ea;
+  --accent-soft: #f3e8ff;
+  --brand-ink: #0a0f1d;
+  --brand-paper: #ffffff;
+  --brand-paper-alt: #f8fafc;
+  --brand-muted: #64748b;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -29,37 +43,6 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-
-    /* Brand Gradients */
-    --gradient-brand: linear-gradient(135deg, #4f46e5, #7c3aed);
-    --gradient-logo: linear-gradient(90deg, #4f46e5, #9333ea);
-    --gradient-logo-light: linear-gradient(90deg, #818cf8, #c084fc);
-
-    /* Stat Card Gradients */
-    --gradient-stat-1: linear-gradient(135deg, #6366f1, #9333ea);
-    --gradient-stat-2: linear-gradient(135deg, #ec4899, #e11d48);
-    --gradient-stat-3: linear-gradient(135deg, #06b6d4, #2563eb);
-    --gradient-stat-4: linear-gradient(135deg, #f472b6, #facc15);
-
-    /* Section Gradients */
-    --gradient-header: linear-gradient(90deg, #6366f1, #9333ea);
-    --gradient-modal-warning: linear-gradient(90deg, #eab308, #f97316);
-    --gradient-talent-bg: linear-gradient(90deg, #f5f3ff, #eef2ff, #eff6ff);
-
-    /* Glassmorphism */
-    --glass-bg: rgba(255, 255, 255, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --glass-blur: 12px;
-
-    /* Aurora Effects */
-    --aurora-purple: rgba(168, 85, 247, 0.15);
-    --aurora-blue: rgba(59, 130, 246, 0.15);
-    --aurora-pink: rgba(236, 72, 153, 0.1);
-
-    /* Shadows */
-    --shadow-stat: 0 4px 14px 0 rgba(99, 102, 241, 0.25);
-    --shadow-talent: 0 10px 40px -10px rgba(99, 102, 241, 0.15);
-    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
   }
 
   .dark {
@@ -86,29 +69,9 @@
     --success-foreground: 0 0% 10%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 10%;
-
-    /* Brand Gradients (Dark) */
-    --gradient-brand: linear-gradient(135deg, #6366f1, #8b5cf6);
-    --gradient-logo: linear-gradient(90deg, #818cf8, #c084fc);
-    --gradient-logo-light: linear-gradient(90deg, #a5b4fc, #d8b4fe);
-
-    /* Stat Card Gradients (Dark - slightly brighter) */
-    --gradient-stat-1: linear-gradient(135deg, #818cf8, #a78bfa);
-    --gradient-stat-2: linear-gradient(135deg, #f472b6, #fb7185);
-    --gradient-stat-3: linear-gradient(135deg, #22d3ee, #60a5fa);
-    --gradient-stat-4: linear-gradient(135deg, #f9a8d4, #fde047);
-
-    /* Glassmorphism (Dark) */
-    --glass-bg: rgba(15, 23, 42, 0.8);
-    --glass-border: rgba(51, 65, 85, 0.5);
-    --glass-blur: 12px;
-
-    /* Aurora Effects (Dark) */
-    --aurora-purple: rgba(139, 92, 246, 0.2);
-    --aurora-blue: rgba(59, 130, 246, 0.2);
-    --aurora-pink: rgba(236, 72, 153, 0.15);
   }
 }
+
 
 @layer base {
   * {
@@ -161,56 +124,134 @@
 }
 
 /* ============================================
-   Aurora Glassmorphism v3.0 — Custom CSS
+   Evalen Landing — Custom Styles
    ============================================ */
 
-/* Animación de los orbes de fondo */
-@keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(40px, -60px) scale(1.2); }
-  66% { transform: translate(-30px, 30px) scale(0.8); }
-  100% { transform: translate(0px, 0px) scale(1); }
+.text-brand-emphasis {
+  color: var(--brand);
 }
 
-.animate-blob {
-  animation: blob 10s infinite alternate;
+.dark .text-brand-emphasis {
+  color: var(--brand-foreground);
 }
-.animation-delay-2000 { animation-delay: 2s; }
-.animation-delay-4000 { animation-delay: 4s; }
 
-/* El efecto Cristal (Glassmorphism 2.0) */
+.btn-press {
+  transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
 .glass-effect {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
-/* Título destacado con color sólido (sin gradient) */
-.text-brand-emphasis {
-  color: #0d9488;
+
+.focus-ring, .focus-ring:focus {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-/* Glow decorativo */
-.glow-teal {
-  box-shadow: 0 0 20px rgba(13, 148, 136, 0.3);
-}
-
-/* Animación fade-in-up para scroll */
 @keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(20px); }
+  0% { opacity: 0; transform: translateY(24px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
+  animation: fadeInUp 0.7s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
 
-/* Animación float para annotations */
+@keyframes revealBlur {
+  0% { opacity: 0; transform: translateY(32px); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.animate-reveal {
+  animation: revealBlur 0.9s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes orb-drift {
+  /* deprecated — Aurora orbs removed in landing redesign. Kept here only to avoid breaking
+     any consumer that imports the class; do not use for new design. */
+  0% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -20px) scale(1.05); }
+  50% { transform: translate(-15px, 25px) scale(0.95); }
+  75% { transform: translate(-25px, -15px) scale(1.03); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+.animate-orb { animation: none; }
+
+@keyframes phrase-enter {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-phrase-enter {
+  animation: phrase-enter 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+@keyframes scan {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.animate-scan {
+  animation: scan 4s ease-in-out infinite;
+}
+
+@keyframes cursor-blink {
+  50% { opacity: 0; }
+}
+
+@keyframes scanline {
+  0%, 100% { top: 0; }
+  50% { top: 100%; }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 0.8s step-end infinite;
+}
+
+
+/* grain-overlay removed in landing redesign — the cream/SVG noise overlay was an AI-slop tell */
+.grain-overlay::after { content: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-float,
+  .animate-reveal,
+  .animate-orb,
+  .animate-phrase-enter,
+  .animate-scan,
+  .animate-cursor-blink {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.landing-page a:focus-visible,
+.landing-page button:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Tiptap Editor Styles */
