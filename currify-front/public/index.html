@@ -27,12 +27,10 @@
     <title>Evalen</title>
     <script>
       (function() {
-        const stored = localStorage.getItem('evalen-landing-theme');
+        const stored = localStorage.getItem('evalen-theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const theme = stored || (prefersDark ? 'dark' : 'light');
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-        }
+        document.documentElement.setAttribute('data-theme', theme);
       })();
     </script>
   </head>

@@ -16,7 +16,7 @@ interface ThemeProviderProps {
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('evalen-landing-theme');
+      const stored = localStorage.getItem('evalen-theme');
       if (stored === 'light' || stored === 'dark') {
         return stored;
       }
@@ -26,16 +26,11 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   });
 
   useLayoutEffect(() => {
-    const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem('evalen-landing-theme', theme);
+    localStorage.setItem('evalen-theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
