@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MapPinIcon } from '@heroicons/react/24/outline';
 
 interface LocationAutocompleteProps {
   value: string;
@@ -106,7 +105,10 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     <div ref={wrapperRef} className="relative">
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <MapPinIcon className="h-5 w-5 text-gray-400" />
+          <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10z"/>
+            <circle cx="12" cy="11" r="2.4"/>
+          </svg>
         </div>
         <input
           type="text"
@@ -115,37 +117,40 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           placeholder={placeholder}
           required={required}
           className={`
-            block w-full pl-10 pr-3 py-2 border rounded-lg text-gray-900
-            focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-            ${error ? 'border-red-500' : 'border-gray-300'}
-            ${isLoading ? 'bg-gray-50' : 'bg-white'}
+            w-full rounded-xl border border-line2 bg-card py-3 pl-11 pr-4 text-[15px] text-ink placeholder:text-ink3/80 transition
+            focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25
+            ${error ? 'border-low' : ''}
+            t-card t-ink t-line2
           `}
           autoComplete="off"
         />
         {isLoading && (
           <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-            <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+            <div className="animate-spin h-4 w-4 border-2 border-green border-t-transparent rounded-full"></div>
           </div>
         )}
       </div>
 
       {/* Suggestions Dropdown */}
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+        <div className="absolute z-10 mt-1 w-full bg-card border border-line2 rounded-lg shadow-card max-h-60 overflow-auto">
           {suggestions.map((suggestion) => (
             <button
               key={suggestion.id}
               type="button"
               onClick={() => handleSelectLocation(suggestion)}
-              className="w-full text-left px-4 py-3 hover:bg-blue-50 focus:bg-blue-50 focus:outline-none border-b border-gray-100 last:border-b-0 transition-colors"
+              className="w-full text-left px-4 py-3 hover:bg-greentint focus:bg-greentint focus:outline-none border-b border-line2 last:border-b-0 transition-colors"
             >
               <div className="flex items-start">
-                <MapPinIcon className="h-5 w-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
+                <svg className="h-[18px] w-[18px] text-green mr-3 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10z"/>
+                  <circle cx="12" cy="11" r="2.4"/>
+                </svg>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-ink">
                     {suggestion.text}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-ink2 mt-0.5">
                     {suggestion.place_name}
                   </p>
                 </div>
@@ -157,13 +162,13 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
       {/* Error Message */}
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p className="mt-1 text-sm text-low">{error}</p>
       )}
 
       {/* No results message */}
       {isOpen && !isLoading && suggestions.length === 0 && value.length >= 3 && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg p-4">
-          <p className="text-sm text-gray-500 text-center">
+        <div className="absolute z-10 mt-1 w-full bg-card border border-line2 rounded-lg shadow-card p-4">
+          <p className="text-sm text-ink3 text-center">
             No se encontraron ubicaciones. Intenta con otro término.
           </p>
         </div>

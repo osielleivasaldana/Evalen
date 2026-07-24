@@ -1,5 +1,4 @@
 import React from 'react';
-import { SparklesIcon } from '@heroicons/react/24/solid';
 
 interface SmartFillButtonProps {
   onClick: () => void;
@@ -13,23 +12,23 @@ const SmartFillButton: React.FC<SmartFillButtonProps> = ({ onClick, isGenerating
       type="button"
       onClick={onClick}
       disabled={disabled || isGenerating}
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white font-medium transition-all shadow-md
-        ${isGenerating || disabled 
-          ? 'bg-purple-400 cursor-not-allowed opacity-70' 
-          : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg'
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-4 py-2.5 text-[13px] font-semibold text-ctatext shadow-cta transition-all
+        ${isGenerating || disabled
+          ? 'bg-cta/60 disabled:opacity-60 disabled:cursor-not-allowed'
+          : 'bg-cta hover:-translate-y-0.5 hover:bg-ctah'
         }`}
     >
       {isGenerating ? (
         <>
-          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Generando con IA...
+          <span className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          Redactando…
         </>
       ) : (
         <>
-          <SparklesIcon className="w-5 h-5 text-yellow-300" />
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="m12 2 1.6 4.4L18 8l-4.4 1.6L12 14l-1.6-4.4L6 8l4.4-1.6z"/>
+            <path d="M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8z"/>
+          </svg>
           Smart Fill
         </>
       )}
