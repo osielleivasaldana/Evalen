@@ -17,40 +17,40 @@ export interface StageTemplateConfig {
 export const STAGE_TEMPLATES: StageTemplateConfig[] = [
     {
         id: 'general',
-        name: 'General / Administrativo',
-        description: 'Flujo estándar para roles administrativos, operativos o de soporte.',
+        name: 'General / Admin',
+        description: 'Roles administrativos, operativos o de soporte.',
         icon: BuildingOfficeIcon,
         stages: [
-            { name: 'Filtro Curricular', description: 'Revisión inicial de antecedentes y cumplimiento de requisitos excluyentes.' },
-            { name: 'Entrevista RRHH', description: 'Evaluar ajuste cultural, motivaciones y competencias blandas.' },
-            { name: 'Entrevista Jefe Directo', description: 'Evaluación técnica y fit con el equipo.' },
-            { name: 'Oferta', description: 'Negociación y cierre.' }
+            { name: 'Contactar', description: 'Primer contacto y confirmación de interés.' },
+            { name: 'Filtro curricular', description: 'Revisión de antecedentes y requisitos excluyentes.' },
+            { name: 'Entrevista RRHH', description: 'Ajuste cultural, motivaciones y expectativas.' },
+            { name: 'Entrevista final', description: 'Conversación con el hiring manager y cierre.' }
         ]
     },
     {
-        id: 'it',
+        id: 'tech',
         name: 'Tecnología (IT)',
-        description: 'Optimizado para desarrolladores, QA y roles técnicos.',
+        description: 'Desarrollo, QA y roles técnicos con prueba.',
         icon: CodeBracketIcon,
         stages: [
-            { name: 'Filtro Curricular', description: 'Validación de stack tecnológico y experiencia.' },
-            { name: 'Entrevista RRHH', description: 'Screening inicial y fit cultural.' },
-            { name: 'Prueba Técnica', description: 'Challenge técnico o revisión de código.' },
-            { name: 'Entrevista Técnica', description: 'Profundización técnica y arquitectura con el equipo.' },
-            { name: 'Oferta', description: 'Propuesta económica y beneficios.' }
+            { name: 'Contactar', description: 'Primer contacto y confirmación de interés.' },
+            { name: 'Filtro curricular', description: 'Revisión de stack y experiencia contra la rúbrica.' },
+            { name: 'Prueba técnica', description: 'Ejercicio o take-home acotado en el tiempo.' },
+            { name: 'Entrevista técnica', description: 'Profundización técnica y diseño de solución.' },
+            { name: 'Entrevista final', description: 'Fit de equipo, condiciones y cierre.' }
         ]
     },
     {
         id: 'sales',
         name: 'Ventas / Comercial',
-        description: 'Enfocado en habilidades de comunicación y negociación.',
+        description: 'Enfocado en comunicación y negociación.',
         icon: PresentationChartLineIcon,
         stages: [
-            { name: 'Filtro Curricular', description: 'Revisión de experiencia comercial.' },
-            { name: 'Entrevista RRHH', description: 'Evaluar perfil hunter/farmer y habilidades comunicacionales.' },
-            { name: 'Roleplay / Caso', description: 'Simulación de venta o resolución de caso práctico.' },
-            { name: 'Entrevista Gerente', description: 'Validación final de potencial comercial.' },
-            { name: 'Oferta', description: 'Esquema de comisiones y cierre.' }
+            { name: 'Contactar', description: 'Primer contacto y confirmación de interés.' },
+            { name: 'Screening', description: 'Revisión de trayectoria comercial y metas.' },
+            { name: 'Role play', description: 'Simulación de venta y manejo de objeciones.' },
+            { name: 'Entrevista comercial', description: 'Conversación con liderazgo de ventas.' },
+            { name: 'Referencias', description: 'Chequeo de referencias y cierre.' }
         ]
     }
 ];

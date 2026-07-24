@@ -64,3 +64,10 @@ export const formatCurrency = (amount: number, currencyCode: string): string => 
 
   return `${currency.symbol} ${amount.toLocaleString('es-CL')}`;
 };
+
+export const WIZARD_CURRENCIES = [
+  { symbol: '$', label: '$ CLP — Peso Chileno', code: 'CLP' },
+  { symbol: 'US$', label: 'US$ USD — Dólar', code: 'USD' },
+  { symbol: '€', label: '€ EUR — Euro', code: 'EUR' },
+  { symbol: 'UF', label: 'UF — Unidad de Fomento', code: 'UF' },
+];
