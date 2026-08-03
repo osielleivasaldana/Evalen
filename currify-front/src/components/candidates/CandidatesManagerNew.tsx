@@ -470,8 +470,8 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
     );
   }
 
-  const totalCandidates = candidates.length;
-  const inProcess = candidates.filter(c => hasCandidateProcess(c)).length;
+  const totalCandidates = candidates.filter(c => c.candidateStatus !== 'NOT_SELECTED').length;
+  const inProcess = candidates.filter(c => hasCandidateProcess(c) || c.candidateStatus === 'IN_PROCESS' || c.candidateStatus === 'SELECTED').length;
   const toReview = candidates.filter(c => c.candidateStatus === 'NEW' && !hasCandidateProcess(c)).length;
   const rejected = candidates.filter(c => c.candidateStatus === 'NOT_SELECTED' && !hasCandidateProcess(c)).length;
 
