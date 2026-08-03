@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Candidate, CVData } from '../../services/api';
+import { Candidate, Campaign } from '../../services/api';
 import { apiService } from '../../services/api';
 import { STAGES, mapStage } from '../../constants/stages';
 import { hasCandidateProcess, getActiveStageName } from '../../utils/candidateProcess';
@@ -20,12 +20,6 @@ interface CandidateDrawerProps {
   onViewAIAnalysis: (candidate: Candidate) => void;
   onViewProcess?: (candidate: Candidate) => void;
   loading?: boolean;
-}
-
-interface Campaign {
-  id: string;
-  title?: string;
-  status?: string;
 }
 
 function getInitials(name: string): string {
