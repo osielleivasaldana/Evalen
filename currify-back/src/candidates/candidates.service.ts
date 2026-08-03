@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { SearchCandidatesDto } from './dto/search-candidates.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class CandidatesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) { }
 
   // Helper function to check if user has access to a campaign
   private async checkCampaignAccess(campaignId: string, userId: string): Promise<boolean> {
@@ -86,6 +90,17 @@ export class CandidatesService {
             recommendation: true,
           },
         },
+        processInstances: {
+          select: {
+            id: true,
+            currentStageOrder: true,
+            endDate: true,
+            stageInstances: {
+              where: { status: 'ACTIVE' },
+              select: { id: true, status: true, stageTemplate: { select: { id: true, name: true, order: true } } }
+            }
+          }
+        },
       },
     });
   }
@@ -108,6 +123,17 @@ export class CandidatesService {
           },
         },
         scoring: true,
+        processInstances: {
+          select: {
+            id: true,
+            currentStageOrder: true,
+            endDate: true,
+            stageInstances: {
+              where: { status: 'ACTIVE' },
+              select: { id: true, status: true, stageTemplate: { select: { id: true, name: true, order: true } } }
+            }
+          }
+        },
       },
     });
 
@@ -182,7 +208,7 @@ export class CandidatesService {
     });
   }
 
-  async updateStatus(id: string, userId: string, status: string) {
+  async updateStatus(id: string, userId: string, status: string, reason?: string) {
     const candidate = await this.prisma.candidate.findUnique({
       where: { id },
       include: { campaign: true }
@@ -198,10 +224,26 @@ export class CandidatesService {
       throw new ForbiddenException('You do not have access to update this candidate');
     }
 
-    return this.prisma.candidate.update({
+    const updated = await this.prisma.candidate.update({
       where: { id },
       data: { candidateStatus: status as any }, // strict typing might fail if not importing enum, using as any for safety or string if prisma accepts it
     });
+
+    await this.auditService.log({
+      userId,
+      action: 'CANDIDATE_STATUS_CHANGED',
+      entityType: 'Candidate',
+      entityId: id,
+      metadata: {
+        campaignId: candidate.campaignId,
+        candidateName: candidate.name,
+        from: candidate.candidateStatus,
+        to: status,
+        reason: reason || null,
+      },
+    });
+
+    return updated;
   }
 
   async searchBySkills(campaignId: string, userId: string, skills: string[]) {
