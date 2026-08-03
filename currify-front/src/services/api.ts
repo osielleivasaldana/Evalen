@@ -170,6 +170,71 @@ interface CampaignStats {
   recentApplications: number;
 }
 
+// Dashboard
+export interface DashboardFunnel {
+  review: number;
+  interview: number;
+  offer: number;
+  hired: number;
+}
+
+export interface DashboardCampaign {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  modality: string;
+  location: string;
+  createdAt: string;
+  candidateCount: number;
+  funnel: DashboardFunnel;
+}
+
+export interface DashboardDecisionCandidate {
+  id: string;
+  name: string;
+  initials: string;
+  campaignTitle: string;
+  campaignId: string;
+  matchScore: number;
+  recommendation: string;
+  summary: string;
+  photoUrl?: string;
+}
+
+export interface DashboardTopCandidate {
+  id: string;
+  name: string;
+  initials: string;
+  photoUrl?: string;
+  role: string;
+  experience: string;
+  campaignTitle: string;
+  campaignId: string;
+  matchScore: number;
+  recommendation: string;
+  status: string;
+  stageLabel: string;
+  dimensions: Array<{ label: string; score: number; maxScore: number }>;
+  summary: string;
+}
+
+export interface DashboardSummary {
+  stats: {
+    activeCampaigns: number;
+    evaluatedCVs: number;
+    inInterview: number;
+    timeSavedHours: number;
+    draftCampaigns: number;
+    closedCampaigns: number;
+    weeklyNewCVs: number;
+    weeklyIncrease: number;
+  };
+  campaigns: DashboardCampaign[];
+  decisionQueue: DashboardDecisionCandidate[];
+  topCandidates: DashboardTopCandidate[];
+}
+
 export interface SmartFillRequest {
   jobTitle: string;
   additionalContext?: string;
@@ -325,6 +390,7 @@ interface Candidate {
   createdAt: string;
   updatedAt: string;
   campaign?: Campaign;
+  processInstances?: CandidateProcessInfo[];
 }
 
 // Process and Stage Instance interfaces
@@ -359,6 +425,17 @@ export interface AuditLog {
   createdAt: string;
 }
 
+export interface CandidateProcessInfo {
+  id: string;
+  currentStageOrder: number;
+  endDate?: string;
+  stageInstances: {
+    id: string;
+    status: StageStatus;
+    stageTemplate: { id: string; name: string; order: number };
+  }[];
+}
+
 export interface ProcessInstance {
   id: string;
   startDate: string;
@@ -382,7 +459,7 @@ export interface StartProcessRequest {
 
 export interface UpdateStageRequest {
   decision: 'ACCEPTED' | 'REJECTED';
-  feedback: string;
+  feedback?: string;
 }
 
 export interface Notification {
@@ -621,6 +698,10 @@ class ApiService {
     return this.apiCall('/campaigns/stats');
   }
 
+  async getDashboardSummary(): Promise<DashboardSummary> {
+    return this.apiCall('/dashboard/summary');
+  }
+
   async generateCampaignDraft(data: SmartFillRequest): Promise<SmartFillResponse> {
     return this.apiCall('/campaigns/generate-draft', {
       method: 'POST',
@@ -702,10 +783,10 @@ class ApiService {
     });
   }
 
-  async updateCandidateStatus(candidateId: string, status: CandidateStatus): Promise<Candidate> {
+  async updateCandidateStatus(candidateId: string, status: CandidateStatus, reason?: string): Promise<Candidate> {
     return this.apiCall(`/candidates/${candidateId}/status`, {
       method: 'PATCH',
-      body: JSON.stringify({ status })
+      body: JSON.stringify(reason ? { status, reason } : { status })
     });
   }
 
