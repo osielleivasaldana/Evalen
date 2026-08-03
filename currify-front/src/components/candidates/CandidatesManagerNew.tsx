@@ -199,11 +199,12 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
         c.name.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q)
       );
     }
-    // Tab 'all' (Todos): todos los candidatos, sin filtro de estado.
-    if (activeTabFilter === 'process') {
-      result = result.filter(c => hasCandidateProcess(c));
+    if (activeTabFilter === 'all') {
+      result = result.filter(c => !hasCandidateProcess(c) && c.candidateStatus !== 'NOT_SELECTED');
+    } else if (activeTabFilter === 'process') {
+      result = result.filter(c => hasCandidateProcess(c) || c.candidateStatus === 'IN_PROCESS' || c.candidateStatus === 'SELECTED');
     } else if (activeTabFilter === 'top10') {
-      result = result.filter(c => c.candidateStatus !== 'NOT_SELECTED')
+      result = result.filter(c => c.candidateStatus !== 'NOT_SELECTED' && !hasCandidateProcess(c))
         .sort((a, b) => calculateScore(b) - calculateScore(a))
         .slice(0, 10);
     } else if (activeTabFilter === 'new') {
@@ -678,6 +679,9 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                   { key: 'process' as FilterTab, label: 'En proceso', icon: (
                     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
                   )},
+                  { key: 'new' as FilterTab, label: 'Por revisar', icon: (
+                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                  )},
                   { key: 'rejected' as FilterTab, label: 'Descartados', icon: (
                     <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
                   )}
@@ -685,7 +689,7 @@ const CandidatesManagerNew: React.FC<CandidatesManagerProps> = ({ campaignId, on
                   <button key={tab.key} role="tab" aria-selected={activeTabFilter === tab.key} onClick={() => setActiveTabFilter(tab.key)}
                     className={`tab-btn inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold transition ${
                       activeTabFilter === tab.key
-                        ? 'bg-greentint text-green t-goodt t-green'
+                        ? `bg-greentint text-green t-goodt t-green ${tab.key === 'new' ? 'ring-2 ring-yellow/40' : ''}`
                         : 'text-ink2 hover:bg-paper2 t-ink2'
                     }`}>
                     {tab.icon}{tab.label}
