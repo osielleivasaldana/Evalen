@@ -129,6 +129,8 @@ export class InterviewGuideService {
 
       return guide;
     } catch (error) {
+      if (error instanceof HttpException) throw error;
+
       // Manejar errores específicos
       if ((error as any).code === 'ECONNRESET') {
         this.logger.error(`Connection reset by scoring service for process ${processInstanceId} stage ${stageInstanceId}`);
