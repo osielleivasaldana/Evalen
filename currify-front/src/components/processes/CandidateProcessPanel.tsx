@@ -409,6 +409,35 @@ const CandidateProcessPanel: React.FC = () => {
     );
   };
 
+  const renderFeedback = () => {
+    if (!canDecide) return null;
+    return (
+      <div className="mt-6 border-t border-line pt-5 t-line">
+        <label htmlFor="fb" className="block font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">Retroalimentación de tu decisión</label>
+        <textarea
+          id="fb"
+          rows={3}
+          value={feedback}
+          onChange={e => { setFeedback(e.target.value); if (feedbackErr) setFeedbackErr(false); }}
+          placeholder="Escribe el porqué de tu decisión… (obligatoria al rechazar)"
+          className={`mt-2 w-full rounded-xl border bg-paper/60 px-3.5 py-3 text-[14px] leading-relaxed text-ink placeholder:text-ink3/80 focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2 ${feedbackErr ? 'animate-shake' : ''}`}
+          style={feedbackErr ? { borderColor: 'var(--low)' } : undefined}
+        />
+        <p className={`mt-1.5 text-[12.5px] font-medium text-low t-low ${feedbackErr ? '' : 'hidden'}`}>La retroalimentación es obligatoria al rechazar una etapa.</p>
+        <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+          <button type="button" onClick={() => handleDecide(true)} disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-good px-4 py-3 text-[14px] font-semibold text-onmark transition hover:brightness-110 disabled:opacity-60 t-good">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            Aprobar etapa
+          </button>
+          <button type="button" onClick={() => handleDecide(false)} disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-low px-4 py-3 text-[14px] font-semibold text-onmark transition hover:brightness-110 disabled:opacity-60 t-low">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            Rechazar etapa
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   const renderMesa = () => {
     if (!process) return null;
     if (terminal) {
@@ -502,31 +531,7 @@ const CandidateProcessPanel: React.FC = () => {
           </div>
           {readOnly ? renderReadOnlyGuide() : renderGuide()}
         </div>
-        {canDecide && (
-          <div className="mt-6 border-t border-line pt-5 t-line">
-            <label htmlFor="fb" className="block font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">Retroalimentación de tu decisión</label>
-            <textarea
-              id="fb"
-              rows={3}
-              value={feedback}
-              onChange={e => { setFeedback(e.target.value); if (feedbackErr) setFeedbackErr(false); }}
-              placeholder="Escribe el porqué de tu decisión… (obligatoria al rechazar)"
-              className={`mt-2 w-full rounded-xl border bg-paper/60 px-3.5 py-3 text-[14px] leading-relaxed text-ink placeholder:text-ink3/80 focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2 ${feedbackErr ? 'animate-shake' : ''}`}
-              style={feedbackErr ? { borderColor: 'var(--low)' } : undefined}
-            />
-            <p className={`mt-1.5 text-[12.5px] font-medium text-low t-low ${feedbackErr ? '' : 'hidden'}`}>La retroalimentación es obligatoria al rechazar una etapa.</p>
-            <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
-              <button type="button" onClick={() => handleDecide(true)} disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-good px-4 py-3 text-[14px] font-semibold text-onmark transition hover:brightness-110 disabled:opacity-60 t-good">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                Aprobar etapa
-              </button>
-              <button type="button" onClick={() => handleDecide(false)} disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-low px-4 py-3 text-[14px] font-semibold text-onmark transition hover:brightness-110 disabled:opacity-60 t-low">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
-                Rechazar etapa
-              </button>
-            </div>
-          </div>
-        )}
+        {renderFeedback()}
       </div>
     );
   };
@@ -620,6 +625,56 @@ const CandidateProcessPanel: React.FC = () => {
               Reintentar
             </button>
           </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (isResponsible) {
+    // SANDBOX: sin acta, sin progreso, sin "Etapa N de M", sin match, sin sensitive.
+    // El responsable solo ve su propia etapa: guía + notas + feedback + decidir.
+    return (
+      <Layout>
+        <div className="min-h-screen bg-paper text-ink font-sans antialiased [text-rendering:optimizeLegibility]">
+          <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[60] bg-grain opacity-[0.045] mix-blend-overlay"></div>
+          <main className="mx-auto max-w-[760px] px-4 pb-24 pt-6 sm:px-6 lg:px-8">
+            <div className="flex items-start gap-4">
+              <button type="button" onClick={() => navigate(`/campaigns/${campaignId}/candidates`)} aria-label="Volver" className="mt-1 grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-line2 bg-card text-ink2 transition hover:border-ink hover:text-ink t-card t-ink2 t-line2">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+              </button>
+              <div className="min-w-0">
+                <p className="font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">Mi etapa asignada · {campaign?.title}</p>
+                <h1 className="mt-1 font-sans text-[1.9rem] font-bold leading-[1.05] tracking-[-0.02em] text-ink t-ink">{mesaStage?.stageTemplate?.name ?? 'Etapa'}</h1>
+                <p className="mt-2 inline-flex items-center gap-1.5 font-sans text-[13px] text-ink2 t-ink2">
+                  <span className="grid h-6 w-6 place-items-center rounded-full bg-greendeep font-mono text-[11px] font-semibold text-onmark">{initialsOf(responsibleName)}</span>
+                  {responsibleName} · Candidato: {candidate?.name}
+                </p>
+              </div>
+            </div>
+            <div className="rise mt-7 rounded-2xl border border-line2 bg-card p-6 shadow-card t-card t-line2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="inline-flex items-center gap-1.5 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">
+                  <svg className="h-3.5 w-3.5" style={{ color: 'var(--yellow)' }} viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 1.7 4.6L18 8l-4.3 1.4L12 14l-1.7-4.6L6 8l4.3-1.4z"/></svg>
+                  Guía de entrevista
+                </p>
+              </div>
+              {mesaStage?.status === 'ACTIVE' ? renderGuide() : renderReadOnlyGuide()}
+              {renderFeedback()}
+            </div>
+          </main>
+        </div>
+
+        {/* Toast */}
+        <div id="toastItem" aria-live="polite" role="status"
+          className={`pointer-events-none fixed inset-x-4 bottom-5 z-[90] mx-auto flex max-w-sm items-start gap-3 rounded-xl border border-line2 bg-card px-4 py-3 text-[14px] text-ink shadow-card transition-all duration-300 sm:inset-x-auto sm:right-6 sm:max-w-sm t-card t-ink t-line2 ${
+            toast ? 'translate-y-0 opacity-100' : 'translate-y-[140%] opacity-0'
+          }`}>
+          {toast && (
+            <>
+              <span className="mt-0.5 shrink-0" dangerouslySetInnerHTML={{ __html: toast.icon }} />
+              <span className="leading-snug">{toast.msg}</span>
+            </>
+          )}
         </div>
       </Layout>
     );
