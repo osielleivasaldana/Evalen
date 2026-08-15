@@ -93,7 +93,7 @@ interface UpdateUserRequest {
 
 // New enums and types
 export type CandidateStatus = 'NEW' | 'IN_PROCESS' | 'NOT_SELECTED' | 'SELECTED';
-export type StageStatus = 'PENDING' | 'ACTIVE' | 'ACCEPTED' | 'REJECTED';
+export type StageStatus = 'PENDING' | 'ACTIVE' | 'ACCEPTED' | 'REJECTED' | 'OMITTED';
 export type UserRole = 'ADMIN' | 'RECRUITER' | 'TECHNICAL_REVIEWER';
 
 // Stage Template interfaces
@@ -394,6 +394,18 @@ interface Candidate {
 }
 
 // Process and Stage Instance interfaces
+export type ProcessViewer = 'OWNER' | 'STAGE_RESPONSIBLE';
+
+export interface GuideQuestion {
+  question: string;
+  source: 'rubrica' | 'perfil' | 'brecha' | 'estandar';
+}
+
+export interface ProcessSensitive {
+  salary?: string | null;
+  modality?: string | null;
+}
+
 export interface StageInstance {
   id: string;
   status: StageStatus;
@@ -407,6 +419,8 @@ export interface StageInstance {
     email: string;
   };
   attachments?: Document[];
+  guideJson?: { questions: GuideQuestion[] };
+  notesJson?: Record<string, string>;
   createdAt: string;
   updatedAt: string;
 }
@@ -445,6 +459,9 @@ export interface ProcessInstance {
   campaign: Campaign;
   stageInstances: StageInstance[];
   auditLogs?: AuditLog[];
+  viewer?: ProcessViewer;
+  sensitive?: ProcessSensitive;
+  processId?: string; // presente en respuesta sandbox (STAGE_RESPONSIBLE)
   createdAt: string;
   updatedAt: string;
 }
@@ -896,6 +913,25 @@ class ApiService {
 
   async getCampaignStages(campaignId: string): Promise<StageTemplate[]> {
     return this.apiCall(`/campaigns/${campaignId}/stages`);
+  }
+
+  async generateStageGuide(processId: string, stageId: string): Promise<{ questions: GuideQuestion[] }> {
+    return this.apiCall(`/processes/${processId}/stages/${stageId}/guide`, {
+      method: 'POST',
+    });
+  }
+
+  async updateStageNotes(processId: string, stageId: string, notes: Record<string, string>): Promise<{ notesJson: Record<string, string> }> {
+    return this.apiCall(`/processes/${processId}/stages/${stageId}/notes`, {
+      method: 'PATCH',
+      body: JSON.stringify({ notes }),
+    });
+  }
+
+  async reopenProcess(processId: string): Promise<any> {
+    return this.apiCall(`/processes/${processId}/reopen`, {
+      method: 'POST',
+    });
   }
 
   // Notification methods
