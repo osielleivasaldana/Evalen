@@ -90,9 +90,11 @@ const CandidateProcessPanel: React.FC = () => {
   const [feedback, setFeedback] = useState('');
   const [feedbackErr, setFeedbackErr] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [toast, setToast] = useState<{ msg: string; icon: string } | null>(null);
   const toastT = useRef<any>(null);
-  const notesT = useRef<any>(null);
+  const notesT = useRef<{ timer: ReturnType<typeof setTimeout>; stageId: string; fn: () => void } | null>(null);
+  const mesaStageIdRef = useRef<string | null>(null);
 
   const showToast = (msg: string, type: string = 'info') => {
     const icons: Record<string, string> = {
@@ -136,6 +138,7 @@ const CandidateProcessPanel: React.FC = () => {
   const isResponsible = process?.viewer === 'STAGE_RESPONSIBLE';
   const stageById = (id: string | null) => allStages.find(s => s.id === id) ?? null;
   const mesaStage = isOwner && selectedStageId ? stageById(selectedStageId) : (isOwner ? activeStage : allStages[0] ?? null);
+  mesaStageIdRef.current = mesaStage?.id ?? null;
   const processPk = process?.id ?? process?.processId ?? '';
   const canDecide = !!mesaStage && mesaStage.status === 'ACTIVE';
   const responsibleName = mesaStage?.responsible?.name ?? '';
@@ -158,20 +161,28 @@ const CandidateProcessPanel: React.FC = () => {
   }, [mesaStage?.id, mesaStage?.status]);
 
   const handleGenerateGuide = async () => {
-    if (!process || !mesaStage) return;
+    if (!process || !mesaStage || generating) return;
+    const stageId = mesaStage.id;
     setGuide('loading');
+    setGenerating(true);
     try {
-      const res = await apiService.generateStageGuide(processPk, mesaStage.id);
+      const res = await apiService.generateStageGuide(processPk, stageId);
+      // Guard anti-race: si el usuario cambió de etapa mientras la IA generaba, descartar la respuesta.
+      if (mesaStageIdRef.current !== stageId) return;
       setGuide(res.questions);
       setNotes({});
       setProcess(p => p ? {
         ...p,
-        stageInstances: p.stageInstances.map(s => s.id === mesaStage.id ? { ...s, guideJson: { questions: res.questions }, notesJson: {} } : s),
+        stageInstances: p.stageInstances.map(s => s.id === stageId ? { ...s, guideJson: { questions: res.questions }, notesJson: {} } : s),
       } : p);
       showToast(`Guía generada: ${res.questions.length} preguntas con procedencia.`, 'ok');
     } catch (e: any) {
-      setGuide(null);
-      showToast(e.message || 'Error al generar la guía.', 'warn');
+      if (mesaStageIdRef.current === stageId) {
+        setGuide(null);
+        showToast(e.message || 'Error al generar la guía.', 'warn');
+      }
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -179,12 +190,19 @@ const CandidateProcessPanel: React.FC = () => {
     setNotes(prev => { const n = { ...prev, [String(idx)]: value }; scheduleSave(n); return n; });
   };
   const scheduleSave = (n: Record<string, string>) => {
-    clearTimeout(notesT.current);
-    notesT.current = setTimeout(async () => {
-      if (!process || !mesaStage) return;
-      try { await apiService.updateStageNotes(processPk, mesaStage.id, n); }
-      catch { showToast('No se pudo guardar la nota.', 'warn'); }
-    }, 700);
+    if (!process || !mesaStage) return;
+    const stageId = mesaStage.id;
+    const fn = () => {
+      apiService.updateStageNotes(processPk, stageId, n)
+        .catch(() => showToast('No se pudo guardar la nota.', 'warn'));
+    };
+    const pending = notesT.current;
+    if (pending) {
+      clearTimeout(pending.timer);
+      // Si el guardado pendiente era de otra etapa, flush inmediato: si no, se perdería al cambiar de etapa.
+      if (pending.stageId !== stageId) pending.fn();
+    }
+    notesT.current = { timer: setTimeout(fn, 700), stageId, fn };
   };
 
   const handleDecide = async (approve: boolean) => {
@@ -275,9 +293,9 @@ const CandidateProcessPanel: React.FC = () => {
       return (
         <>
           <p className="mt-3 text-[14px] leading-relaxed text-ink2 t-ink2">La IA prepara preguntas apoyándose en el CV, la rúbrica del cargo y el feedback de las etapas anteriores.</p>
-          <button type="button" onClick={handleGenerateGuide} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cta px-4 py-3.5 text-[15px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah">
+          <button type="button" onClick={handleGenerateGuide} disabled={generating} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cta px-4 py-3.5 text-[15px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah disabled:translate-y-0 disabled:opacity-60 disabled:hover:bg-cta">
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 1.7 4.6L18 8l-4.3 1.4L12 14l-1.7-4.6L6 8l4.3-1.4z"/><path d="M18.5 13.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z"/></svg>
-            Generar preguntas con IA
+            {generating ? 'Generando…' : 'Generar preguntas con IA'}
           </button>
         </>
       );
@@ -290,7 +308,7 @@ const CandidateProcessPanel: React.FC = () => {
             <svg className="h-3.5 w-3.5" style={{ color: 'var(--yellow)' }} viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 1.7 4.6L18 8l-4.3 1.4L12 14l-1.7-4.6L6 8l4.3-1.4z"/></svg>
             Guía de entrevista · {guide.length} preguntas
           </p>
-          <button type="button" onClick={handleGenerateGuide} className="ml-auto font-mono text-[12.5px] font-medium text-cta underline-offset-2 hover:underline t-cta">Regenerar</button>
+          <button type="button" onClick={handleGenerateGuide} disabled={generating} className="ml-auto font-mono text-[12.5px] font-medium text-cta underline-offset-2 hover:underline disabled:opacity-50 disabled:no-underline t-cta">{generating ? 'Generando…' : 'Regenerar'}</button>
         </div>
         {asked.length > 0 && (
           <div className="mt-3 rounded-xl border border-line2 bg-paper/60 p-3 t-line2">
@@ -413,9 +431,11 @@ const CandidateProcessPanel: React.FC = () => {
               </p>
             </div>
           </div>
-          <button type="button" onClick={handleReopen} disabled={busy} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-line2 bg-card px-4 py-3 text-[14px] font-semibold text-ink2 transition hover:border-ink hover:text-ink disabled:opacity-60 t-card t-ink2 t-line2">
-            {busy ? 'Reabriendo…' : 'Reabrir proceso'}
-          </button>
+          {!terminalSelected && (
+            <button type="button" onClick={handleReopen} disabled={busy} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-line2 bg-card px-4 py-3 text-[14px] font-semibold text-ink2 transition hover:border-ink hover:text-ink disabled:opacity-60 t-card t-ink2 t-line2">
+              {busy ? 'Reabriendo…' : 'Reabrir proceso'}
+            </button>
+          )}
         </div>
       );
     }
