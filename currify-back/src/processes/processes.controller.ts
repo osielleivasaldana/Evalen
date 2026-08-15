@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ProcessesService } from './processes.service';
+import { InterviewGuideService } from './interview-guide.service';
 import { StartProcessDto } from './dto/start-process.dto';
 import { UpdateStageDto } from './dto/update-stage.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -20,6 +21,7 @@ export class ProcessesController {
   constructor(
     private processesService: ProcessesService,
     private auditService: AuditService,
+    private interviewGuideService: InterviewGuideService,
   ) {}
 
   @Post('start')
@@ -64,5 +66,24 @@ export class ProcessesController {
     @Request() req: any,
   ) {
     return this.processesService.reopenProcess(processInstanceId, req.user.id);
+  }
+
+  @Post(':processInstanceId/stages/:stageInstanceId/guide')
+  async generateGuide(
+    @Param('processInstanceId') processInstanceId: string,
+    @Param('stageInstanceId') stageInstanceId: string,
+    @Request() req: any,
+  ) {
+    return this.interviewGuideService.generateGuide(processInstanceId, stageInstanceId, req.user.id);
+  }
+
+  @Patch(':processInstanceId/stages/:stageInstanceId/notes')
+  async updateNotes(
+    @Param('processInstanceId') processInstanceId: string,
+    @Param('stageInstanceId') stageInstanceId: string,
+    @Body() body: { notes: Record<string, string> },
+    @Request() req: any,
+  ) {
+    return this.interviewGuideService.updateNotes(processInstanceId, stageInstanceId, req.user.id, body.notes || {});
   }
 }
