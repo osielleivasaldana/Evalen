@@ -47,7 +47,7 @@ describe('ProcessesService — getProcessByCandidate scoping', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: AuditService, useValue: { log: jest.fn() } },
         { provide: NotificationsService, useValue: { create: jest.fn() } },
-        { provide: EmailService, useValue: {} },
+        { provide: EmailService, useValue: { sendCandidateRejectedEmail: jest.fn() } },
       ],
     }).compile();
     service = module.get(ProcessesService);
@@ -94,5 +94,30 @@ describe('ProcessesService — getProcessByCandidate scoping', () => {
     mockPrisma.processInstance.findUnique.mockResolvedValue(null);
     await expect(service.getProcessByCandidate('camp-1', 'cand-1', 'owner-1')).rejects
       .toBeInstanceOf(NotFoundException);
+  });
+
+  describe('handleStageRejected — OMITTED', () => {
+    it('debe marcar las etapas PENDING posteriores como OMITTED', async () => {
+      const stageInstance = {
+        processInstanceId: 'proc-1',
+        processInstance: {
+          campaignId: 'camp-1',
+          candidateId: 'cand-1',
+          campaign: { userId: 'owner-1', title: 'Campaña' },
+          candidate: { email: 'm@x.cl', name: 'Marta' },
+        },
+        stageTemplate: { name: 'Contactar' },
+      };
+      mockPrisma.stageInstance.updateMany.mockResolvedValue({ count: 2 });
+      mockPrisma.candidate.update.mockResolvedValue({});
+      mockPrisma.processInstance.update.mockResolvedValue({});
+
+      await (service as any).handleStageRejected(stageInstance, 'owner-1');
+
+      expect(mockPrisma.stageInstance.updateMany).toHaveBeenCalledWith({
+        where: { processInstanceId: 'proc-1', status: 'PENDING' },
+        data: { status: 'OMITTED' },
+      });
+    });
   });
 });

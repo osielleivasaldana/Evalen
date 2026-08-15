@@ -289,6 +289,15 @@ export class ProcessesService {
       data: { endDate: new Date() }
     });
 
+    // 2b. Marcar etapas posteriores pendientes como OMITIDAS (acta correcta para el dueño)
+    await this.prisma.stageInstance.updateMany({
+      where: {
+        processInstanceId: stageInstance.processInstanceId,
+        status: 'PENDING',
+      },
+      data: { status: 'OMITTED' },
+    });
+
     // 3. Notificar al reclutador (dueño de la campaña)
     await this.notificationsService.create({
       userId: stageInstance.processInstance.campaign.userId,
