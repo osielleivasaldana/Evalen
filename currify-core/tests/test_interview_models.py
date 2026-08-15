@@ -28,3 +28,8 @@ def test_valid_response_roundtrip():
 def test_invalid_source_rejected():
     with pytest.raises(ValidationError):
         GuideQuestion(question="x", source="feedback")
+
+
+def test_source_normalized():
+    assert GuideQuestion(question="x", source="Rúbrica").source == "rubrica"
+    assert GuideQuestion(question="x", source="estándar").source == "estandar"

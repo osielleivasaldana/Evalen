@@ -1,5 +1,5 @@
 from typing import List, Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class CampaignBrief(BaseModel):
@@ -29,6 +29,21 @@ class InterviewGuideRequest(BaseModel):
 class GuideQuestion(BaseModel):
     question: str
     source: Literal["rubrica", "perfil", "brecha", "estandar"]
+
+    @field_validator("source", mode="before")
+    @classmethod
+    def normalize_source(cls, v):
+        if isinstance(v, str):
+            normalized = (
+                v.lower()
+                .replace("á", "a")
+                .replace("é", "e")
+                .replace("í", "i")
+                .replace("ó", "o")
+                .replace("ú", "u")
+            )
+            return normalized
+        return v
 
 
 class InterviewGuideResponse(BaseModel):
