@@ -1489,35 +1489,38 @@ const loadData = useCallback(async () => {
     ]);
     setProcess(pc); setCampaign(camp); setCandidate(cand);
     const active = pc.stageInstances.find(s => s.status === 'ACTIVE');
-    setSelectedStageId(active?.id ?? pc.stageInstances[0]?.id ?? null);
-    const activeStage = pc.stageInstances.find(s => s.status === 'ACTIVE');
-    if (activeStage?.guideJson?.questions) {
-      setGuide(activeStage.guideJson.questions);
-      setNotes(activeStage.notesJson || {});
-    } else if (pc.viewer === 'OWNER' && selectedStageIsActive()) {
-      setGuide(null);
+    // Inicializar guía/notas desde la etapa activa si ya están persistidas
+    if (active?.guideJson?.questions) {
+      setGuide(active.guideJson.questions);
+      setNotes(active.notesJson || {});
     } else {
       setGuide(null);
+      setNotes({});
     }
+    setSelectedStageId(active?.id ?? pc.stageInstances[0]?.id ?? null);
   } catch (e: any) { setError(e.message || 'Error al cargar el proceso'); }
   finally { setLoading(false); }
 }, [campaignId, candidateId]);
 
-const activeStage = process?.stageInstances.find(s => s.status === 'ACTIVE') ?? null;
+const allStages = process?.stageInstances ?? [];
+const activeStage = allStages.find(s => s.status === 'ACTIVE') ?? null;
 const isOwner = process?.viewer === 'OWNER' || process?.viewer === undefined;
 const isResponsible = process?.viewer === 'STAGE_RESPONSIBLE';
-const mesaStage = process?.stageInstances.find(s => s.id === selectedStageId) ?? activeStage;
-const canDecide = mesaStage?.status === 'ACTIVE'; // responsable o dueño: el backend ya filtra; dueño decide solo la activa
+const stageById = (id: string | null) => allStages.find(s => s.id === id) ?? null;
+// mesaStage: en dueño, la clickeada en el acta (o la activa); en sandbox, su única etapa
+const mesaStage = isOwner && selectedStageId ? stageById(selectedStageId) : (isOwner ? activeStage : allStages[0] ?? null);
+// en sandbox, el id real del proceso para llamar por pk: process.id no viene en esa respuesta
+const processPk = process?.id ?? process?.processId ?? '';
+const canDecide = !!mesaStage && mesaStage.status === 'ACTIVE';
+const responsibleName = mesaStage?.responsible?.name ?? '';
 
 const showToast = (msg: string, type: 'ok' | 'info' | 'warn' = 'info') => { /* patrón del mockup (toastId, translate-y) */ };
 
 const handleGenerateGuide = async () => {
-  if (!process) return;
-  const stage = stageInstances().find(s => s.id === selectedStageId) ?? activeStage;
-  if (!stage) return;
+  if (!process || !mesaStage) return;
   setGuide('loading');
   try {
-    const res = await apiService.generateStageGuide(process.id, stage.id);
+    const res = await apiService.generateStageGuide(processPk, mesaStage.id);
     setGuide(res.questions);
     setNotes({});
     showToast(`Guía generada: ${res.questions.length} preguntas con procedencia.`, 'ok');
@@ -1526,7 +1529,6 @@ const handleGenerateGuide = async () => {
     showToast(e.message || 'Error al generar la guía.', 'warn');
   }
 };
-// stageInstances(): en modo responsable usa process.stageInstances (sus etapas); en owner todas.
 
 const handleNoteChange = (idx: number, value: string) => {
   setNotes(prev => { const n = { ...prev, [String(idx)]: value }; scheduleSave(n); return n; });
@@ -1534,9 +1536,8 @@ const handleNoteChange = (idx: number, value: string) => {
 const scheduleSave = (n: Record<string, string>) => {
   clearTimeout(notesT.current);
   notesT.current = setTimeout(async () => {
-    const stage = activeOrMesa();
-    if (!process || !stage) return;
-    try { await apiService.updateStageNotes(process.id, stage.id, n); }
+    if (!process || !mesaStage) return;
+    try { await apiService.updateStageNotes(processPk, mesaStage.id, n); }
     catch { showToast('No se pudo guardar la nota.', 'warn'); }
   }, 700);
 };
@@ -1557,7 +1558,7 @@ const handleDecide = async (approve: boolean) => {
 const handleReopen = async () => {
   if (!process) return;
   setBusy(true);
-  try { await apiService.reopenProcess(process.id); showToast('Proceso reabierto.', 'ok'); await loadData(); }
+  try { await apiService.reopenProcess(processPk); showToast('Proceso reabierto.', 'ok'); await loadData(); }
   catch (e: any) { showToast(e.message || 'Error al reabrir.', 'warn'); }
   finally { setBusy(false); }
 };
