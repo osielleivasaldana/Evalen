@@ -388,65 +388,88 @@ export class ProcessesService {
   }
 
   async getProcessByCandidate(campaignId: string, candidateId: string, userId: string) {
-    // Validar acceso
-    const campaign = await this.prisma.campaign.findUnique({
-      where: { id: campaignId }
-    });
+    const campaign = await this.prisma.campaign.findUnique({ where: { id: campaignId } });
 
     if (!campaign) {
       throw new NotFoundException('Campaign not found');
     }
 
-    if (campaign.userId !== userId) {
-      const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-      // Check if user is responsible for any stage in this campaign
-      const isResponsible = await this.prisma.stageTemplate.findFirst({
-        where: {
-          campaignId: campaignId,
-          responsibleId: userId
-        }
+    const isOwner = campaign.userId === userId || user.role === 'ADMIN';
+
+    if (!isOwner) {
+      // Responsable de alguna etapa de esta campaña (stage template o instancia asignada)?
+      const isTemplateResponsible = await this.prisma.stageTemplate.findFirst({
+        where: { campaignId, responsibleId: userId },
       });
 
-      if (user && user.role !== 'ADMIN' && !isResponsible) {
-        throw new ForbiddenException('Access denied');
+      if (!isTemplateResponsible || !(user.role === 'ADMIN')) {
+        if (!isTemplateResponsible) {
+          throw new ForbiddenException('Access denied');
+        }
       }
     }
 
     const processInstance = await this.prisma.processInstance.findUnique({
-      where: {
-        campaignId_candidateId: { campaignId, candidateId }
-      },
+      where: { campaignId_candidateId: { campaignId, candidateId } },
       include: {
         candidate: true,
         campaign: true,
         stageInstances: {
           include: {
             stageTemplate: true,
-            responsible: {
-              select: { id: true, name: true, email: true }
-            },
-            attachments: true
+            responsible: { select: { id: true, name: true, email: true } },
+            attachments: true,
           },
-          orderBy: {
-            stageTemplate: { order: 'asc' }
-          }
+          orderBy: { stageTemplate: { order: 'asc' } },
         },
         auditLogs: {
-          include: {
-            user: {
-              select: { id: true, name: true, email: true }
-            }
-          },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
+          include: { user: { select: { id: true, name: true, email: true } } },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
     });
 
     if (!processInstance) {
       throw new NotFoundException('Process not found for this candidate');
     }
 
-    return processInstance;
+    if (isOwner) {
+      const candidate = processInstance.candidate;
+      const sensitive = {
+        salary: (candidate.expectedSalary as string) || null,
+        modality: (processInstance.campaign.modality as string) || null,
+      };
+      return {
+        ...processInstance,
+        viewer: 'OWNER',
+        sensitive,
+      };
+    }
+
+    // SANDBOX: el responsable solo recibe sus propias etapas. Sin hermanas,
+    // sin auditLogs, sin sensitive, sin progreso del proceso.
+    const myStages = processInstance.stageInstances.filter(
+      (s) => s.responsible.id === userId,
+    );
+
+    return {
+      viewer: 'STAGE_RESPONSIBLE',
+      processId: processInstance.id,
+      startDate: processInstance.startDate,
+      candidate: {
+        id: processInstance.candidate.id,
+        name: processInstance.candidate.name,
+      },
+      campaign: {
+        id: processInstance.campaign.id,
+        title: processInstance.campaign.title,
+      },
+      stageInstances: myStages,
+    };
   }
 }
