@@ -57,4 +57,12 @@ export class ProcessesController {
   async getAuditLog(@Param('processInstanceId') processInstanceId: string) {
     return this.auditService.getByProcess(processInstanceId);
   }
+
+  @Post(':processInstanceId/reopen')
+  async reopenProcess(
+    @Param('processInstanceId') processInstanceId: string,
+    @Request() req: any,
+  ) {
+    return this.processesService.reopenProcess(processInstanceId, req.user.id);
+  }
 }

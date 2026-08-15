@@ -21,6 +21,8 @@ describe('ProcessesService — getProcessByCandidate scoping', () => {
     auditLog: { create: jest.fn() },
   };
 
+  const mockNotificationsService = { create: jest.fn() };
+
   const fullProcess = {
     id: 'proc-1',
     startDate: new Date().toISOString(),
@@ -46,7 +48,7 @@ describe('ProcessesService — getProcessByCandidate scoping', () => {
         ProcessesService,
         { provide: PrismaService, useValue: mockPrisma },
         { provide: AuditService, useValue: { log: jest.fn() } },
-        { provide: NotificationsService, useValue: { create: jest.fn() } },
+        { provide: NotificationsService, useValue: mockNotificationsService },
         { provide: EmailService, useValue: { sendCandidateRejectedEmail: jest.fn() } },
       ],
     }).compile();
@@ -118,6 +120,55 @@ describe('ProcessesService — getProcessByCandidate scoping', () => {
         where: { processInstanceId: 'proc-1', status: 'PENDING' },
         data: { status: 'OMITTED' },
       });
+    });
+  });
+
+  describe('reopenProcess', () => {
+    const rejectedProcess = {
+      id: 'proc-1',
+      endDate: new Date().toISOString(),
+      currentStageOrder: 2,
+      campaignId: 'camp-1',
+      candidateId: 'cand-1',
+      campaign: { id: 'camp-1', userId: 'owner-1' },
+      stageInstances: [
+        { id: 's1', status: 'ACCEPTED', stageTemplate: { name: 'Contactar' } },
+        { id: 's2', status: 'REJECTED', feedback: 'x', decision: 'REJECTED', decidedAt: new Date().toISOString(), stageTemplate: { name: 'Técnica', order: 2 }, responsibleId: 'resp-1' },
+        { id: 's3', status: 'OMITTED', stageTemplate: { name: 'Final', order: 3 } },
+      ],
+    };
+
+    beforeEach(() => {
+      mockPrisma.processInstance.findUnique.mockResolvedValue(rejectedProcess);
+      mockPrisma.campaign.findUnique.mockResolvedValue({ id: 'camp-1', userId: 'owner-1' });
+    });
+
+    it('debe lanzar 403 si no es dueño ni admin', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: 'resp-1', role: 'TECHNICAL_REVIEWER' });
+      await expect(service.reopenProcess('proc-1', 'resp-1')).rejects.toBeInstanceOf(ForbiddenException);
+    });
+
+    it('debe reactivar la etapa rechazada y restaurar pendientes', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({ id: 'owner-1', role: 'RECRUITER' });
+      await service.reopenProcess('proc-1', 'owner-1');
+
+      expect(mockPrisma.stageInstance.update).toHaveBeenCalledWith({
+        where: { id: 's2' },
+        data: { status: 'ACTIVE', feedback: null, decision: null, decidedAt: null },
+      });
+      expect(mockPrisma.stageInstance.updateMany).toHaveBeenCalledWith({
+        where: { processInstanceId: 'proc-1', status: 'OMITTED' },
+        data: { status: 'PENDING' },
+      });
+      expect(mockPrisma.processInstance.update).toHaveBeenCalledWith({
+        where: { id: 'proc-1' },
+        data: { endDate: null, currentStageOrder: 2 },
+      });
+      expect(mockPrisma.candidate.update).toHaveBeenCalledWith({
+        where: { id: 'cand-1' },
+        data: { candidateStatus: 'IN_PROCESS' },
+      });
+      expect(mockNotificationsService.create).toHaveBeenCalled();
     });
   });
 });

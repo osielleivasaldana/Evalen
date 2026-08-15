@@ -396,6 +396,76 @@ export class ProcessesService {
     }
   }
 
+  async reopenProcess(processInstanceId: string, userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const processInstance = await this.prisma.processInstance.findUnique({
+      where: { id: processInstanceId },
+      include: {
+        campaign: { select: { id: true, userId: true } },
+        stageInstances: {
+          include: { stageTemplate: true },
+          orderBy: { stageTemplate: { order: 'asc' } },
+        },
+      },
+    });
+
+    if (!processInstance) {
+      throw new NotFoundException('Process not found');
+    }
+
+    if (processInstance.campaign.userId !== userId && user.role !== 'ADMIN') {
+      throw new ForbiddenException('Only the campaign owner or an admin can reopen a process');
+    }
+
+    const rejected = processInstance.stageInstances.find((s) => s.status === 'REJECTED');
+    if (!rejected) {
+      throw new BadRequestException('No rejected stage to reopen');
+    }
+
+    await this.prisma.stageInstance.update({
+      where: { id: rejected.id },
+      data: { status: 'ACTIVE', feedback: null, decision: null, decidedAt: null },
+    });
+
+    await this.prisma.stageInstance.updateMany({
+      where: { processInstanceId, status: 'OMITTED' },
+      data: { status: 'PENDING' },
+    });
+
+    await this.prisma.processInstance.update({
+      where: { id: processInstanceId },
+      data: { endDate: null, currentStageOrder: rejected.stageTemplate.order },
+    });
+
+    await this.prisma.candidate.update({
+      where: { id: processInstance.candidateId },
+      data: { candidateStatus: 'IN_PROCESS' },
+    });
+
+    await this.auditService.log({
+      userId,
+      action: 'PROCESS_REOPENED',
+      entityType: 'ProcessInstance',
+      entityId: processInstanceId,
+      processInstanceId,
+      metadata: { stageName: rejected.stageTemplate.name },
+    });
+
+    await this.notificationsService.create({
+      userId: rejected.responsibleId,
+      type: 'STAGE_ASSIGNED',
+      title: 'Etapa reactivada',
+      message: `El proceso fue reabierto. La etapa "${rejected.stageTemplate.name}" vuelve a estar activa.`,
+      metadata: { processInstanceId, stageInstanceId: rejected.id },
+    });
+
+    return { id: processInstanceId, reopened: true, stageName: rejected.stageTemplate.name };
+  }
+
   async getProcessByCandidate(campaignId: string, candidateId: string, userId: string) {
     const campaign = await this.prisma.campaign.findUnique({ where: { id: campaignId } });
 
