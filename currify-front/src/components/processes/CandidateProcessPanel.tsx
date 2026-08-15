@@ -26,11 +26,7 @@ const chipFor = (status: StageStatus) => {
     return <span className="inline-flex items-center rounded-full bg-lowt px-2 py-0.5 font-sans text-[12.5px] font-semibold text-ink2 t-lowt t-ink2">Rechazada</span>;
   }
   if (status === 'ACTIVE') {
-    return (
-      <span className="inline-flex items-center rounded-full bg-cta px-2 py-0.5 font-sans text-[12.5px] font-semibold text-ctatext">
-        <span className="animate-pulsering h-1.5 w-1.5 rounded-full" style={{ background: 'var(--ctatext)' }}></span> Activa
-      </span>
-    );
+    return <span className="inline-flex items-center rounded-full bg-midt px-2 py-0.5 font-sans text-[12.5px] font-semibold text-ink2 t-midt t-ink2">Activa</span>;
   }
   if (status === 'OMITTED') {
     return <span className="inline-flex items-center rounded-full bg-paper2 px-2 py-0.5 font-sans text-[12.5px] font-semibold text-ink3 t-paper2 t-ink3">Omitida</span>;
@@ -198,7 +194,14 @@ const CandidateProcessPanel: React.FC = () => {
     setBusy(true);
     try {
       await apiService.updateStageDecision(activeStage.id, { decision: approve ? 'ACCEPTED' : 'REJECTED', feedback: fb });
-      showToast(approve ? `Etapa "${activeStage.stageTemplate.name}" aprobada.` : 'Etapa rechazada. Proceso terminado.', approve ? 'ok' : 'warn');
+      const idx = allStages.findIndex(s => s.id === activeStage.id);
+      const next = allStages[idx + 1];
+      showToast(
+        approve
+          ? (next ? `Etapa ${idx + 1} aprobada. Pasa a ${next.stageTemplate.name}.` : '¡Candidata seleccionada! Proceso completado.')
+          : `Etapa ${idx + 1} rechazada. Proceso terminado.`,
+        approve ? 'ok' : 'warn'
+      );
       setFeedback('');
       await loadData();
     } catch (e: any) { showToast(e.message || 'Error al decidir.', 'warn'); }
@@ -208,7 +211,12 @@ const CandidateProcessPanel: React.FC = () => {
   const handleReopen = async () => {
     if (!process) return;
     setBusy(true);
-    try { await apiService.reopenProcess(processPk); showToast('Proceso reabierto.', 'ok'); await loadData(); }
+    try {
+      const rejected = allStages.find(s => s.status === 'REJECTED');
+      await apiService.reopenProcess(processPk);
+      showToast(`Proceso reabierto. La etapa ${rejected?.stageTemplate.name ?? 'rechazada'} vuelve a estar activa.`, 'info');
+      await loadData();
+    }
     catch (e: any) { showToast(e.message || 'Error al reabrir.', 'warn'); }
     finally { setBusy(false); }
   };
@@ -318,7 +326,7 @@ const CandidateProcessPanel: React.FC = () => {
                         value={notes[String(idx)] || ''}
                         onChange={e => handleNoteChange(idx, e.target.value)}
                         placeholder="Nota de la respuesta… alimentará la próxima etapa"
-                        className="mt-3 w-full rounded-xl border border-line2 bg-paper/60 px-3.5 py-3 text-[14px] leading-relaxed text-ink placeholder:text-ink3/80 focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2"
+                        className="mt-3 w-full rounded-xl border border-line2 bg-paper/60 px-3.5 py-3 text-[14px] leading-relaxed text-ink placeholder:text-ink3/80 focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2"
                       />
                     ) : (
                       <button type="button" onClick={() => setOpenNote(prev => ({ ...prev, [idx]: true }))} className="mt-3 inline-flex items-center gap-1 font-mono text-[12.5px] font-medium text-cta t-cta">＋ añadir nota de la respuesta</button>
@@ -426,10 +434,7 @@ const CandidateProcessPanel: React.FC = () => {
         <p className="font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">
           {readOnly ? 'Mesa de la etapa · lectura' : (isResponsible ? 'Mesa de tu etapa' : 'Mesa de la etapa activa')}
         </p>
-        <div className="mt-1 flex flex-wrap items-center gap-2.5">
-          <h3 className="font-sans text-[1.5rem] font-bold tracking-tight text-ink t-ink">Etapa {mesaIdx + 1}: {mesaStage.stageTemplate.name}</h3>
-          {chipFor(mesaStage.status)}
-        </div>
+        <h3 className="mt-1 font-sans text-[1.5rem] font-bold tracking-tight text-ink t-ink">Etapa {mesaIdx + 1}: {mesaStage.stageTemplate.name}</h3>
         <p className="mt-1.5 inline-flex items-center gap-1.5 font-sans text-[13px] text-ink2 t-ink2">
           <span className="grid h-6 w-6 place-items-center rounded-full bg-greendeep font-mono text-[11px] font-semibold text-onmark">{initialsOf(responsibleName)}</span>
           {responsibleName}
@@ -486,7 +491,7 @@ const CandidateProcessPanel: React.FC = () => {
               value={feedback}
               onChange={e => { setFeedback(e.target.value); if (feedbackErr) setFeedbackErr(false); }}
               placeholder="Escribe el porqué de tu decisión… (obligatoria al rechazar)"
-              className={`mt-2 w-full rounded-xl border bg-paper/60 px-3.5 py-3 text-[14px] leading-relaxed text-ink placeholder:text-ink3/80 focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2 ${feedbackErr ? 'animate-shake' : ''}`}
+              className={`mt-2 w-full rounded-xl border bg-paper/60 px-3.5 py-3 text-[14px] leading-relaxed text-ink placeholder:text-ink3/80 focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2 ${feedbackErr ? 'animate-shake' : ''}`}
               style={feedbackErr ? { borderColor: 'var(--low)' } : undefined}
             />
             <p className={`mt-1.5 text-[12.5px] font-medium text-low t-low ${feedbackErr ? '' : 'hidden'}`}>La retroalimentación es obligatoria al rechazar una etapa.</p>
