@@ -38,14 +38,20 @@ class ScoringService:
         try:
             logger.info("Starting candidate-job scoring evaluation (v3: Latent Skills & Normalized Roles)")
             
-            # 0. GUARDRAIL: Short-circuit if extraction failed
+            # 0. GUARDRAIL: Short-circuit if extraction failed (graceful per-dimension)
             titular = candidate_data.get('titular_profesional', {}).get('titular', '')
-            has_skills = any(candidate_data.get('habilidades', {}).values()) if isinstance(candidate_data.get('habilidades'), dict) else False
+            habs = candidate_data.get('habilidades', {})
+            has_skills = False
+            if isinstance(habs, dict):
+                has_skills = any(
+                    (isinstance(v, list) and len(v) > 0) or (isinstance(v, str) and v.strip())
+                    for v in habs.values()
+                )
             has_experience = len(candidate_data.get('experiencia_laboral', [])) > 0
             has_education = len(candidate_data.get('formacion_academica', [])) > 0
-            
-            # Allow evaluation if we have at least SOME meaningful matching data
-            if not has_experience and not has_skills and not has_education:
+            has_contact = bool(candidate_data.get('datos_contacto', {}).get('email')) and candidate_data.get('datos_contacto', {}).get('email') != "no-extraido@example.com"
+            # Only return 0.0 if truly empty (all dimensions missing) — else graceful partial scoring
+            if not has_experience and not has_skills and not has_education and not has_contact:
                 logger.warning("⚠️ Extraction failed or empty data detected. Returning 0 score.")
                 return ScoringResponse(
                     overall_score=0.0,
@@ -55,6 +61,7 @@ class ScoringService:
                     gaps=["Error en la extracción de datos del CV"],
                     summary="No se pudo procesar el contenido del CV para realizar la evaluación."
                 )
+            # Else: continue to graceful partial scoring (do not short-circuit if partial data exists)
 
             # 1. Semantic Layer: Global Intelligence Extraction
             # semantic_service already initialized
