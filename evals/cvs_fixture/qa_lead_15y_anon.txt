@@ -1,0 +1,32 @@
+Candidato QA 15y
+QA Test Lead Automation Engineer
+qa.anon@example.com
++56 9 12345678
+Santiago, Chile
+
+RESUMEN PROFESIONAL
+15 años experiencia QA, liderazgo equipos, automatización Selenium Java, ISTQB. Especialista en testing automatizado y liderazgo de equipos QA de alto rendimiento.
+
+EXPERIENCIA LABORAL
+QA Test Lead Automation Engineer — Empresa A
+Ene 2024 - Presente | Santiago
+Automatización Selenium, liderazgo de equipo QA, definición de estrategia de testing, integración continua.
+
+QA Test Lead — Empresa B
+Mar 2021 - Nov 2023 | Santiago
+Liderazgo QA, coordinación de equipos distribuidos, implementación de metodologías ágiles, gestión de defectos con JIRA.
+
+FORMACIÓN ACADÉMICA
+Ingeniería en Informática — Universidad Tecnológica
+2010 - 2015
+
+Magíster en Dirección de Empresas — Universidad X
+2018 - 2020
+
+HABILIDADES
+Habilidades técnicas: Selenium, Java, JIRA, SQL, Postman, Jenkins
+Idiomas: Inglés Intermedio (TOEFL)
+Habilidades blandas: Liderazgo, Trabajo en equipo, Comunicación
+
+OTROS
+ISTQB Certified Tester
