@@ -295,13 +295,13 @@ Eres un experto en análisis de habilidades profesionales. Extrae y categoriza T
 - Analiza contexto para categorizar correctamente (técnica vs blanda)
 - Extrae habilidades agrupadas por categorías o mezcladas
 
-**HABILIDADES TÉCNICAS:**
+**HABILIDADES TÉCNICAS Y DE DOMINIO:**
 - Lenguajes: Python, JavaScript, Java, C++, SQL, etc.
-- Frameworks: React, Django, Spring, Angular, Vue.js, etc.
+- Herramientas de dominio: Reclutamiento y Selección, Nómina, Legislación laboral, Desarrollo organizacional, Gestión RRHH, SAP RRHH, Prospección, Conciliación...
+- Frameworks/Metodologías: React, Scrum, Metodología Ágil, DO, OKR...
 - Herramientas: Git, Docker, Kubernetes, Jenkins, etc.
 - Plataformas: AWS, Azure, GCP, Linux, etc.
 - Bases de datos: MySQL, PostgreSQL, MongoDB, etc.
-- Metodologías: Agile, Scrum, DevOps, etc.
 
 **IDIOMAS:**
 - Todos los idiomas con sus niveles exactos
@@ -312,6 +312,8 @@ Eres un experto en análisis de habilidades profesionales. Extrae y categoriza T
 - Liderazgo, comunicación, trabajo en equipo
 - Resolución de problemas, pensamiento crítico
 - Adaptabilidad, creatividad, organización
+
+Nota: Para perfiles no-tech (RRHH, Admin, Ventas, Legal, Salud) clasifica competencias troncales como habilidades_tecnicas con level según seniority descrito (ej. "Fuerte experiencia" → Avanzado). Blandas solo interpersonales puras.
 
 Responde con JSON:
 ```json

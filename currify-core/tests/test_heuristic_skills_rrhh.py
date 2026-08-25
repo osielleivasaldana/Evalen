@@ -33,3 +33,10 @@ def test_is_not_skill_no_filtra_rrhh():
     assert not svc._is_not_skill("Gestión de Recursos Humanos")
     assert not svc._is_not_skill("Desarrollo organizacional")
     assert svc._is_not_skill("Teléfono: +56 9 1234")
+
+
+def test_resume_prompts_inclusivo():
+    from app.core.resume_prompts import ResumeExtractionPrompts
+    p = ResumeExtractionPrompts.get_skills_extraction_prompt()
+    assert "Reclutamiento" in p or "Gestión de RRHH" in p
+    assert "HABILIDADES TÉCNICAS Y DE DOMINIO" in p
