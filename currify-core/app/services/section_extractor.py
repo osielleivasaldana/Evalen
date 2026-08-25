@@ -72,13 +72,17 @@ Output: {"titulo_profesional": "QA Test Lead Automation Engineer", "formacion": 
 
 Output JSON: {"titulo_profesional": "Ingeniero Civil", "formacion": [{"titulo": "...", "institucion": "...", "periodo": {"fecha_inicio": "...", "fecha_fin": "..."}}]}"""
 
-PROMPT_SKILLS = r"""Extrae habilidades técnicas, idiomas y habilidades blandas del texto.
+PROMPT_SKILLS = r"""Extrae habilidades técnicas, de dominio, idiomas y blandas del texto.
 
 ⛔ REGLAS:
-1. habilidades_tecnicas: SOLO herramientas, tecnologías, metodologías. Ej: "Python", "Excel Avanzado", "Metodología Ágil", "SAP", "Power BI"
-2. idiomas: idioma + nivel + certificación si existe. Ej: {"idioma": "Inglés", "nivel": "Avanzado", "certificacion": "TOEFL 105"}
-3. habilidades_blandas: competencias interpersonales como strings planos. Ej: ["Liderazgo", "Trabajo en equipo", "Comunicación"]
+1. habilidades_tecnicas: herramientas, tecnologías, METODOLOGÍAS Y COMPETENCIAS DE DOMINIO DEL OFICIO. Ej: "Python", "Excel Avanzado", "SAP", "Power BI", "Reclutamiento y Selección", "Gestión de RRHH", "Desarrollo organizacional", "Legislación laboral", "Nómina y Compensaciones", "Gestión de stakeholders", "Metodología Ágil", "Prospección comercial", "Triage", "Conciliación bancaria". Si el CV es RRHH/Admin/Ventas/Legal/Salud, sus competencias troncales VAN AQUÍ con level Intermedio/Avanzado según contexto, NO en blandas.
+2. idiomas: idioma + nivel + certificación si existe. Ej: {"idioma": "Inglés", "nivel": "Avanzado", "certificacion": "TOEFL 105"} — "Inglés intermedio avanzado" → {"idioma":"Inglés","nivel":"Intermedio - Avanzado"}
+3. habilidades_blandas: SOLO interpersonales puros como strings planos. Ej: ["Liderazgo", "Comunicación", "Trabajo en equipo", "Negociación"]. NO pongas competencias de dominio aquí.
 4. NO incluyas títulos académicos, cargos laborales ni experiencias.
+
+Few-shot RRHH:
+Input: "Gestión de RRHH, Administración, Desarrollo organizacional, Liderazgo, Gestión de stakeholders, Inglés intermedio avanzado"
+Output: {"habilidades_tecnicas": [{"skill": "Gestión de RRHH", "level": "Avanzado"}, {"skill": "Administración", "level": "Avanzado"}, {"skill": "Desarrollo organizacional", "level": "Intermedio"}], "idiomas": [{"idioma": "Inglés", "nivel": "Intermedio - Avanzado", "certificacion": null}], "habilidades_blandas": ["Liderazgo", "Gestión de stakeholders"]}
 
 Output JSON: {"habilidades_tecnicas": [{"skill": "...", "level": "..."}], "idiomas": [{"idioma": "...", "nivel": "...", "certificacion": "..."}], "habilidades_blandas": ["Liderazgo", "Trabajo en equipo"]}"""
 
