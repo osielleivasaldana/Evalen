@@ -493,38 +493,33 @@ class RobustExtractionService:
                     otros_items.extend([str(i) for i in items if i])
         merged["otros_antecedentes"] = otros_items
 
-        # ── 4A. Regla de prioridad para titular_profesional ──
+        # ── 4A. Regla de prioridad para titular_profesional (condicional F3.1) ──
         titular_final = "No extraído"
-
-        # Prioridad 1: titles → titulo_profesional
-        if titular_from_titles and str(titular_from_titles).strip().lower() not in (
-            "no extraído", "no extraido", "", "none", "null"
-        ):
-            titular_final = str(titular_from_titles).strip()
-            logger.info("[%s] 🏷️ Titular desde titles: %s", request_id, titular_final)
-
-        # Prioridad 2: buscar título más alto en formación académica combinada
+        if titular_from_titles and str(titular_from_titles).strip().lower() not in ("no extraído", "no extraido", "", "none", "null"):
+            # Heurística: si titular_from_titles es grado académico y existe headline, preferir headline
+            is_academic = any(kw in str(titular_from_titles).lower() for kw in ["magíster", "magister", "master", "doctorado", "phd", "mba"])
+            headline_from_text = self._extract_titular_from_text(raw_text) if hasattr(self, '_extract_titular_from_text') else None
+            if is_academic and headline_from_text and headline_from_text != "No extraído":
+                titular_final = headline_from_text
+                logger.info("[%s] 🏷️ Titular headline override academic: %s -> %s", request_id, titular_from_titles, headline_from_text)
+            else:
+                titular_final = str(titular_from_titles).strip()
+                logger.info("[%s] 🏷️ Titular desde titles: %s", request_id, titular_final)
+        if titular_final == "No extraído":
+            # Prioridad 2: headline heurística de texto
+            headline = self._extract_titular_from_text(raw_text) if hasattr(self, '_extract_titular_from_text') else None
+            if headline and headline != "No extraído":
+                titular_final = headline
+                logger.info("[%s] 🏷️ Titular desde headline heurística: %s", request_id, titular_final)
         if titular_final == "No extraído" and formacion_combinada:
-            for entry in formacion_combinada:
-                titulo_str = str(entry.get("titulo", "")).strip()
-                if titulo_str and len(titulo_str) > 3:
-                    titular_final = titulo_str
-                    logger.info("[%s] 🏷️ Titular desde education: %s", request_id, titular_final)
-                    break
-
-        # Prioridad 3: buscar keywords de profesión en cargos de experiencia
-        if titular_final == "No extraído" and experience_data_raw:
-            prof_keywords = [
-                "ingeniero", "licenciado", "arquitecto", "médico", "abogado",
-                "contador", "profesor", "doctor", "psicólogo", "enfermer",
-                "científico", "desarrollador", "programador", "analista",
-            ]
-            for exp in experience_data_raw:
-                cargo = str(exp.get("cargo", "")).lower()
-                if any(kw in cargo for kw in prof_keywords):
-                    titular_final = str(exp.get("cargo", "")).strip()
-                    logger.info("[%s] 🏷️ Titular desde experience: %s", request_id, titular_final)
-                    break
+            # Solo usar educación si no hay experiencia (junior)
+            if not experience_data_raw:
+                for entry in formacion_combinada:
+                    titulo_str = str(entry.get("titulo", "")).strip()
+                    if titulo_str and len(titulo_str) > 3:
+                        titular_final = titulo_str
+                        logger.info("[%s] 🏷️ Titular desde education (junior fallback): %s", request_id, titular_final)
+                        break
 
         merged["titular_profesional"] = {"titular": titular_final}
 
@@ -2161,7 +2156,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
             r'^www\.', r'^https?://',
         ]
 
-        # Keywords que sugieren un rol/titular profesional
+        # Keywords que sugieren un rol/titular profesional (incluye QA/lead para headline vs académico)
         role_keywords = re.compile(
             r'\b('
             r'ingeniero|ingeniera|engineer|developer|desarrollador|desarrolladora|'
@@ -2174,7 +2169,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
             r'jefe|jefa|chief|head|'
             r'director|directora|'
             r'gerente|manager|'
-            r'líder|lider|leader|'
+            r'líder|lider|leader|lead|'
             r'diseñador|diseñadora|designer|'
             r'científico|científica|scientist|'
             r'profesor|profesora|professor|teacher|'
@@ -2183,31 +2178,39 @@ El output final debe corresponder exactamente al modelo ResumeData.
             r'auditor|auditora|'
             r'contador|contadora|accountant|'
             r'abogado|abogada|lawyer|attorney|'
-            r'médico|médica|doctor'
+            r'médico|médica|doctor|'
+            r'qa|tester|testing|quality|automation|automatización'
             r')\b',
             re.IGNORECASE
         )
 
-        for line in lines[:20]:
-            line = line.strip()
-            if len(line) < 5 or len(line) > 100:
+        best = None
+        best_score = -1
+        for line in lines[:7]:
+            stripped = line.strip()
+            if len(stripped) < 5 or len(stripped) > 100:
                 continue
-
-            # Saltar líneas que parecen ser nombre personal
-            if name_pattern.match(line):
+            if name_pattern.match(stripped):
                 continue
-
-            # Saltar líneas con info de contacto
-            if any(re.search(p, line, re.IGNORECASE) for p in contact_patterns):
+            if any(re.search(p, stripped, re.IGNORECASE) for p in contact_patterns):
                 continue
-
-            # Saltar líneas que son puramente fechas o números
-            if re.match(r'^[\d\s/\-–—.]+$', line):
+            if re.match(r'^[\d\s/\-–—.]+$', stripped):
                 continue
+            # Skip candidate placeholder lines without real role density (e.g. "Candidato QA 15y" has only 1 qa hit)
+            hits = len(role_keywords.findall(stripped))
+            if hits == 0:
+                continue
+            # Score by hits and length (longer more descriptive headline wins)
+            score = hits * 10 + len(stripped) * 0.1
+            # bonus if contains engineer/developer/lead which are strong headline signals
+            if re.search(r'\b(engineer|ingeniero|lead|automation|developer|desarrollador|architect|analyst)\b', stripped, re.IGNORECASE):
+                score += 5
+            if score > best_score:
+                best_score = score
+                best = stripped
 
-            # Si la línea contiene una keyword de rol profesional → titular
-            if role_keywords.search(line):
-                return line
+        if best:
+            return best
 
         # Si no se encuentra nada, retornar "No extraído" para que la cascada continúe
         return "No extraído"

@@ -55,15 +55,20 @@ Output JSON: {"experiencias": [{"cargo": "...", "empresa": "...", "periodo": {"f
 
 PROMPT_TITLES = r"""Eres un clasificador de títulos profesionales y credenciales académicas.
 
+<cv>{content}</cv>
+
 ⛔ DIFERENCIA CLAVE:
-- "Título profesional" = PROFESIÓN de la persona (Ingeniero Civil, Médico, Abogado)
-- "Cargo laboral" = puesto de trabajo (Gerente, Jefe, Coordinador) → NO es un título
+- "Título profesional" = HEADLINE de la persona (lo que ES profesionalmente, ej: Ingeniero Civil, QA Test Lead) - busca en las primeras 5 líneas bajo el nombre.
+- "Cargo laboral" = puesto de trabajo (Gerente, Jefe) → NO es un título
+- "Grado académico" = Magíster/Master/Doctorado → va en formacion, NO en titular_profesional a menos que no haya headline.
 
 INSTRUCCIONES:
-1. Busca el TÍTULO PROFESIONAL (lo que estudió, no dónde trabajó). Busca palabras como: Ingeniero/a, Licenciado/a, Arquitecto/a, Médico/a, Abogado/a, Contador/a, Profesor/a, Doctor/a, Psicólogo/a
-2. Si hay varios títulos, prioriza: Doctorado > Magíster > Licenciatura > Técnico
-3. Extrae TODOS los títulos/grados con su institución y fecha si está disponible
-4. NO incluyas diplomados ni cursos cortos aquí (van en certificaciones)
+1. Razona paso a paso: 1) Identifica headline en primeras 5 líneas 2) Luego busca grados 3) Si headline existe, úsalo como titulo_profesional 4) Si no, usa grado más alto (Doctorado > Magíster > Licenciatura)
+2. NO incluyas diplomados ni cursos cortos en titulo_profesional.
+
+Few-Shot:
+Input: "Candidato QA 15y\nQA Test Lead Automation Engineer\nIng. Informático - UChile\n..."
+Output: {"titulo_profesional": "QA Test Lead Automation Engineer", "formacion": [{"titulo": "Ingeniería en Informática", "institucion": "UChile"}]}
 
 Output JSON: {"titulo_profesional": "Ingeniero Civil", "formacion": [{"titulo": "...", "institucion": "...", "periodo": {"fecha_inicio": "...", "fecha_fin": "..."}}]}"""
 
