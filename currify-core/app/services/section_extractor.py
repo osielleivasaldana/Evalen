@@ -264,12 +264,18 @@ def _heuristic_skills(content: str) -> Optional[Dict[str, Any]]:
         "docker", "kubernetes", "git", "linux", "windows", "office",
         "metodología ágil", "scrum", "kanban", "jira", "tableau",
         "photoshop", "illustrator", "autocad", "solidworks", "matlab",
+        # dominio no-tech
+        "gestión", "gestion", "rrhh", "recursos humanos", "reclutamiento", "selección",
+        "nómina", "nomina", "compensacion", "legislación", "organizacional",
+        "administración", "administracion", "stakeholder", "desarrollo organizacional",
+        "cultura empresarial", "ventas", "prospección", "conciliación", "triage",
     ]
 
     # Known soft skills
     soft_keywords = [
         "liderazgo", "trabajo en equipo", "comunicación", "resolución",
         "proactividad", "adaptabilidad", "organización", "creatividad",
+        "negociación", "stakeholders", "empatía", "gestión de stakeholders",
     ]
 
     # Known languages
@@ -291,7 +297,7 @@ def _heuristic_skills(content: str) -> Optional[Dict[str, Any]]:
         for lang_kw in lang_keywords:
             if lang_kw in lower:
                 nivel: Optional[str] = None
-                for lv in ["nativo", "avanzado", "intermedio", "básico", "basico"]:
+                for lv in ["nativo", "avanzado", "intermedio - avanzado", "intermedio", "básico", "basico"]:
                     if lv in lower:
                         nivel = lv.capitalize()
                         break
