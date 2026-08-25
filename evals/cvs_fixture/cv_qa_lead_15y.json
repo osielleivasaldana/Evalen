@@ -1,0 +1,185 @@
+{
+  "meta": {
+    "case": "cv_qa_lead_15y",
+    "source": "Osiel Leiva (QA Lead) anonimizado — 15 años exp",
+    "anonimizado": true,
+    "pii_reemplazado": {
+      "nombre_real": "Candidato QA 15y",
+      "email_real": "qa.anon@example.com",
+      "telefono_real": "+56 9 12345678"
+    },
+    "created": "2026-08-25",
+    "fixture_version": 1,
+    "eval_contract": "docs/contracts/core/resume_extraction_contract.md + scoring_contract.md",
+    "semaphore": "3/request global 6, +0 llamadas default (+1 retry condicional)"
+  },
+  "input": {
+    "archivo_contenido": "Candidato QA 15y\nQA Lead Automation Engineer - 15 años en testing y BDD\nqa.anon@example.com | +56 9 12345678 | Santiago, Chile | linkedin.com/in/candidato-qa-15y\n\nRESUMEN PROFESIONAL\nQA Lead con 15 años de experiencia en testing manual y automatizado, especialista en BDD con Gherkin/Cucumber, liderazgo de equipos de hasta 12 QA, ISTQB Advanced Test Manager. Implementación de estrategias de calidad E2E, CI/CD y coaching en shift-left. Experiencia en banca, retail y SaaS.\n\nEXPERIENCIA LABORAL\nQA Lead Automation Engineer — Empresa A (Banca) | Santiago\nEne 2020 - Presente\n• Liderazgo de squad QA de 12 personas, definición de estrategia de testing y métricas de calidad\n• Automatización E2E con Selenium + Java + TestNG + Maven, integración Jenkins/GitHub Actions, 70% reducción de regresión manual\n• BDD con Gherkin/Cucumber, living documentation en Confluence, colaboración con PO/Dev en refinement\n• API testing REST con Postman/Newman + REST Assured, validación de contratos y performance básico con JMeter\n• Gestión de TestRail/Zephyr, trazabilidad JIRA, reportabilidad a C-level\n\nSenior QA Automation Engineer — Empresa B (Retail) | Santiago\nMar 2016 - Dic 2019\n• Automatización Cypress + JavaScript + Playwright para checkout crítico, cobertura 85%\n• Diseño de framework POM, Dockerización de ejecución paralela en Jenkins\n• Mentoring a 4 QA juniors, guild de calidad, ISTQB Foundation trainer interno\n\nQA Analyst — Empresa C (SaaS) | Santiago\nJun 2010 - Feb 2016\n• Testing manual exploratorio, casos Gherkin, SQL para validación de datos, soporte UAT con negocio\n• Introducción de BDD y automatización incipiente con Selenium IDE -> WebDriver\n\nTÍTULOS\nIngeniería en Informática — Universidad Tecnológica de Chile — 2006 - 2011\nMagíster en Dirección de Tecnologías de Información — Universidad X — 2018 - 2020\nISTQB Advanced Test Manager — 2019\nISTQB Foundation — 2012\n\nHABILIDADES TÉCNICAS\nSelenium, Java, Python, JavaScript, TypeScript, Gherkin, Cucumber, BDD, ISTQB, JIRA, Confluence, TestRail, Zephyr, Jenkins, Git, GitHub Actions, Docker, SQL, PostgreSQL, MySQL, API Testing, REST, Postman, SoapUI, REST Assured, Cypress, Playwright, TestNG, JUnit, Maven, Gradle, Linux, Agile, Scrum, Kanban, JMeter, BrowserStack, Azure DevOps, AWS (básico), Agile Testing, Shift-Left\n\nIDIOMAS\nInglés Avanzado (TOEFL 105) — uso diario con stakeholders internacionales\nEspañol Nativo\n\nCOMPETENCIAS (HABILIDADES BLANDAS)\nLiderazgo, Mentoring, Comunicación efectiva, Pensamiento crítico, Gestión de equipos, Resolución de conflictos, Adaptabilidad, Colaboración interdisciplinaria\n\nCERTIFICACIONES Y FORMACIÓN COMPLEMENTARIA\n• ISTQB Advanced Test Manager (2019)\n• Scrum Master PSM I (2021)\n• Curso Docker para QA (2022)\n\nPROYECTOS\nProyecto Migración Core Bancario — Automatización de 300 casos E2E, pipeline Jenkins paralelo, reducción 40% tiempo release\n\nOTROS ANTECEDENTES\n• Charlista: \"BDD más allá del Given-When-Then\" — Testing Day Chile 2023\n• Voluntariado: Mentor QA en Fundación Talento Digital\n",
+    "tipo_archivo": "txt",
+    "nombre_archivo": "cv_qa_lead_15y_anon.txt"
+  },
+  "golden": {
+    "datos_cv": {
+      "datos_contacto": {
+        "nombre_completo": "Candidato QA 15y",
+        "email": "qa.anon@example.com",
+        "telefono": "+56 9 12345678",
+        "ubicacion": "Santiago, Chile"
+      },
+      "titular_profesional": {
+        "titular": "QA Lead Automation Engineer - 15 años en testing y BDD"
+      },
+      "resumen_profesional": {
+        "resumen": "QA Lead con 15 años de experiencia en testing manual y automatizado, especialista en BDD con Gherkin/Cucumber, liderazgo de equipos de hasta 12 QA, ISTQB Advanced Test Manager. Implementación de estrategias de calidad E2E, CI/CD y coaching en shift-left."
+      },
+      "experiencia_laboral": [
+        {
+          "cargo": "QA Lead Automation Engineer",
+          "empresa": "Empresa A",
+          "periodo": {"fecha_inicio": "2020-01", "fecha_fin": "Presente", "texto_original": "Ene 2020 - Presente"},
+          "responsabilidades": [
+            "Liderazgo de squad QA de 12 personas, definición de estrategia de testing y métricas de calidad",
+            "Automatización E2E con Selenium + Java + TestNG + Maven, integración Jenkins/GitHub Actions, 70% reducción de regresión manual",
+            "BDD con Gherkin/Cucumber, living documentation en Confluence, colaboración con PO/Dev en refinement",
+            "API testing REST con Postman/Newman + REST Assured, validación de contratos y performance básico con JMeter",
+            "Gestión de TestRail/Zephyr, trazabilidad JIRA, reportabilidad a C-level"
+          ],
+          "ubicacion": "Santiago"
+        },
+        {
+          "cargo": "Senior QA Automation Engineer",
+          "empresa": "Empresa B",
+          "periodo": {"fecha_inicio": "2016-03", "fecha_fin": "2019-12", "texto_original": "Mar 2016 - Dic 2019"},
+          "responsabilidades": [
+            "Automatización Cypress + JavaScript + Playwright para checkout crítico, cobertura 85%",
+            "Diseño de framework POM, Dockerización de ejecución paralela en Jenkins",
+            "Mentoring a 4 QA juniors, guild de calidad, ISTQB Foundation trainer interno"
+          ],
+          "ubicacion": "Santiago"
+        },
+        {
+          "cargo": "QA Analyst",
+          "empresa": "Empresa C",
+          "periodo": {"fecha_inicio": "2010-06", "fecha_fin": "2016-02", "texto_original": "Jun 2010 - Feb 2016"},
+          "responsabilidades": [
+            "Testing manual exploratorio, casos Gherkin, SQL para validación de datos, soporte UAT con negocio",
+            "Introducción de BDD y automatización incipiente con Selenium IDE -> WebDriver"
+          ],
+          "ubicacion": "Santiago"
+        }
+      ],
+      "formacion_academica": [
+        {"titulo": "Ingeniería en Informática", "institucion": "Universidad Tecnológica de Chile", "periodo": {"fecha_inicio": "2006", "fecha_fin": "2011"}},
+        {"titulo": "Magíster en Dirección de Tecnologías de Información", "institucion": "Universidad X", "periodo": {"fecha_inicio": "2018", "fecha_fin": "2020"}}
+      ],
+      "habilidades": {
+        "habilidades_tecnicas": [
+          {"skill": "Selenium", "level": "Avanzado"},
+          {"skill": "Java", "level": "Avanzado"},
+          {"skill": "Python", "level": "Intermedio"},
+          {"skill": "JavaScript", "level": "Intermedio"},
+          {"skill": "TypeScript", "level": "Intermedio"},
+          {"skill": "Gherkin", "level": "Avanzado"},
+          {"skill": "Cucumber", "level": "Avanzado"},
+          {"skill": "BDD", "level": "Avanzado"},
+          {"skill": "ISTQB", "level": "Avanzado"},
+          {"skill": "JIRA", "level": "Avanzado"},
+          {"skill": "Confluence", "level": "Intermedio"},
+          {"skill": "TestRail", "level": "Avanzado"},
+          {"skill": "Zephyr", "level": "Intermedio"},
+          {"skill": "Jenkins", "level": "Avanzado"},
+          {"skill": "Git", "level": "Avanzado"},
+          {"skill": "GitHub Actions", "level": "Intermedio"},
+          {"skill": "Docker", "level": "Intermedio"},
+          {"skill": "SQL", "level": "Avanzado"},
+          {"skill": "PostgreSQL", "level": "Intermedio"},
+          {"skill": "MySQL", "level": "Intermedio"},
+          {"skill": "API Testing", "level": "Avanzado"},
+          {"skill": "REST", "level": "Avanzado"},
+          {"skill": "Postman", "level": "Avanzado"},
+          {"skill": "SoapUI", "level": "Intermedio"},
+          {"skill": "REST Assured", "level": "Avanzado"},
+          {"skill": "Cypress", "level": "Avanzado"},
+          {"skill": "Playwright", "level": "Intermedio"},
+          {"skill": "TestNG", "level": "Avanzado"},
+          {"skill": "JUnit", "level": "Intermedio"},
+          {"skill": "Maven", "level": "Intermedio"},
+          {"skill": "Gradle", "level": "Básico"},
+          {"skill": "Linux", "level": "Intermedio"},
+          {"skill": "Agile", "level": "Avanzado"},
+          {"skill": "Scrum", "level": "Avanzado"},
+          {"skill": "Kanban", "level": "Intermedio"},
+          {"skill": "JMeter", "level": "Intermedio"},
+          {"skill": "BrowserStack", "level": "Intermedio"}
+        ],
+        "idiomas": [
+          {"idioma": "Inglés", "nivel": "Avanzado", "certificacion": "TOEFL 105"},
+          {"idioma": "Español", "nivel": "Nativo"}
+        ],
+        "habilidades_blandas": [
+          "Liderazgo",
+          "Mentoring",
+          "Comunicación efectiva",
+          "Pensamiento crítico",
+          "Gestión de equipos",
+          "Resolución de conflictos",
+          "Adaptabilidad",
+          "Colaboración interdisciplinaria"
+        ]
+      },
+      "formacion_complementaria": {
+        "certificaciones_cursos": [
+          "ISTQB Advanced Test Manager (2019)",
+          "Scrum Master PSM I (2021)",
+          "Curso Docker para QA (2022)"
+        ]
+      },
+      "proyectos": {
+        "proyectos": [
+          {
+            "nombre": "Proyecto Migración Core Bancario",
+            "descripcion": "Automatización de 300 casos E2E, pipeline Jenkins paralelo, reducción 40% tiempo release",
+            "rol": "QA Lead",
+            "tecnologias": ["Selenium", "Java", "Jenkins", "Cucumber"]
+          }
+        ]
+      },
+      "reconocimientos": {"logros_premios": []},
+      "actividades_extracurriculares": {"voluntariado": ["Mentor QA en Fundación Talento Digital"]},
+      "intereses": {"hobbies_intereses": []},
+      "otros_antecedentes": [
+        "Charlista: \"BDD más allá del Given-When-Then\" — Testing Day Chile 2023"
+      ],
+      "referencias": []
+    },
+    "confianza_general": 0.88,
+    "confianza_min": 0.75,
+    "advertencias": [],
+    "campos_faltantes": []
+  },
+  "scoring_expected": {
+    "job_reference": {
+      "title": "QA Lead Automation Engineer",
+      "description": "Liderar equipo QA, BDD Gherkin/Cucumber, automatización Selenium/Java, CI/CD Jenkins, API testing, ISTQB deseable, 10+ años exp"
+    },
+    "overall_score": {"min": 75, "max": 90, "target": 82},
+    "recommendation": "strong_fit",
+    "breakdown_expectations": {
+      "skills_match": {"min": 75, "weight": 30, "nota": "37 skills técnicas cubren stack requerido"},
+      "experience": {"min": 80, "weight": 25, "nota": "15 años, 3 cargos progresivos, lideró 12"},
+      "education": {"min": 60, "weight": 15, "nota": "Ingeniería + Magíster + ISTQB Advanced"},
+      "cultural_fit": {"min": 65, "weight": 15},
+      "logistics": {"min": 80, "weight": 10},
+      "career_trajectory": {"min": 70, "weight": 5}
+    },
+    "justificacion": "15 años exp + 37 skills técnicas + lideró equipos + BDD/Gherkin + ISTQB Advanced => strong_fit. Scoring determinista no LLM, debe dar 75-90 vs job QA Lead similar. Si da <75 o weak_fit, falla el eval."
+  },
+  "eval_assertions": {
+    "habilidades_blandas_formato": "todos los items deben ser str, no dict — validar `all(isinstance(s, str) for s in habilidades_blandas)`",
+    "proyectos_limpio": "ningún proyecto contiene 'LAYOUT' ni nombre con longitud >120 ni string vacío",
+    "titular_headline": "titular_profesional.titular == 'QA Lead Automation Engineer - 15 años en testing y BDD' (no 'Magíster' ni 'No extraído')",
+    "tecnicas_count": "len(habilidades_tecnicas) == 37",
+    "score_range": "75 <= overall_score <= 90 and recommendation == 'strong_fit'",
+    "confianza": "confianza_general >= 0.75"
+  }
+}
