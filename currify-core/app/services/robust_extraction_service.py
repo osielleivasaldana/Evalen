@@ -1674,10 +1674,9 @@ El output final debe corresponder exactamente al modelo ResumeData.
                 extracted_skills, section_name = self._heuristic_skill_extraction(cv_text)
                 if extracted_skills:
                     # Determinar si es sección de "competencias" (no-estándar) → otros_antecedentes
-                    is_competency_section = section_name and any(
-                        w in section_name.lower() for w in ['competencia', 'diferencial', 'competency']
-                    )
-                    if is_competency_section and 'habilidad' not in section_name.lower():
+                    is_competency_section = section_name and any(w in section_name.lower() for w in ['diferencial', 'fortalezas diferenciales']) and 'habilidad' not in section_name.lower() and 'competencias clave' not in section_name.lower()  # type: ignore[attr-defined]
+                    # Comentario: "Competencias" genérico ya NO se deriva a otros; solo "Competencias diferenciales" / "Fortalezas"
+                    if is_competency_section and 'habilidad' not in section_name.lower():  # type: ignore[union-attr]
                         logger.info(f"🔧 [HEURISTIC] Sección '{section_name}' → otros_antecedentes ({len(extracted_skills)} items)")
                         otros = fixed_data.get('otros_antecedentes', [])
                         if not isinstance(otros, list):
@@ -1877,7 +1876,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
         if not section_lines:
             return [], section_name
 
-        raw_skills_text = ' '.join(section_lines)
+        raw_skills_text = '\n'.join(section_lines)
         logger.info(f"🔧 [HEURISTIC] Contenido sección skills: {raw_skills_text[:200]}...")
 
         skills = []
