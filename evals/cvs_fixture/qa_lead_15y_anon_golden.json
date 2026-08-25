@@ -1,0 +1,21 @@
+{
+  "datos_contacto": {"nombre_completo": "Candidato QA 15y", "email": "qa.anon@example.com", "telefono": "+56 9 12345678", "ubicacion": "Santiago, Chile"},
+  "titular_profesional": {"titular": "QA Test Lead Automation Engineer"},
+  "resumen_profesional": {"resumen": "15 años experiencia QA, liderazgo equipos, automatización Selenium Java, ISTQB."},
+  "experiencia_laboral": [
+    {"cargo": "QA Test Lead Automation Engineer", "empresa": "Empresa A", "periodo": {"fecha_inicio": "2024-01", "fecha_fin": "Presente", "texto_original": "Ene 2024 - Presente"}, "responsabilidades": ["Automatización Selenium"], "ubicacion": "Santiago"},
+    {"cargo": "QA Test Lead", "empresa": "Empresa B", "periodo": {"fecha_inicio": "2021-03", "fecha_fin": "2023-11", "texto_original": "Mar 2021 - Nov 2023"}, "responsabilidades": ["Liderazgo QA"], "ubicacion": "Santiago"}
+  ],
+  "formacion_academica": [
+    {"titulo": "Ingeniería en Informática", "institucion": "Universidad Tecnológica", "periodo": {"fecha_inicio": "2010", "fecha_fin": "2015"}},
+    {"titulo": "Magíster en Dirección de Empresas", "institucion": "Universidad X", "periodo": {"fecha_inicio": "2018", "fecha_fin": "2020"}}
+  ],
+  "habilidades": {
+    "habilidades_tecnicas": [{"skill": "Selenium", "level": "Avanzado"}, {"skill": "Java", "level": "Avanzado"}, {"skill": "JIRA", "level": "Intermedio"}],
+    "idiomas": [{"idioma": "Inglés", "nivel": "Intermedio"}],
+    "habilidades_blandas": ["Liderazgo", "Trabajo en equipo", "Comunicación"]
+  },
+  "proyectos": {"proyectos": []},
+  "otros_antecedentes": [],
+  "referencias": []
+}
