@@ -83,4 +83,10 @@ export class DocumentsController {
   reprocessDocument(@Param('id') id: string) {
     return this.documentsService.reprocessDocument(id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/repair')
+  repairDocument(@Param('id') id: string) {
+    return this.documentsService.repairDocument(id);
+  }
 }

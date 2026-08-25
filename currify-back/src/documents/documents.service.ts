@@ -142,11 +142,20 @@ export class DocumentsService {
 
       const extractedData = await this.extractDataFromDocument(document.filePath, userId, companyId || undefined);
 
+      // Detect PARTIAL status from core metadata_procesamiento.partial
+      const sd: any = extractedData.structuredData || {};
+      const isPartial =
+        sd?.metadata_procesamiento?.partial === true ||
+        sd?.datos_cv?.metadata_procesamiento?.partial === true ||
+        sd?.metadata_procesamiento?.recovered === true ||
+        sd?.datos_cv?.metadata_procesamiento?.recovered === true;
+      const finalStatus = isPartial ? ProcessingStatus.PARTIAL : ProcessingStatus.COMPLETED;
+
       await this.prisma.$transaction(async (tx) => {
         await tx.document.update({
           where: { id: documentId },
           data: {
-            processingStatus: ProcessingStatus.COMPLETED,
+            processingStatus: finalStatus,
             extractedText: extractedData.rawText,
           },
         });
@@ -156,7 +165,7 @@ export class DocumentsService {
             where: { id: document.candidate.id },
             data: {
               structuredData: extractedData.structuredData,
-              // processingStatus remains PROCESSING until scoring is done
+              // processingStatus remains PROCESSING until scoring is done (now finalStatus)
               name: extractedData.structuredData.datos_cv?.datos_contacto?.nombre_completo || document.candidate.name,
               email: extractedData.structuredData.datos_cv?.datos_contacto?.email || document.candidate.email,
               phone: extractedData.structuredData.datos_cv?.datos_contacto?.telefono || document.candidate.phone,
@@ -177,11 +186,17 @@ export class DocumentsService {
         // We log it but don't fail the process
       }
 
-      // FINAL STEP: Mark candidate as COMPLETED only after scoring attempt
+      // FINAL STEP: Mark candidate as PARTIAL/COMPLETED only after scoring attempt (preserve PARTIAL)
       if (document.candidate) {
+        // Re-evaluate finalStatus if available, else fallback to COMPLETED
+        const sd2: any = (typeof extractedData !== 'undefined' && (extractedData as any)?.structuredData) || {};
+        const isPartial2 =
+          sd2?.metadata_procesamiento?.partial === true ||
+          sd2?.datos_cv?.metadata_procesamiento?.partial === true;
+        const statusToSet = isPartial2 ? ProcessingStatus.PARTIAL : (typeof finalStatus !== 'undefined' ? finalStatus : ProcessingStatus.COMPLETED);
         await this.prisma.candidate.update({
           where: { id: document.candidate.id },
-          data: { processingStatus: ProcessingStatus.COMPLETED }
+          data: { processingStatus: statusToSet }
         });
       }
 
@@ -434,6 +449,69 @@ export class DocumentsService {
       message: 'Document reprocessing started',
       documentId: document.id,
       candidateId: document.candidateId,
+    };
+  }
+
+  async repairDocument(documentId: string) {
+    const document = await this.prisma.document.findUnique({
+      where: { id: documentId },
+      include: {
+        candidate: true,
+      },
+    });
+
+    if (!document) {
+      throw new NotFoundException('Document not found');
+    }
+
+    // No credit charge if previous status was PARTIAL (or candidate was PARTIAL)
+    // We do not decrement cvCredits here — unlike uploadDocument, repair is free for PARTIAL
+    const wasPartial = document.processingStatus === ProcessingStatus.PARTIAL;
+    let candidatePartial = false;
+    if (document.candidateId) {
+      const cand = await this.prisma.candidate.findUnique({
+        where: { id: document.candidateId },
+        select: { processingStatus: true },
+      });
+      candidatePartial = cand?.processingStatus === ProcessingStatus.PARTIAL;
+    }
+    // Allow repair for any status, but log if not PARTIAL
+    if (!wasPartial && !candidatePartial) {
+      // Still allow repair; just don't charge — idempotent repair path
+    }
+
+    try {
+      await this.storageService.getReadStreamAndSize(document.filePath);
+    } catch (e) {
+      throw new NotFoundException('File not found in storage');
+    }
+
+    await this.prisma.document.update({
+      where: { id: documentId },
+      data: {
+        processingStatus: ProcessingStatus.PROCESSING,
+        extractedText: null,
+      },
+    });
+
+    if (document.candidateId) {
+      await this.prisma.candidate.update({
+        where: { id: document.candidateId },
+        data: { processingStatus: ProcessingStatus.PROCESSING },
+      });
+
+      await this.prisma.candidateScoring.deleteMany({
+        where: { candidateId: document.candidateId },
+      });
+    }
+
+    this.processDocumentAsync(documentId);
+
+    return {
+      message: 'Document repair started (no credit charged for PARTIAL)',
+      documentId: document.id,
+      candidateId: document.candidateId,
+      wasPartial: wasPartial || candidatePartial,
     };
   }
 }

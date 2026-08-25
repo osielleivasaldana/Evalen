@@ -2213,9 +2213,34 @@ El output final debe corresponder exactamente al modelo ResumeData.
         return "No extraído"
 
     def _create_emergency_response(self, partial_data: Dict, cv_text: str) -> Optional[ResumeData]:
-        """Intentar recuperar datos en caso de emergencia"""
-        # Implementación simple de recuperación
-        return self._create_validated_response(partial_data, cv_text)
+        """Recovery no destructivo: merge parcial sanitizando campos fallidos y marcando PARTIAL"""
+        partial: Dict[str, Any] = {}
+        for k, v in partial_data.items():
+            if k == "habilidades" and isinstance(v, dict):
+                hb = v.get("habilidades_blandas", [])
+                if isinstance(hb, list):
+                    sanitized = []
+                    for x in hb:
+                        if isinstance(x, dict):
+                            val = x.get("skill") or x.get("nombre") or x.get("name") or x.get("habilidad") or next((str(val) for val in x.values() if isinstance(val, str) and val.strip()), None)
+                            if val:
+                                sanitized.append(str(val).strip())
+                        elif isinstance(x, str) and x.strip():
+                            sanitized.append(x.strip())
+                        elif x is not None:
+                            s = str(x).strip()
+                            if s:
+                                sanitized.append(s)
+                    v = dict(v)
+                    v["habilidades_blandas"] = sanitized
+            if k == "proyectos" and isinstance(v, dict):
+                # filter layout already handled elsewhere; keep but ensure dict
+                pass
+            partial[k] = v
+        # Marca PARTIAL/recovered para que el caller (Nest back) pueda distinguir
+        partial.setdefault("metadata_procesamiento", {})["partial"] = True
+        partial.setdefault("metadata_procesamiento", {})["recovered"] = True
+        return self._create_validated_response(partial, cv_text)
 
     async def extract_from_file(self, file_content: bytes, filename: str,
                                config: Optional[Dict[str, Any]] = None, request_id: str = "unknown") -> ResumeExtractionResponse:
