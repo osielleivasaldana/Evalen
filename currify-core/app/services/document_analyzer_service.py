@@ -162,6 +162,8 @@ class DocumentAnalyzerService:
             stripped = line.strip()
             if not stripped:
                 continue
+            if "LAYOUT CONTEXT" in stripped.upper():
+                continue
             if len(stripped) > 120:
                 continue  # demasiado larga para ser header
 
@@ -244,6 +246,9 @@ class DocumentAnalyzerService:
         5. ❌ Title Case por sí solo NO es suficiente (demasiados falsos positivos)
         """
         stripped = line.strip()
+
+        if "LAYOUT CONTEXT" in stripped.upper():
+            return False
 
         # ⛔ NO header si empieza con bullet
         if stripped and stripped[0] in self._BULLET_CHARS:
@@ -346,7 +351,7 @@ class DocumentAnalyzerService:
         # ── Calcular contenido real por sección (sin la línea del header) ──
         def _content_chars(det: SectionDetection) -> int:
             content_lines = [
-                l.strip() for l in lines[det.start_line + 1:det.end_line] if l.strip()
+                l.strip() for l in lines[det.start_line + 1:det.end_line] if l.strip() and "LAYOUT CONTEXT" not in l.upper()
             ]
             return sum(len(l) for l in content_lines)
 

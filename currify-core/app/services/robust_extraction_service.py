@@ -424,8 +424,14 @@ class RobustExtractionService:
             if isinstance(items, list):
                 for item in items:
                     if isinstance(item, str):
-                        proyectos_list.append({"nombre": item})
+                        if "LAYOUT" in item.upper() or len(item.strip()) < 2:
+                            continue
+                        proyectos_list.append({"nombre": item.strip()})
                     elif isinstance(item, dict):
+                        if "LAYOUT" in str(item.get("nombre","")).upper():
+                            continue
+                        if len(str(item.get("nombre",""))) > 120:
+                            continue
                         proyectos_list.append(item)
         merged["proyectos"] = {"proyectos": proyectos_list}
 

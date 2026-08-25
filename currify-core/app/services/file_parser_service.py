@@ -74,10 +74,11 @@ class FileParserService:
                         text_default = page.extract_text(x_tolerance=2, y_tolerance=3) or ""
                         text_layout = page.extract_text(layout=True) or ""
                         
-                        # Use default as primary, but append layout version if they differ significantly
-                        # or just append page-by-page?
-                        # Appending page-by-page keeps context together.
-                        combined_page = f"{text_default}\n\n--- LAYOUT CONTEXT (PAGE {i+1}) ---\n{text_layout}"
+                        # Hybrid limited: solo text_default si >100 chars (anti-contaminación layout)
+                        if len(text_default.strip()) > 100:
+                            combined_page = text_default
+                        else:
+                            combined_page = text_layout if text_layout.strip() else text_default
                         text_parts.append(combined_page)
                         
                     except Exception as e:
@@ -350,6 +351,21 @@ class FileParserService:
         """Limpia el texto extraído eliminando caracteres problemáticos"""
         if not text:
             return ""
+        # 0. Anti-contaminación layout: eliminar marcadores hybrid pdfplumber
+        text = re.sub(r"---\s*LAYOUT CONTEXT\s*\(PAGE\s*\d+\)\s*---", "", text, flags=re.IGNORECASE)
+        text = re.sub(r"LAYOUT CONTEXT.*", "", text, flags=re.IGNORECASE)
+        # Dedup líneas exactas (headers/footers repetidos)
+        lines = text.split("\n")
+        seen = set()
+        deduped = []
+        for l in lines:
+            stripped = l.strip()
+            if stripped and stripped not in seen:
+                seen.add(stripped)
+                deduped.append(l)
+            elif not stripped:
+                deduped.append(l)
+        text = "\n".join(deduped)
 
         # Eliminar caracteres de control excepto saltos de línea y tabs
         cleaned = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', text)

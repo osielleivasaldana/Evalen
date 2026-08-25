@@ -556,7 +556,20 @@ class Projects(BaseModel):
     def validate_list_input(cls, v):
         if not v: return []
         if isinstance(v, list):
-            return [{"nombre": item} if isinstance(item, str) else item for item in v]
+            filtered = []
+            for item in v:
+                if isinstance(item, str):
+                    if "LAYOUT" in item.upper() or len(item.strip()) < 2:
+                        continue
+                    filtered.append({"nombre": item.strip()})
+                elif isinstance(item, dict):
+                    nombre = str(item.get("nombre",""))
+                    if "LAYOUT" in nombre.upper() or len(nombre.strip()) > 120:
+                        continue
+                    if isinstance(item.get("tecnologias"), list):
+                        item["tecnologias"] = [str(t)[:60] for t in item["tecnologias"] if "LAYOUT" not in str(t).upper()]
+                    filtered.append(item)
+            return filtered
         return v
 
     @model_validator(mode='before')
