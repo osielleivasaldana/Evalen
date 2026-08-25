@@ -114,16 +114,20 @@ class RobustExtractionService:
             logger.info(f"🎯 Respuesta final - email: {response.datos_cv.datos_contacto.email}")
             logger.info(f"🎯 Respuesta final - confianza: {response.confianza_general}")
 
-            # EMERGENCY CHECK: Detect high confidence with empty data (critical bug)
-            if (response.confianza_general > 0.8 and
-                response.datos_cv.titular_profesional.titular == "No extraído" and
-                response.datos_cv.datos_contacto.email == "no-extraido@example.com"):
-
+            # Robust detector: comparar pre vs post (error solo si ambos vacíos, warning si post vacío pero pre no)
+            is_empty_post = (
+                resume_data.titular_profesional.titular == "No extraído"
+                and resume_data.datos_contacto.email == "no-extraido@example.com"
+                and len(resume_data.experiencia_laboral) == 0
+            )
+            is_empty_pre = (
+                len(structured_data.get("experiencia_laboral", [])) == 0
+                and not structured_data.get("datos_contacto", {}).get("email")
+            )
+            if confidence > 0.8 and is_empty_post and is_empty_pre:
                 logger.error("🚨 CRITICAL BUG DETECTED: High confidence with empty data!")
                 logger.error(f"🚨 Original structured_data: {structured_data}")
                 logger.error(f"🚨 This indicates a critical failure in data preservation")
-
-                # Try to create emergency response with original data
                 try:
                     logger.info("🚨 Attempting emergency data recovery...")
                     emergency_data = self._create_emergency_response(structured_data, cv_text)
@@ -139,6 +143,9 @@ class RobustExtractionService:
                         )
                 except Exception as e:
                     logger.error(f"🚨 Emergency recovery failed: {e}")
+            elif is_empty_post and not is_empty_pre:
+                logger.warning("⚠️ Pydantic degraded valid data, activating sanitization (structured had data, resume empty)")
+                structured_data["__quality_mismatch__"] = True
 
             logger.info(f"✅ EXTRACCIÓN ROBUSTA COMPLETADA en {processing_time:.2f}s")
             self._log_extraction_summary(resume_data)
@@ -1019,43 +1026,24 @@ El output final debe corresponder exactamente al modelo ResumeData.
 
         logger.info(f"📊 Score calculado antes de normalizar: {score}/{max_score} = {final_score:.3f}")
 
-        # Score mínimo de 0.15 si hay estructura JSON válida
+        # Score mínimo genérico para estructura básica válida (sin PII)
         if final_score == 0.0 and isinstance(extraction, dict):
-            # Verificar si hay al menos estructura básica
-            basic_structure = (
-                extraction.get("datos_contacto") or
-                extraction.get("experiencia_laboral") or
-                extraction.get("formacion_academica")
-            )
+            basic_structure = extraction.get("datos_contacto") or extraction.get("experiencia_laboral") or extraction.get("formacion_academica")
             if basic_structure:
-                final_score = 0.15  # Score mínimo para estructuras válidas
+                final_score = 0.15
                 logger.info(f"🔧 Applied minimum score 0.15 for basic valid structure")
 
-        # MEJORA ADICIONAL: Si hay datos válidos extraídos pero score bajo, aplicar mínimo más alto
-        if final_score > 0.0 and final_score < 0.2:
-            # Verificar si hay datos realmente válidos
+        if final_score > 0.0 and final_score < 0.3:
+            # Check has_valid_data genérico
             has_valid_data = False
-
-            # Verificar contacto válido
-            if extraction.get("datos_contacto"):
-                contacto = extraction["datos_contacto"]
-                if isinstance(contacto, dict):
-                    nombre = contacto.get("nombre_completo")
-                    email = contacto.get("email")
-                    if (nombre and str(nombre).strip() and "Osiel" in str(nombre)) or \
-                       (email and "@" in str(email) and "gmail" in str(email)):
-                        has_valid_data = True
-
-            # Verificar experiencia válida
-            if extraction.get("experiencia_laboral") and isinstance(extraction["experiencia_laboral"], list):
-                for exp in extraction["experiencia_laboral"]:
-                    if isinstance(exp, dict) and exp.get("cargo") and exp.get("empresa"):
-                        has_valid_data = True
-                        break
-
+            contacto = extraction.get("datos_contacto", {})
+            if isinstance(contacto, dict) and contacto.get("nombre_completo") and str(contacto.get("nombre_completo")).strip() not in ["No extraído", "", "None"]:
+                has_valid_data = True
+            if extraction.get("experiencia_laboral"):
+                has_valid_data = True
             if has_valid_data:
-                final_score = max(final_score, 0.3)  # Score mínimo de 30% si hay datos válidos
-                logger.info(f"🔧 Applied higher minimum score 0.3 for valid extracted data")
+                final_score = max(final_score, 0.30)
+                logger.info(f"🔧 Applied higher minimum score 0.3 for valid extracted data (generic)")
 
         logger.info(f"📊 Final quality score: {final_score:.3f} (raw: {score:.1f}/{max_score})")
         return final_score
