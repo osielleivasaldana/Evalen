@@ -1,8 +1,11 @@
 import io
 import logging
 import re
+import unicodedata
 from typing import Dict, Optional, Tuple
 from pathlib import Path
+
+from app.utils.encoding import fix_mojibake
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +126,9 @@ class FileParserService:
                 return text
 
             extracted_text = fix_encoding_artifacts(extracted_text)
+            # UTF-8 consistency: fix mojibake (double-encoded via latin1/cp1252) and normalize
+            extracted_text = fix_mojibake(extracted_text)
+            extracted_text = unicodedata.normalize('NFC', extracted_text)
             cleaned_text = self._clean_extracted_text(extracted_text)
 
             return {
@@ -256,34 +262,26 @@ class FileParserService:
             return self._create_error_response(filename, "docx", str(e))
 
     def _parse_text(self, file_content: bytes, filename: str) -> Dict[str, any]:
-        """Extrae texto de archivos de texto plano"""
+        """Extrae texto de archivos de texto plano - UTF-8 consistente"""
         try:
-            # Intentar diferentes encodings
-            encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
-
-            for encoding in encodings:
-                try:
-                    extracted_text = file_content.decode(encoding)
-                    cleaned_text = self._clean_extracted_text(extracted_text)
-
-                    return {
-                        "success": True,
-                        "text": cleaned_text,
-                        "metadata": {
-                            "filename": filename,
-                            "file_type": "txt",
-                            "encoding": encoding,
-                            "parsing_method": "direct_decode",
-                            "text_length": len(cleaned_text),
-                            "has_text": len(cleaned_text.strip()) > 0
-                        }
-                    }
-                except UnicodeDecodeError:
-                    continue
-
-            # Si ningún encoding funciona
-            return self._create_error_response(filename, "txt", "No se pudo decodificar el archivo con encodings comunes")
-
+            try:
+                extracted_text = file_content.decode('utf-8', errors='strict')
+            except UnicodeDecodeError:
+                extracted_text = file_content.decode('utf-8', errors='replace')
+                extracted_text = fix_mojibake(extracted_text)
+            extracted_text = unicodedata.normalize('NFC', extracted_text)
+            cleaned_text = self._clean_extracted_text(extracted_text)
+            return {
+                "success": True,
+                "text": cleaned_text,
+                "metadata": {
+                    "filename": filename,
+                    "file_type": "txt",
+                    "parsing_method": "direct_decode",
+                    "text_length": len(cleaned_text),
+                    "has_text": len(cleaned_text.strip()) > 0
+                }
+            }
         except Exception as e:
             logger.error(f"Error parsing text file {filename}: {e}")
             return self._create_error_response(filename, "txt", str(e))

@@ -19,6 +19,7 @@ from app.services.profile_detection_service import ProfileDetectionService
 from app.services.date_parser_service import DateParserService
 from app.services.document_analyzer_service import DocumentAnalyzerService
 from app.services.section_extractor import SectionExtractor
+from app.utils.encoding import fix_mojibake, fix_mojibake_recursive
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,8 @@ class RobustExtractionService:
 
             # 1. Pre-procesamiento y análisis
             cv_text = self._preprocess_text(request.archivo_contenido)
+            # Defensa preventiva mojibake: revertir UTF-8 leído como cp850/latin1/cp1252
+            cv_text = fix_mojibake(cv_text)
             profile_info = self.profile_detector.detect_profile_type(cv_text)
             document_analysis = self.document_analyzer.analyze_document(cv_text)
 
@@ -92,6 +95,8 @@ class RobustExtractionService:
             logger.info(f"🎯 Datos estructurados antes de validación - titular: {structured_data.get('titular_profesional')}")
             logger.info(f"🎯 Datos estructurados antes de validación - email: {structured_data.get('datos_contacto', {}).get('email')}")
 
+            # Choke point único: cubre section-pipeline + legacy + fallback JSON + emergency
+            structured_data = fix_mojibake_recursive(structured_data)
             resume_data = self._create_validated_response(structured_data, cv_text)
 
             logger.info(f"🎯 Resume data después de validación - titular: {resume_data.titular_profesional.titular}")
