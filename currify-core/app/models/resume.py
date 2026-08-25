@@ -369,6 +369,25 @@ class Skills(BaseModel):
                 cleaned.append(item)
         return cleaned
 
+    @validator('habilidades_blandas', pre=True)
+    def validate_soft_skills(cls, v):
+        if not v:
+            return []
+        cleaned = []
+        for item in v:
+            if isinstance(item, dict):
+                val = item.get('skill') or item.get('nombre') or item.get('name') or item.get('habilidad') or next((str(x) for x in item.values() if isinstance(x, str) and x.strip()), None)
+                if val:
+                    cleaned.append(str(val).strip())
+            elif isinstance(item, str):
+                if item.strip():
+                    cleaned.append(item.strip())
+            elif item is not None:
+                s = str(item).strip()
+                if s:
+                    cleaned.append(s)
+        return cleaned
+
 # ... (OnlineProfiles, AdditionalTraining, etc remain same)
 class OnlineProfiles(BaseModel):
     linkedin: Optional[str] = Field(None, description="URL del perfil de LinkedIn")

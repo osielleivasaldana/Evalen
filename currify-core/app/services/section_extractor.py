@@ -72,10 +72,10 @@ PROMPT_SKILLS = r"""Extrae habilidades técnicas, idiomas y habilidades blandas 
 ⛔ REGLAS:
 1. habilidades_tecnicas: SOLO herramientas, tecnologías, metodologías. Ej: "Python", "Excel Avanzado", "Metodología Ágil", "SAP", "Power BI"
 2. idiomas: idioma + nivel + certificación si existe. Ej: {"idioma": "Inglés", "nivel": "Avanzado", "certificacion": "TOEFL 105"}
-3. habilidades_blandas: competencias interpersonales. Ej: "Liderazgo", "Trabajo en equipo"
+3. habilidades_blandas: competencias interpersonales como strings planos. Ej: ["Liderazgo", "Trabajo en equipo", "Comunicación"]
 4. NO incluyas títulos académicos, cargos laborales ni experiencias.
 
-Output JSON: {"habilidades_tecnicas": [{"skill": "...", "level": "..."}], "idiomas": [{"idioma": "...", "nivel": "...", "certificacion": "..."}], "habilidades_blandas": [{"skill": "...", "level": "..."}]}"""
+Output JSON: {"habilidades_tecnicas": [{"skill": "...", "level": "..."}], "idiomas": [{"idioma": "...", "nivel": "...", "certificacion": "..."}], "habilidades_blandas": ["Liderazgo", "Trabajo en equipo"]}"""
 
 PROMPT_EDUCATION = r"""Extrae formación académica del texto.
 

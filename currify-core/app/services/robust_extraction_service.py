@@ -372,6 +372,21 @@ class RobustExtractionService:
         if "skills" in section_results and section_results["skills"].success:
             sk_data = section_results["skills"].data or {}
             habilidades_data["habilidades_tecnicas"] = sk_data.get("habilidades_tecnicas", [])
+            hb = sk_data.get("habilidades_blandas", [])
+            if isinstance(hb, list):
+                sanitized_hb = []
+                for x in hb:
+                    if isinstance(x, dict):
+                        v = x.get("skill") or x.get("nombre") or x.get("name") or x.get("habilidad") or next((str(val) for val in x.values() if isinstance(val, str) and val.strip()), None)
+                        if v:
+                            sanitized_hb.append(str(v).strip())
+                    elif isinstance(x, str) and x.strip():
+                        sanitized_hb.append(x.strip())
+                    elif x is not None:
+                        s = str(x).strip()
+                        if s:
+                            sanitized_hb.append(s)
+                sk_data["habilidades_blandas"] = sanitized_hb
             habilidades_data["habilidades_blandas"] = sk_data.get("habilidades_blandas", [])
             # Skills prompt also extracts languages
             if sk_data.get("idiomas"):
