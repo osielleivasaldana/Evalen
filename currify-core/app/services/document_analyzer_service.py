@@ -59,9 +59,9 @@ KEYWORD_CLASSIFICATION: List[Tuple[List[str], SectionType]] = [
 # Ambiguity resolution overrides: (contains_X, contains_Y) → preferred_type
 # ---------------------------------------------------------------------------
 AMBIGUITY_RULES: List[Tuple[str, str, SectionType]] = [
-    # "Competencias Técnicas y Diferenciales" → OTHER (has "diferenciales")
-    ("diferenciales", "técnicas", SectionType.OTHER),
-    ("diferenciales", "tecnicas", SectionType.OTHER),
+    # "Competencias Técnicas y Diferenciales" → SKILLS (PROMPT_SKILLS inclusivo clasifica dominio vs blandas)
+    ("diferenciales", "técnicas", SectionType.SKILLS),
+    ("diferenciales", "tecnicas", SectionType.SKILLS),
     ("transversales", "competencias", SectionType.OTHER),
     # "Títulos y Certificaciones" → TITLES
     ("títulos", "certificaciones", SectionType.TITLES),

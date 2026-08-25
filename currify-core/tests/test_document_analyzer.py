@@ -41,7 +41,13 @@ Gestión comercial y administrativa de la sucursal
 
 
 def test_classify_competencias_tecnicas_y_diferenciales(analyzer):
-    """'Competencias Técnicas y Diferenciales' debe clasificarse como OTHER."""
+    """'Competencias Técnicas y Diferenciales' debe clasificarse como SKILLS.
+
+    CAMBIO (Task D): antes esta regla de ambigüedad mapeaba a OTHER, lo que
+    impedía que la sección disparara PROMPT_SKILLS. Ahora va a SKILLS para que
+    PROMPT_SKILLS inclusivo clasifique dominio vs blandas (ej. RRHH).
+    Ver test_heuristic_skills_rrhh.py::test_analyzer_header_diferenciales_va_a_skills
+    """
     cv_text = """NOMBRE APELLIDO
 email@example.com
 
@@ -51,15 +57,11 @@ Gestión de equipos multidisciplinarios
 Orientación a resultados
 """
     detections = analyzer.analyze(cv_text)
-    section_types = {d.section_type for d in detections}
-    # Should NOT be SKILLS
-    assert SectionType.SKILLS not in {d.section_type for d in detections if "diferenciales" in d.section_name.lower()}, \
-        f"'Competencias Técnicas y Diferenciales' should be OTHER, not SKILLS. Got: {[(d.section_name, d.section_type.value) for d in detections]}"
-    # Should be OTHER
-    other_sections = [d for d in detections if d.section_type == SectionType.OTHER]
-    has_diferenciales = any("diferenciales" in d.section_name.lower() for d in other_sections)
+    # Debe ser SKILLS (Task D)
+    skills_sections = [d for d in detections if d.section_type == SectionType.SKILLS]
+    has_diferenciales = any("diferenciales" in d.section_name.lower() for d in skills_sections)
     assert has_diferenciales, \
-        f"Expected OTHER section for 'Competencias Técnicas y Diferenciales', got: {[(d.section_name, d.section_type.value) for d in detections]}"
+        f"Expected SKILLS section for 'Competencias Técnicas y Diferenciales', got: {[(d.section_name, d.section_type.value) for d in detections]}"
 
 
 def test_classify_experiencia_laboral(analyzer):

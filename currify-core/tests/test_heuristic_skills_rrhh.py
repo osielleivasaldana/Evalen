@@ -42,6 +42,16 @@ def test_resume_prompts_inclusivo():
     assert "HABILIDADES TÉCNICAS Y DE DOMINIO" in p
 
 
+def test_analyzer_header_diferenciales_va_a_skills():
+    """Task D: headers 'COMPETENCIAS TÉCNICAS Y DIFERENCIALES' clasifican como SKILLS
+    para disparar PROMPT_SKILLS inclusivo (clasifica dominio vs blandas)."""
+    from app.services.document_analyzer_service import DocumentAnalyzerService, SectionType
+    analyzer = DocumentAnalyzerService()
+    text = "DATOS PERSONALES\nJuan Perez\njuan@mail.com\n\nCOMPETENCIAS TÉCNICAS Y DIFERENCIALES\n• Gestión RRHH\n• Liderazgo"
+    sections = analyzer.analyze(text)
+    assert any(s.section_type == SectionType.SKILLS for s in sections), f"sections={[ (s.section_name, s.section_type) for s in sections ]}"
+
+
 def test_competencia_no_otros():
     from app.services.robust_extraction_service import RobustExtractionService
     from unittest.mock import MagicMock
