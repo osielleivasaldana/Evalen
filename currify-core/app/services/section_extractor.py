@@ -551,6 +551,36 @@ class SectionExtractor:
             logger.warning("[%s] Error LLM en sección %s: %s", request_id, section_type.value, e)
             last_error = str(e)
 
+        # ── Nivel 1b: Retry dirigido ValidationError (opcional, 0-1 llamada extra) ──
+        # Si el error contiene ValidationError / habilidades_blandas dict, reintentar una vez con corrección de prompt.
+        # Coste +0-1 condicional; sanitización principal en RobustExtractionService._create_validated_response ya cubre sin LLM extra.
+        if last_error and ("validation" in last_error.lower() or "habilidades_blandas" in last_error.lower()):
+            try:
+                logger.info("[%s] Reintentando sección %s con corrección ValidationError", request_id, section_type.value)
+                correction = "\n\nCORRECCIÓN: Responde con habilidades_blandas como list[str] no dict. Ej: [\"Liderazgo\", \"Trabajo en equipo\"]"
+                prompt_corr = _PROMPT_MAP.get(section_type, PROMPT_DEFAULT) + correction
+                result = await asyncio.wait_for(
+                    self.llm_service.call_agent(
+                        prompt=prompt_corr,
+                        input_data=content,
+                        stage_name=f"section_{section_type.value}",
+                        temperature=0.0,
+                        request_id=request_id,
+                    ),
+                    timeout=30.0,
+                )
+                if result is not None:
+                    return SectionResult(
+                        section_type=section_type.value,
+                        success=True,
+                        data=result,
+                        method="llm",
+                        processing_time_ms=(time.time() - start) * 1000,
+                    )
+            except Exception as e2:
+                logger.warning("[%s] Retry ValidationError falló en sección %s: %s", request_id, section_type.value, e2)
+                last_error = str(e2)
+
         # ── Nivel 2: Fallback heurístico ──
         try:
             heuristic_result = self._heuristic_fallback(section_type, content)

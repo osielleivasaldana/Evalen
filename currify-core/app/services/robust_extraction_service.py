@@ -10,6 +10,8 @@ import time
 from typing import Dict, List, Optional, Any, Union, Tuple
 from datetime import datetime
 
+from pydantic import ValidationError
+
 from app.services.llm_service import LLMService
 from app.models.resume import ResumeData, ResumeExtractionRequest, ResumeExtractionResponse, ThinkingResumeData
 from app.models.resume import SectionType
@@ -1448,8 +1450,72 @@ El output final debe corresponder exactamente al modelo ResumeData.
             logger.info(f"🔧 ✅ Habilidades finales: t={len(resume_data.habilidades.habilidades_tecnicas)} i={len(resume_data.habilidades.idiomas)} b={len(resume_data.habilidades.habilidades_blandas)}")
             return resume_data
 
+        except ValidationError as ve:
+            logger.warning(f"🔧 ValidationError en {ve.errors()[:2]}, intentando sanitización + retry dirigido")
+            # Sanitización campo-a-campo
+            for err in ve.errors():
+                loc = err.get('loc', ())
+                # loc like ('habilidades', 'habilidades_blandas', 0) or ('proyectos',)
+                if len(loc) >= 2 and loc[0] == 'habilidades' and loc[1] == 'habilidades_blandas':
+                    hb = fixed_data.get('habilidades', {}).get('habilidades_blandas', [])
+                    if isinstance(hb, list):
+                        sanitized = []
+                        for x in hb:
+                            if isinstance(x, dict):
+                                v = x.get('skill') or x.get('nombre') or x.get('name') or x.get('habilidad') or next((str(val) for val in x.values() if isinstance(val, str) and val.strip()), None)
+                                if v:
+                                    sanitized.append(str(v).strip())
+                            elif isinstance(x, str) and x.strip():
+                                sanitized.append(x.strip())
+                            elif x is not None:
+                                s = str(x).strip()
+                                if s:
+                                    sanitized.append(s)
+                        fixed_data['habilidades']['habilidades_blandas'] = sanitized
+                elif len(loc) >= 1 and loc[0] == 'proyectos':
+                    # Anti-contaminacion LAYOUT y tipos invalidos: normalizar a dict vacio si es string
+                    proj_val = fixed_data.get('proyectos')
+                    if isinstance(proj_val, str):
+                        fixed_data['proyectos'] = {"proyectos": []}
+                    elif isinstance(proj_val, dict):
+                        items = proj_val.get('proyectos', [])
+                        if isinstance(items, list):
+                            filtered = []
+                            for item in items:
+                                if isinstance(item, str):
+                                    if "LAYOUT" in item.upper() or len(item.strip()) < 2:
+                                        continue
+                                    filtered.append({"nombre": item.strip()})
+                                elif isinstance(item, dict):
+                                    nombre = str(item.get("nombre", ""))
+                                    if "LAYOUT" in nombre.upper() or len(nombre.strip()) > 120:
+                                        continue
+                                    filtered.append(item)
+                            proj_val['proyectos'] = filtered
+                    elif isinstance(proj_val, list):
+                        # flatten_list_input handled but ensure filter
+                        filtered = []
+                        for item in proj_val:
+                            if isinstance(item, str):
+                                if "LAYOUT" in item.upper():
+                                    continue
+                                filtered.append({"nombre": item.strip()})
+                        fixed_data['proyectos'] = {"proyectos": filtered}
+            try:
+                return ResumeData(**fixed_data)
+            except ValidationError as ve2:
+                logger.warning(f"🔧 Segundo ValidationError, aplicando fallback heurístico parcial: {ve2}")
+                # Keep valid fields, drop failed top-level sections
+                failed_top = set(err['loc'][0] for err in ve2.errors() if err.get('loc'))
+                partial = {k: v for k, v in fixed_data.items() if k not in failed_top}
+                # Ensure required defaults
+                self._ensure_required_fields(partial, cv_text)
+                partial['metadata_procesamiento'] = partial.get('metadata_procesamiento', {}) or {}
+                partial['metadata_procesamiento']['partial'] = True
+                partial['metadata_procesamiento']['warnings'] = [f"sanitized:{','.join(map(str, failed_top))}"]
+                return ResumeData(**partial)
         except Exception as e:
-            logger.error(f"Error validando con Pydantic: {e}")
+            logger.error(f"❌ Unexpected validation error: {e}")
             logger.error(f"🔧 Datos que causaron error: {list(fixed_data.keys())}")
             logger.warning("🔧 ⚠️ FALLBACK: Usando respuesta mínima porque falló todo")
             return self._create_minimal_valid_response()
