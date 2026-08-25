@@ -354,18 +354,28 @@ class FileParserService:
         # 0. Anti-contaminación layout: eliminar marcadores hybrid pdfplumber
         text = re.sub(r"---\s*LAYOUT CONTEXT\s*\(PAGE\s*\d+\)\s*---", "", text, flags=re.IGNORECASE)
         text = re.sub(r"LAYOUT CONTEXT.*", "", text, flags=re.IGNORECASE)
-        # Dedup líneas exactas (headers/footers repetidos)
+        # Dedup líneas exactas (headers/footers repetidos) + dedup semántico (whitespace-insensitive)
         lines = text.split("\n")
         seen = set()
+        seen_norm = set()
         deduped = []
         for l in lines:
             stripped = l.strip()
-            if stripped and stripped not in seen:
-                seen.add(stripped)
+            if not stripped:
                 deduped.append(l)
-            elif not stripped:
+                continue
+            norm = re.sub(r"\s+", "", stripped.lower())
+            if stripped not in seen and norm not in seen_norm:
+                seen.add(stripped)
+                seen_norm.add(norm)
                 deduped.append(l)
         text = "\n".join(deduped)
+
+        # 1. Normalizar pegado sin espacios (pdfplumber layout artifact)
+        text = re.sub(r"([a-záéíóú])([A-ZÁÉÍÓÚ])", r"\1 \2", text)
+        # 2. Colapsar múltiples espacios
+        text = re.sub(r" +", " ", text)
+        text = text.strip()
 
         # Eliminar caracteres de control excepto saltos de línea y tabs
         cleaned = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', text)
