@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "case": "cv_parvularia_15y",
+    "source": "CLASE de CVs no-tech chilenos — SINTÉTICO/ANONIMIZADO (educación inicial, ~15 años)",
+    "anonimizado": true,
+    "pii_reemplazado": {
+      "nombre_real": "Candidata Educación Inicial",
+      "email_real": "parvularia.anon@example.com",
+      "telefono_real": "+56 9 87654321"
+    },
+    "created": "2026-08-25",
+    "fixture_version": 1,
+    "clase_representada": [
+      "Layout laboral pipe/en-dash: 'Fundación San Carlos de Maipo | 2018 – 2023'",
+      "Bloques laborales colados bajo encabezado 'Otros Antecedentes'",
+      "Skills pedagógicas que NO matchean exacto contra rúbrica típica",
+      "Cargo 'Educadora de Párvulos' no cubierto por normalización tech-centrica"
+    ],
+    "eval_contract": "docs/contracts/core/resume_extraction_contract.md + scoring_contract.md",
+    "semaphore": "3/request global 6; judge skills ≤6 llamadas cacheadas; retry fechas máx 1/entrada (excepcional)"
+  },
+  "input": {
+    "archivo_fuente": "cv_parvularia_15y.txt",
+    "tipo_archivo": "txt",
+    "nombre_archivo": "cv_parvularia_15y_anon.txt"
+  },
+  "golden": {
+    "datos_cv": {
+      "datos_contacto": {
+        "nombre_completo": "Candidata Educación Inicial",
+        "email": "parvularia.anon@example.com",
+        "telefono": "+56 9 87654321",
+        "ubicacion": "Santiago, Chile"
+      },
+      "titular_profesional": {
+        "titular": "Educadora de Párvulos - 15 años de trayectoria en educación inicial"
+      },
+      "experiencia_laboral": [
+        {
+          "cargo": "Educadora de Párvulos",
+          "empresa": "Fundación San Carlos de Maipo",
+          "periodo": {"fecha_inicio": "2018", "fecha_fin": "2023", "texto_original": "Fundación San Carlos de Maipo | 2018 - 2023"},
+          "responsabilidades": [
+            "Elaboración de proyectos pedagógicos para primer y segundo ciclo",
+            "Evaluación del desarrollo infantil mediante observación sistemática",
+            "Reuniones periódicas con apoderados y comunidad educativa"
+          ]
+        },
+        {
+          "cargo": "Educadora de Párvulos Nivel Medio",
+          "empresa": "Corporación Educacional B",
+          "periodo": {"fecha_inicio": "2010", "fecha_fin": "2017", "texto_original": "Corporación Educacional B | 2010 - 2017"},
+          "responsabilidades": [
+            "Gestión de curso de 25 párvulos con planificación educativa por ámbitos",
+            "Aplicación de primeros auxiliares pediátricos y protocolos de emergencia"
+          ]
+        },
+        {
+          "cargo": "Educadora en programa comunitario",
+          "empresa": "Junta de Vecinos Los Aromos",
+          "periodo": {"fecha_inicio": "2009", "fecha_fin": "2010", "texto_original": "Junta de Vecinos Los Aromos | 2009 - 2010"},
+          "responsabilidades": ["Talleres de estimulación temprana para la comunidad"]
+        }
+      ],
+      "formacion_academica": [
+        {"titulo": "Educadora de Párvulos", "institucion": "Universidad Central de Chile", "periodo": {"fecha_inicio": "2005", "fecha_fin": "2009"}}
+      ],
+      "habilidades": {
+        "habilidades_tecnicas": [
+          {"skill": "Elaboración de proyectos pedagógicos", "level": "Avanzado"},
+          {"skill": "Evaluación del desarrollo infantil", "level": "Avanzado"},
+          {"skill": "Primeros auxiliares pediátricos", "level": "Intermedio"},
+          {"skill": "Comunicación con apoderados", "level": "Avanzado"},
+          {"skill": "Gestión de curso", "level": "Avanzado"},
+          {"skill": "Metodologías lúdicas", "level": "Intermedio"},
+          {"skill": "Planificación educativa por ámbitos", "level": "Avanzado"}
+        ],
+        "idiomas": [],
+        "habilidades_blandas": ["Trabajo colaborativo con familias", "Empatía", "Comunicación efectiva"]
+      }
+    },
+    "confianza_min": 0.3
+  },
+  "scoring_expected": {
+    "job_reference": {
+      "title": "Educadora de Párvulos Nivel Medio",
+      "description": "Educadora de Párvulos para nivel medio. Requiere: planificación educativa, evaluación del desarrollo infantil, primeros auxiliares, comunicación con apoderados, gestión de curso. Deseable inglés básico."
+    },
+    "overall_score": {"min": 60},
+    "recommendation_any_of": ["strong_fit", "moderate_fit"],
+    "breakdown_expectations": {
+      "skills_match": {"min": 60, "weight": 30, "nota": "crédito parcial (bandas + judge) debe superar 60 pese a terminología pedagógica no literal"},
+      "experience": {"min": 60, "weight": 25, "nota": "re-enrute de bloques colados + match exacto de roles educación"}
+    },
+    "eval_assertions": {
+      "fechas_parseadas": "existe entrada con empresa 'San Carlos de Maipo' con fecha_inicio=2018 y fecha_fin=2023 (nunca N/A)",
+      "bloques_reenrutados": "len(experiencia_laboral) >= 3 (los bloques bajo Otros Antecedentes se mueven a experiencia)",
+      "skills_min": "breakdown.skills_match.score >= 60",
+      "experience_min": "breakdown.experience.score >= 60"
+    }
+  }
+}

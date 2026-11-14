@@ -35,7 +35,7 @@ function ScoreCircle({ score, size = "md", className }: ScoreCircleProps) {
           stroke="currentColor"
           strokeWidth={stroke}
           fill="transparent"
-          className="text-indigo-100"
+          className="text-ev-line dark:text-white/[0.08]"
         />
         <circle
           cx={radius + stroke}

@@ -77,15 +77,15 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
   return (
     <div
       onClick={handleCardClick}
-      className="group relative bg-white p-6 hover:bg-slate-50 border-b border-gray-100 last:border-b-0 transition-all duration-300 cursor-pointer first:rounded-t-2xl last:rounded-b-2xl overflow-hidden"
+      className="group relative bg-ev-card dark:bg-[#16241C] p-6 hover:bg-ev-paper dark:hover:bg-[#0E1813] border-b border-ev-line/50 dark:border-white/[0.06] last:border-b-0 transition-all duration-300 cursor-pointer first:rounded-t-2xl last:rounded-b-2xl overflow-hidden"
     >
       {/* Indicador de hover lateral */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-center" />
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-ev-cta transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-center" />
 
       <div className="flex items-start gap-5">
         {/* Icono de Campaña con Glassmorphism */}
         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm transition-transform group-hover:scale-110 duration-500 ${
-          status === 'ACTIVE' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-400'
+          status === 'ACTIVE' ? 'bg-ev-cta/10 text-ev-cta' : 'bg-ev-paper dark:bg-[#0E1813] text-ev-ink3'
         }`}>
           <BriefcaseIcon className="w-7 h-7" />
         </div>
@@ -93,7 +93,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
         {/* Información Principal */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center flex-wrap gap-2 mb-2">
-            <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors truncate max-w-md">
+            <h3 className="text-xl font-bold text-ev-ink dark:text-ev-onmark group-hover:text-ev-cta transition-colors truncate max-w-md">
               {title}
             </h3>
             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight ${color} shadow-sm border border-white/20`}>
@@ -103,18 +103,18 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
           </div>
 
           <div 
-            className="text-sm text-slate-500 mb-4 line-clamp-2 prose prose-sm max-w-none prose-slate"
+            className="text-sm text-ev-ink2/70 dark:text-ev-ink2/60 mb-4 line-clamp-2 prose prose-sm max-w-none prose-slate"
             dangerouslySetInnerHTML={{ __html: description }}
           />
 
           {/* Stats & Metadata Row */}
           <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50/50 rounded-lg text-indigo-700 font-bold border border-indigo-100/50">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-ev-cta/10 dark:bg-ev-cta/20 rounded-lg text-ev-cta font-bold border border-ev-cta/20 dark:border-ev-cta/30">
               <UserGroupIcon className="w-4 h-4" />
               <span>{candidatesCount} candidatos</span>
             </div>
             
-            <div className="flex items-center gap-2 text-slate-400 font-medium ml-1">
+            <div className="flex items-center gap-2 text-ev-ink3 dark:text-ev-ink3/70 font-medium ml-1">
               <CalendarIcon className="w-4 h-4" />
               <span className="opacity-80">Creada el {formatDate(createdAt)}</span>
             </div>
@@ -123,7 +123,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
             <div className="hidden lg:flex items-center gap-3 ml-auto opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
                <button
                   onClick={(e) => { e.stopPropagation(); onCopyLink(publicId); }}
-                  className="flex items-center gap-1.5 text-slate-400 hover:text-indigo-600 font-bold text-xs"
+                  className="flex items-center gap-1.5 text-ev-ink3 dark:text-ev-ink3/70 hover:text-ev-cta font-bold text-xs"
                   title="Copiar enlace público"
                 >
                   <ClipboardDocumentIcon className="w-4 h-4" />
@@ -131,7 +131,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); window.open(`/apply/${publicId}`, '_blank'); }}
-                  className="flex items-center gap-1.5 text-slate-400 hover:text-indigo-600 font-bold text-xs"
+                  className="flex items-center gap-1.5 text-ev-ink3 dark:text-ev-ink3/70 hover:text-ev-cta font-bold text-xs"
                   title="Abrir enlace público"
                 >
                   <ArrowTopRightOnSquareIcon className="w-4 h-4" />
@@ -148,8 +148,8 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
             onClick={(e) => { e.stopPropagation(); onToggleStatus(id, status); }}
             className={`p-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center hover:scale-105 active:scale-95 ${
               status === 'ACTIVE'
-                ? 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200/50'
-                : 'bg-green-50 text-green-600 hover:bg-green-100 border border-green-200/50'
+                ? 'bg-ev-red/10 text-ev-red hover:bg-ev-red/20 border border-ev-red/30'
+                : 'bg-ev-cta/10 text-ev-cta hover:bg-ev-cta/20 border border-ev-cta/30'
             }`}
             title={status === 'ACTIVE' ? 'Pausar campaña' : 'Activar campaña'}
           >
@@ -172,14 +172,14 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none z-30 p-1.5">
+              <Menu.Items className="absolute right-0 mt-2 w-56 origin-top-right rounded-2xl bg-ev-card dark:bg-[#16241C] shadow-card-lg-evalen ring-1 ring-ev-line/30 dark:ring-white/[0.08] focus:outline-none z-30 p-1.5">
                 <div className="py-1">
                   <Menu.Item>
                     {({ active }) => (
                       <button
                         onClick={(e) => { e.stopPropagation(); onEdit(id); }}
                         className={`${
-                          active ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'
+                          active ? 'bg-ev-paper dark:bg-white/[0.04] text-ev-cta' : 'text-ev-ink2 dark:text-ev-ink2/70'
                         } group flex items-center gap-3 w-full px-4 py-2.5 text-sm font-bold rounded-xl transition-colors`}
                       >
                         <PencilIcon className="w-5 h-5 opacity-70" />
@@ -192,7 +192,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
                       <button
                         onClick={(e) => { e.stopPropagation(); onCopyLink(publicId); }}
                         className={`${
-                          active ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'
+                          active ? 'bg-ev-paper dark:bg-white/[0.04] text-ev-cta' : 'text-ev-ink2 dark:text-ev-ink2/70'
                         } group flex items-center gap-3 w-full px-4 py-2.5 text-sm font-bold rounded-xl transition-colors`}
                       >
                         <ShareIcon className="w-5 h-5 opacity-70" />
@@ -200,7 +200,7 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
                       </button>
                     )}
                   </Menu.Item>
-                  <div className="my-1.5 border-t border-slate-100" />
+                  <div className="my-1.5 border-t border-ev-line/30 dark:border-white/[0.06]" />
                   <Menu.Item>
                     {({ active }) => (
                       <button
@@ -222,14 +222,14 @@ const CampaignCard: React.FC<CampaignCardProps> = ({
       </div>
 
       {/* Botón CTA - "Gestionar Candidatos" */}
-      <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-slate-50 pt-5">
-        <div className="hidden sm:block text-xs uppercase tracking-widest font-black text-slate-300 group-hover:text-indigo-200 transition-colors">
+      <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-ev-line/30 dark:border-white/[0.06] pt-5">
+        <div className="hidden sm:block text-xs uppercase tracking-widest font-black text-ev-ink3 dark:text-ev-ink3/70 group-hover:text-ev-cta/60 transition-colors">
           Flujo de gestión activa
         </div>
         
         <button
           onClick={(e) => { e.stopPropagation(); navigate(`/campaigns/${id}`); }}
-          className="group/btn flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-indigo-600 border border-slate-200 hover:border-indigo-600 text-indigo-600 hover:text-white rounded-xl font-black text-sm uppercase tracking-wide transition-all shadow-sm hover:shadow-indigo-200"
+          className="group/btn flex items-center justify-center gap-2 px-6 py-3 bg-ev-card dark:bg-[#16241C] hover:bg-ev-cta border border-ev-line/50 dark:border-white/[0.08] hover:border-ev-cta text-ev-cta hover:text-ev-onmark rounded-xl font-black text-sm uppercase tracking-wide transition-all shadow-sm hover:shadow-card-lg-evalen"
         >
           <span>Gestionar {candidatesCount} candidatos</span>
           <ArrowRightIcon className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />

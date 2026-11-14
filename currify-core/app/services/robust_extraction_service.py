@@ -6,15 +6,19 @@ Arquitectura moderna con técnicas de prompting avanzadas y validación robusta
 import asyncio
 import json
 import logging
+import re
 import time
-from typing import Dict, List, Optional, Any, Union, Tuple
+from typing import Dict, List, Optional, Any, Union, Tuple, cast
 from datetime import datetime
 
 from pydantic import ValidationError
 
 from app.services.llm_service import LLMService
 from app.models.resume import ResumeData, ResumeExtractionRequest, ResumeExtractionResponse, ThinkingResumeData
-from app.models.resume import SectionType
+from app.models.resume import SectionType, Period
+
+# Regex de años plausibles para reparación/retry de fechas (Bug 1)
+_YEAR_SEARCH_RE = re.compile(r'\b((?:19|20)\d{2})\b')
 from app.services.profile_detection_service import ProfileDetectionService
 from app.services.date_parser_service import DateParserService
 from app.services.document_analyzer_service import DocumentAnalyzerService
@@ -99,6 +103,11 @@ class RobustExtractionService:
             structured_data = fix_mojibake_recursive(structured_data)
             resume_data = self._create_validated_response(structured_data, cv_text)
 
+            # BUG 1c: retry acotado de fechas (máx 1 por entrada, path excepcional).
+            # Solo se dispara si la capa determinista (b) no pudo reparar y el
+            # texto_original aún contiene años recuperables.
+            resume_data = await self._repair_dates_with_bounded_retry(resume_data, cv_text, request_id=request_id)
+
             logger.info(f"🎯 Resume data después de validación - titular: {resume_data.titular_profesional.titular}")
             logger.info(f"🎯 Resume data después de validación - email: {resume_data.datos_contacto.email}")
 
@@ -114,7 +123,7 @@ class RobustExtractionService:
                 campos_faltantes=self._identify_missing_fields(resume_data),
                 request_id=request_id,
                 tiempo_procesamiento=processing_time,
-                timestamp=datetime.now().isoformat()
+                timestamp=datetime.now()
             )
 
             logger.info(f"🎯 Respuesta final - titular: {response.datos_cv.titular_profesional.titular}")
@@ -145,6 +154,7 @@ class RobustExtractionService:
                             confianza_general=response.confianza_general,
                             advertencias=response.advertencias + ["Emergency data recovery applied"],
                             campos_faltantes=response.campos_faltantes,
+                            request_id=None,  # solo-tipos: explicita el default (None) sin cambiar semantica
                             tiempo_procesamiento=response.tiempo_procesamiento,
                             timestamp=response.timestamp
                         )
@@ -496,6 +506,15 @@ class RobustExtractionService:
                 items = other_data.get("items", [])
                 if isinstance(items, list):
                     otros_items.extend([str(i) for i in items if i])
+
+        # ── BUG 2: Re-enrute estructural de bloques laborales colados ──
+        # Una entrada en otros_antecedentes con (empresa+rango fechas) O (cargo+empresa)
+        # se mueve a experiencia_laboral. Regla genérica, sin empresas hardcodeadas.
+        otros_items, rerouted_exps = self._reroute_work_blocks(otros_items)
+        if rerouted_exps:
+            experience_data_raw.extend(rerouted_exps)
+            logger.info("[%s] 🔀 Re-enrute: %d bloque(s) laboral(es) movidos a experiencia_laboral",
+                        request_id, len(rerouted_exps))
         merged["otros_antecedentes"] = otros_items
 
         # ── 4A. Regla de prioridad para titular_profesional (condicional F3.1) ──
@@ -542,6 +561,299 @@ class RobustExtractionService:
 
         return merged
 
+    # ─────────────────────────────────────────────────────────────────────
+    # HOTFIX parvularia — Capas defensivas de fechas y re-enrute estructural
+    # ─────────────────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _normalize_for_anchor(text: str) -> str:
+        """Normaliza texto para anclaje de empresa: lowercase, sin tildes, espacios colapsados."""
+        import re as _re
+        import unicodedata
+        t = unicodedata.normalize('NFD', str(text or '').lower())
+        t = ''.join(c for c in t if not unicodedata.combining(c))
+        t = _re.sub(r'[^\w\s]', ' ', t)
+        return _re.sub(r'\s+', ' ', t).strip()
+
+    def _find_company_context_line(self, cv_text: str, empresa: str) -> Optional[str]:
+        """
+        Busca la línea del CV crudo que contiene el nombre de la empresa y la
+        devuelve junto con la línea siguiente (donde suelen vivir las fechas).
+        NUNCA inventa contenido: devuelve None si no hay anclaje.
+        """
+        if not cv_text or not empresa:
+            return None
+        anchor_norm = self._normalize_for_anchor(empresa)
+        if len(anchor_norm) < 4:
+            return None
+        # Usar las primeras 4 palabras como firma tolerante a sufijos legales
+        signature = ' '.join(anchor_norm.split()[:4])
+        lines = cv_text.replace('\r', '\n').split('\n')
+        for i, line in enumerate(lines):
+            line_norm = self._normalize_for_anchor(line)
+            if signature in line_norm:
+                window = [line]
+                if i + 1 < len(lines):
+                    window.append(lines[i + 1])
+                return '\n'.join(window)
+        return None
+
+    def _repair_missing_dates_from_text(self, data: Dict[str, Any], cv_text: Optional[str]) -> Dict[str, Any]:
+        """
+        BUG 1b — Capa determinista post-LLM: repara fecha_inicio/fecha_fin ausentes
+        buscando rangos de años ANCLADOS a la línea/contexto del nombre de empresa
+        en el texto crudo. Nunca inventa años fuera del texto; nunca pisa valores válidos.
+        """
+        if not cv_text or not isinstance(data, dict):
+            return data
+        exps = data.get("experiencia_laboral")
+        if not isinstance(exps, list):
+            return data
+
+        year_range_re = re.compile(
+            r'((?:19|20)\d{2})\s*[-–]\s*((?:19|20)\d{2}|presente|actualidad|actual|hoy|current)',
+            re.IGNORECASE,
+        )
+
+        for exp in exps:
+            if not isinstance(exp, dict):
+                continue
+            periodo = exp.get("periodo")
+            if not isinstance(periodo, dict):
+                periodo = {}
+                exp["periodo"] = periodo
+
+            inicio_actual = periodo.get("fecha_inicio")
+            fin_actual = periodo.get("fecha_fin")
+            inicio_bad = not inicio_actual or str(inicio_actual).strip().lower() in (
+                "n/a", "na", "none", "null", "no especificado", ""
+            )
+            fin_bad = not fin_actual or str(fin_actual).strip().lower() in (
+                "n/a", "na", "none", "null", "no especificado", ""
+            )
+            if not inicio_bad and not fin_bad:
+                continue
+
+            empresa = str(exp.get("empresa") or "").strip()
+            context = self._find_company_context_line(cv_text, empresa)
+            if not context:
+                continue
+
+            repaired_inicio, repaired_fin = None, None
+
+            # 1) Intento de alta precisión: parser centralizado sobre el contexto anclado
+            parsed = DateParserService.parse_period_string(context)
+            if parsed.get("fecha_inicio") and inicio_bad:
+                repaired_inicio = parsed["fecha_inicio"]
+            if parsed.get("fecha_fin") and fin_bad:
+                repaired_fin = parsed["fecha_fin"]
+
+            # 2) Fallback año-año explícito en el contexto
+            m = year_range_re.search(context)
+            if m:
+                if inicio_bad and repaired_inicio is None:
+                    repaired_inicio = m.group(1)
+                if fin_bad and repaired_fin is None:
+                    fin_txt = m.group(2)
+                    repaired_fin = "Presente" if fin_txt.lower() in ("presente", "actualidad", "actual", "hoy", "current") else fin_txt
+
+            if repaired_inicio:
+                periodo["fecha_inicio"] = repaired_inicio
+                logger.info(f"🔧 [DATE-REPAIR] fecha_inicio reparada desde texto anclado a '{empresa}': {repaired_inicio}")
+            if repaired_fin:
+                periodo["fecha_fin"] = repaired_fin
+                logger.info(f"🔧 [DATE-REPAIR] fecha_fin reparada desde texto anclado a '{empresa}': {repaired_fin}")
+            if (repaired_inicio or repaired_fin) and (
+                not periodo.get("texto_original")
+                or str(periodo["texto_original"]).strip().lower() in ("n/a", "na", "none", "null", "no especificado", "")
+            ):
+                periodo["texto_original"] = context.replace('\n', ' ').strip()
+
+        return data
+
+    async def _repair_dates_with_bounded_retry(
+        self, resume_data: ResumeData, cv_text: str, request_id: str = "unknown"
+    ) -> ResumeData:
+        """
+        BUG 1c — Validador Pydantic + retry acotado POR ENTRADA (máx 1 por entrada).
+        Se dispara SOLO cuando fecha_inicio quedó ausente/N-A pero el texto_original
+        contiene años recuperables (period_has_recoverable_years). Es un path
+        excepcional: no cuenta contra el presupuesto típico de llamadas.
+        Acepta solo años presentes en el contexto (nunca inventados).
+        """
+        from app.models.resume import PeriodRepairResult, period_has_recoverable_years
+
+        try:
+            for exp in resume_data.experiencia_laboral:
+                periodo = exp.periodo
+                pdict = periodo.model_dump() if periodo is not None else {}
+                if not period_has_recoverable_years(pdict):
+                    continue
+
+                # Contexto: línea anclada a empresa en el CV crudo, o texto_original
+                context = self._find_company_context_line(cv_text, str(exp.empresa or ""))
+                if not context:
+                    context = str(pdict.get("texto_original") or "")
+                if not _YEAR_SEARCH_RE.search(context):
+                    continue
+
+                prompt = (
+                    "Repara SOLO las fechas de esta entrada laboral. Devuelve EXCLUSIVAMENTE JSON:\n"
+                    '{"fecha_inicio": "YYYY o YYYY-MM", "fecha_fin": "YYYY, YYYY-MM o Presente"}\n'
+                    "Reglas: usa ÚNICAMENTE años/meses literalmente presentes en el CONTEXTO. "
+                    "Si no hay año de inicio en el contexto usa null. PROHIBIDO \"N/A\".\n\n"
+                    f"CONTEXTO:\n<contexto>\n{context[:500]}\n</contexto>"
+                )
+                try:
+                    raw = await self.llm_service.call_agent(
+                        prompt=prompt,
+                        input_data="",
+                        stage_name="date_repair_retry",
+                        temperature=0.0,
+                        request_id=request_id,
+                    )
+                except Exception as llm_err:
+                    logger.warning("[%s] date_repair_retry falló: %s", request_id, llm_err)
+                    continue
+
+                try:
+                    repair = PeriodRepairResult.model_validate(raw)
+                except Exception:
+                    # Respuesta malformada → se descarta silenciosamente (capa b ya actuó antes)
+                    continue
+
+                context_years = set(_YEAR_SEARCH_RE.findall(context))
+                if repair.fecha_inicio:
+                    start_year = str(repair.fecha_inicio)[:4]
+                    if start_year in context_years and not (periodo and periodo.fecha_inicio):
+                        if periodo is None:
+                            exp.periodo = Period(fecha_inicio=repair.fecha_inicio, fecha_fin=repair.fecha_fin, texto_original=context.replace('\n', ' ')[:200])
+                        else:
+                            periodo.fecha_inicio = repair.fecha_inicio
+                            if repair.fecha_fin and not periodo.fecha_fin:
+                                periodo.fecha_fin = repair.fecha_fin
+                        logger.info("[%s] 🔁 [DATE-RETRY] entrada '%s' reparada: %s", request_id, exp.cargo, repair.fecha_inicio)
+        except Exception as e:
+            logger.warning("[%s] _repair_dates_with_bounded_retry error no fatal: %s", request_id, e)
+        return resume_data
+
+    # Lexicón genérico de roles (vocabulario, NO empresas hardcodeadas)
+    _ROLE_KEYWORDS_RE = re.compile(
+        r'(gerente|jefe|jefa|director|directora|coordinador|coordinadora|encargad[oa]|'
+        r'analista|asistente|auxiliar|supervisor|supervisora|practicante|'
+        r'profesor|profesora|docente|educador|educadora|'
+        r'enfermer[oa]|médic[oa]|medic[oa]|matron[oa]|kinesi[óo]log[oa]|paramédic[oa]|paramedic[oa]|'
+        r'abogad[oa]|contad[oa]r|ingenier[oa]|técnic[oa]|tecnic[oa]|'
+        r'vendedor[aa]|vendedora|cajer[oa]|secretari[oa]|recepcionista|'
+        r'operari[oa]|conduct[oa]r|chofer|guardia|vigilante|consultor[aa]|'
+        r'desarrollador[aa]|programador[aa]|diseñador[aa]|arquitect[oa]|psic[óo]log[oa])',
+        re.IGNORECASE,
+    )
+    # Exclusiones: bloques con estos prefijos NO son experiencia laboral aunque tengan años
+    _NON_WORK_BLOCK_RE = re.compile(
+        r'^\s*(voluntariado|voluntaria(?:do)?\b|curso[s]?\b|certificaci[óo]n\b|capacitaci[óo]n\b|'
+        r'diplomado\b|seminario\b|taller\b|docencia\b|referid[oa]\b)',
+        re.IGNORECASE,
+    )
+    _YEAR_RANGE_SPLIT_RE = re.compile(
+        r'(?<!\d)((?:19|20)\d{2})\s*[-–]\s*((?:19|20)\d{2}|presente|actualidad|hoy|current)(?!\d)',
+        re.IGNORECASE,
+    )
+
+    def _reroute_work_blocks(self, otros_items: List[Any]) -> Tuple[List[Any], List[Dict[str, Any]]]:
+        """
+        BUG 2 — Regla estructural genérica de re-enrute: una entrada ubicada en
+        otros_antecedentes que contenga (empresa+rango de fechas) O (cargo+empresa)
+        se mueve a experiencia_laboral. Sin listas hardcodeadas de empresas.
+        Las viñetas (•, -, ✓) inmediatamente siguientes al bloque se absorben como
+        responsabilidades de esa experiencia (preservación de contenido literal).
+        Returns: (items que permanecen en otros_antecedentes, experiencias detectadas)
+        """
+        remaining: List[Any] = []
+        experiences: List[Dict[str, Any]] = []
+
+        bullet_prefixes = ('•', '-', '*', '✓', '\uf0fc', '·', '○', '▪')
+        i = 0
+        n = len(otros_items)
+        while i < n:
+            item = otros_items[i]
+            text = str(item).strip() if item is not None else ""
+            i += 1
+            if not text:
+                continue
+
+            # Exclusiones genéricas: voluntariado/cursos/certificaciones con años no son empleo
+            if self._NON_WORK_BLOCK_RE.match(text):
+                remaining.append(item)
+                continue
+
+            moved_entry: Optional[Dict[str, Any]] = None
+
+            m = self._YEAR_RANGE_SPLIT_RE.search(text)
+            if m:
+                left = text[:m.start()].strip(' |·–-,:')
+                right = text[m.end():].strip(' |·–-,:')
+                fin_raw = m.group(2)
+                fecha_fin = "Presente" if fin_raw.lower() in ("presente", "actualidad", "hoy", "current") else fin_raw
+                entry: Dict[str, Any] = {
+                    "cargo": None,
+                    "empresa": left or None,
+                    "periodo": {
+                        "fecha_inicio": m.group(1),
+                        "fecha_fin": fecha_fin,
+                        "texto_original": text,
+                    },
+                    "responsabilidades": [],
+                }
+                if right and self._ROLE_KEYWORDS_RE.search(right):
+                    entry["cargo"] = right
+                elif left and self._ROLE_KEYWORDS_RE.search(left) and not self._looks_like_company(left):
+                    # Formato "Cargo – 2018 - 2023": lo que está a la izquierda es cargo
+                    entry["cargo"] = left
+                    entry["empresa"] = None
+                moved_entry = entry
+            else:
+                # cargo+empresa sin fechas: "Cargo | Empresa"
+                parts = re.split(r'\s+[|·]\s*', text)
+                if (
+                    len(parts) == 2
+                    and self._ROLE_KEYWORDS_RE.search(parts[0])
+                    and len(parts[1]) >= 3
+                    and not self._YEAR_RANGE_SPLIT_RE.search(text)
+                ):
+                    moved_entry = {
+                        "cargo": parts[0].strip(),
+                        "empresa": parts[1].strip(),
+                        "periodo": {"fecha_inicio": None, "fecha_fin": None, "texto_original": text},
+                        "responsabilidades": [],
+                    }
+
+            if moved_entry is not None:
+                # Absorber viñetas inmediatamente siguientes como responsabilidades
+                while i < n:
+                    nxt = str(otros_items[i]).strip() if otros_items[i] is not None else ""
+                    if nxt.startswith(bullet_prefixes):
+                        moved_entry["responsabilidades"].append(nxt.lstrip(''.join(bullet_prefixes)).strip())
+                        i += 1
+                    else:
+                        break
+                experiences.append(moved_entry)
+                logger.info(f"🔀 [RE-ENRUTE] bloque laboral movido desde otros_antecedentes: {text[:80]} "
+                            f"(+{len(moved_entry['responsabilidades'])} responsabilidades)")
+                continue
+
+            remaining.append(item)
+
+        return remaining, experiences
+
+    @staticmethod
+    def _looks_like_company(text: str) -> bool:
+        """Heurística suave: ¿el fragmento parece razón social y no cargo?"""
+        t = text.lower()
+        company_signals = ('s.a', 'sa ', 'ltda', 'spa', 'fundación', 'fundacion', 'corporación',
+                           'corporacion', 'colegio', 'universidad', 'instituto', 'junta', 'municipalidad')
+        return any(sig in t for sig in company_signals)
+
     def _extract_contact_info(self, raw_text: str) -> Dict[str, Any]:
         """
         Extrae datos de contacto del texto crudo usando regex.
@@ -585,7 +897,7 @@ class RobustExtractionService:
                     'group': lambda self, g=0: max(candidates, key=lambda x: sum(c.isdigit() for c in x))
                 })()
         if phone_match:
-            result["telefono"] = phone_match.group(0).strip()
+            result["telefono"] = cast(Any, phone_match).group(0).strip()  # cast solo-tipos: Match dinamico via type()
 
         # ── Nombre (primeras líneas significativas) ──
         lines = [l.strip() for l in raw_text.split('\n') if l.strip()]
@@ -1059,7 +1371,15 @@ El output final debe corresponder exactamente al modelo ResumeData.
 
         # Post-procesamiento de fechas
         extraction = self._post_process_dates(extraction)
-        
+
+        # BUG 1b: reparación determinista de fechas anclada a la línea de empresa
+        # (antes de dedup: claves empresa|fecha_inicio coinciden y fusionan bien)
+        raw_cv = None
+        if request is not None and hasattr(request, 'archivo_contenido'):
+            raw_cv = getattr(request, 'archivo_contenido', None)
+        if raw_cv:
+            extraction = self._repair_missing_dates_from_text(extraction, raw_cv)
+
         # Deduplicación de experiencias (Fix: "No especificado" duplicate entries)
         extraction = self._deduplicate_experiences(extraction)
         
@@ -1429,7 +1749,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
 
         return data
 
-    def _create_validated_response(self, structured_data: Dict[str, Any], cv_text: str = None) -> ResumeData:
+    def _create_validated_response(self, structured_data: Dict[str, Any], cv_text: Optional[str] = None) -> ResumeData:
         """
         Crear respuesta validada con modelo Pydantic
         """
@@ -1509,7 +1829,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
                 failed_top = set(err['loc'][0] for err in ve2.errors() if err.get('loc'))
                 partial = {k: v for k, v in fixed_data.items() if k not in failed_top}
                 # Ensure required defaults
-                self._ensure_required_fields(partial, cv_text)
+                self._ensure_required_fields(partial, cast(str, cv_text))  # cast solo-tipos: None fluye igual que hoy
                 partial['metadata_procesamiento'] = partial.get('metadata_procesamiento', {}) or {}
                 partial['metadata_procesamiento']['partial'] = True
                 partial['metadata_procesamiento']['warnings'] = [f"sanitized:{','.join(map(str, failed_top))}"]
@@ -1520,7 +1840,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
             logger.warning("🔧 ⚠️ FALLBACK: Usando respuesta mínima porque falló todo")
             return self._create_minimal_valid_response()
 
-    def _fix_missing_required_fields(self, data: Dict[str, Any], cv_text: str = None) -> Dict[str, Any]:
+    def _fix_missing_required_fields(self, data: Dict[str, Any], cv_text: Optional[str] = None) -> Dict[str, Any]:
         """
         Reparar campos requeridos faltantes con valores por defecto razonables
         """
@@ -1644,7 +1964,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
                     else:
                         match_phone = None
                 if match_phone:
-                    encontrado = match_phone.group(0).strip()
+                    encontrado = cast(Any, match_phone).group(0).strip()  # cast solo-tipos: Match dinamico via type()
                     logger.info(f"🔧 [REGEX Fallback] Teléfono recuperado del texto: {encontrado}")
                     dc['telefono'] = encontrado
 
@@ -2045,6 +2365,7 @@ El output final debe corresponder exactamente al modelo ResumeData.
             datos_contacto=ContactInfo(
                 nombre_completo="No extraído",
                 email="no-extraido@example.com",
+                telefono=None,  # solo-tipos: explicita el default (None)
                 ubicacion="No especificado"
             ),
             titular_profesional=ProfessionalTitle(titular="No extraído"),
@@ -2058,7 +2379,9 @@ El output final debe corresponder exactamente al modelo ResumeData.
             proyectos=Projects(proyectos=[]),
             actividades_extracurriculares=ExtracurricularActivities(voluntariado=[]),
             intereses=Interests(hobbies_intereses=[]),
-            otros_antecedentes=[]
+            otros_antecedentes=[],
+            referencias=None,  # solo-tipos: explicita el default (None)
+            metadata_procesamiento=None  # solo-tipos: explicita el default (None)
         )
 
     def _calculate_confidence(self, data: Dict[str, Any]) -> float:
@@ -2137,8 +2460,9 @@ El output final debe corresponder exactamente al modelo ResumeData.
             confianza_general=0.0,
             advertencias=[f"Error crítico durante extracción: {error_msg}"],
             campos_faltantes=["ALL"],
+            request_id=None,  # solo-tipos: explicita el default (None) sin cambiar semantica
             tiempo_procesamiento=processing_time,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now()
         )
         
     def _extract_titular_from_text(self, text: str) -> str:

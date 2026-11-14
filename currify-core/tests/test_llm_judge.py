@@ -72,7 +72,7 @@ async def test_llm_as_a_judge_on_extraction():
     
     # Convert extracted data to JSON string for the Judge
     try:
-        extracted_data_json = json.dumps(extraction_result.dict(), ensure_ascii=False, indent=2)
+        extracted_data_json = json.dumps(extraction_result.model_dump(), ensure_ascii=False, indent=2)
     except AttributeError:
         extracted_data_json = json.dumps(extraction_result, ensure_ascii=False, indent=2)
 

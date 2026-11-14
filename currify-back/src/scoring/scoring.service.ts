@@ -10,6 +10,7 @@ export class ScoringService {
   private readonly username: string;
   private readonly password: string;
   private readonly apiKey: string;
+  private readonly scoringTimeoutMs: number;
   private tokenCache: { token: string; expiresAt: number } | null = null;
 
   constructor(
@@ -20,6 +21,9 @@ export class ScoringService {
     this.username = this.configService.get<string>('SCORING_SERVICE_USERNAME') || '';
     this.password = this.configService.get<string>('SCORING_SERVICE_PASSWORD') || '';
     this.apiKey = this.configService.get<string>('SCORING_SERVICE_API_KEY') || '';
+    const rawTimeout = this.configService.get<string>('SCORING_TIMEOUT_MS');
+    const parsed = rawTimeout ? parseInt(rawTimeout, 10) : 180000;
+    this.scoringTimeoutMs = Number.isNaN(parsed) || parsed <= 0 ? 180000 : parsed;
   }
 
   /**
@@ -223,10 +227,12 @@ export class ScoringService {
     };
   }
 
-  /**
-   * Evalúa un candidato contra una campaña y guarda el score
-   */
+   /**
+    * Evalúa un candidato contra una campaña y guarda el score
+    */
   async evaluateCandidate(candidateId: string): Promise<any> {
+    let t0 = 0;
+    const timeout = this.scoringTimeoutMs;
     try {
       // Obtener candidato con su CV estructurado y detalles del usuario/compañía
       const candidate = await this.prisma.candidate.findUnique({
@@ -286,6 +292,7 @@ export class ScoringService {
       this.logger.debug(`Calling scoring service for candidate ${candidateId}`);
       this.logger.debug(`Payload size: ${JSON.stringify({ candidate: candidate.structuredData, job: completeJobData }).length} bytes`);
 
+      t0 = Date.now();
       const response = await axios.post(`${this.scoringServiceUrl}/scoring/evaluate`, {
         candidate: candidate.structuredData,
         job: completeJobData,
@@ -294,12 +301,12 @@ export class ScoringService {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        timeout: 120000, // 2 minutes timeout
+        timeout,
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
       });
 
-      this.logger.debug(`Scoring service responded for candidate ${candidateId}`);
+      this.logger.log(`Scoring service responded for candidate ${candidateId} in ${Date.now() - t0}ms (timeout ${timeout}ms)`);
       const scoringResult = response.data;
 
       const promptTokens = parseInt(response.headers['x-llm-prompt-tokens'] || response.headers['X-LLM-Prompt-Tokens'] || '0', 10);
@@ -353,7 +360,8 @@ export class ScoringService {
       }
 
       if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') {
-        this.logger.error(`Timeout calling scoring service for candidate ${candidateId}`);
+        const elapsed = t0 ? Date.now() - t0 : 0;
+        this.logger.error(`Timeout calling scoring service for candidate ${candidateId} after ${elapsed}ms (timeout ${timeout}ms)`);
         throw new HttpException(
           'Scoring service timeout. The evaluation is taking too long.',
           HttpStatus.REQUEST_TIMEOUT,

@@ -1,38 +1,40 @@
-import React from 'react';
-import { ThemeProvider } from '../contexts/ThemeContext';
-import './landing-new.css';
+import React, { useEffect } from 'react';
+import './landing-evalen.css';
 import LandingNavbar from './components/LandingNavbar';
 import HeroSection from './components/HeroSection';
-import ProblemSection from './components/ProblemSection';
+import BenefitsStrip from './components/BenefitsStrip';
 import HowItWorksSection from './components/HowItWorksSection';
-import DemoSection from './components/DemoSection';
-import BenefitsSection from './components/BenefitsSection';
-import TestimonialsSection from './components/TestimonialsSection';
+import AnalysisSection from './components/AnalysisSection';
+import ProcessSection from './components/ProcessSection';
 import PricingSection from './components/PricingSection';
 import FAQSection from './components/FAQSection';
+import ClosingSection from './components/ClosingSection';
 import FooterSection from './components/FooterSection';
+import { usePlans } from './hooks/usePlans';
 
 const LandingPage: React.FC = () => {
+  const plans = usePlans();
+
+  useEffect(() => {
+    document.body.classList.add('lp-root');
+    return () => document.body.classList.remove('lp-root');
+  }, []);
+
   return (
-    <ThemeProvider>
-      <div className="topbar" id="topbar">
-        <span className="star">✦</span>
-        <span>Nuevo: <b>Smart Match semántico</b> — ya evalúa significado, no palabras clave.</span>
-        <a href="/login?plan=free">Ver cómo →</a>
-      </div>
+    <div className="lp-root">
       <LandingNavbar />
       <main id="top">
         <HeroSection />
-        <ProblemSection />
+        <BenefitsStrip />
         <HowItWorksSection />
-        <DemoSection />
-        <BenefitsSection />
-        <TestimonialsSection />
-        <PricingSection />
+        <AnalysisSection />
+        <ProcessSection />
+        <PricingSection plans={plans} />
         <FAQSection />
+        <ClosingSection plans={plans} />
       </main>
       <FooterSection />
-    </ThemeProvider>
+    </div>
   );
 };
 

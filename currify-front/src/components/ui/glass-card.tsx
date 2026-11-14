@@ -15,8 +15,8 @@ function GlassCard({
     <div
       className={cn(
         variant === "candidate"
-          ? "bg-white/80 backdrop-blur-md rounded-2xl border border-white shadow-sm"
-          : "backdrop-blur-md rounded-2xl border border-white/50 bg-white/60",
+          ? "bg-ev-card/80 dark:bg-[#16241C]/80 backdrop-blur-md rounded-2xl border border-ev-line/30 dark:border-white/[0.06] shadow-sm"
+          : "backdrop-blur-md rounded-2xl border border-ev-line/30 dark:border-white/[0.06] bg-ev-card/60 dark:bg-[#16241C]/60",
         className
       )}
       {...props}

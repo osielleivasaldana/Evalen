@@ -412,7 +412,7 @@ async def validate_resume_data(
         validators = ResumeValidators()
 
         # Convertir a dict para validación
-        resume_dict = resume_data.dict()
+        resume_dict = resume_data.model_dump()
 
         # Ejecutar validaciones
         completeness = validators.validate_resume_completeness(resume_dict)
@@ -523,7 +523,7 @@ async def process_batch_files(job_id: str, files: List[UploadFile], config: Dict
                 return {
                     "filename": file.filename,
                     "success": True,
-                    "data": result.dict(),
+                    "data": result.model_dump(),
                     "processed_at": datetime.now().isoformat()
                 }
             except Exception as e:

@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Evalen · Análisis IA — Osiel Leiva Saldaña</title>
+<meta name="description" content="Análisis IA de Evalen: el veredicto como hilo conductor y el CV extraído como evidencia anclada. Una sola vista para auditar el match criterio por criterio." />
+<meta name="theme-color" content="#0F3A2C" />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2048%2048'%3E%3Crect%20width='48'%20height='48'%20rx='12'%20fill='%230F3A2C'/%3E%3Crect%20x='13'%20y='12'%20width='5'%20height='24'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='12'%20width='18'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='21.5'%20width='13'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='31'%20width='21'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Ccircle%20cx='37'%20cy='14.5'%20r='4.5'%20fill='%23F3E94E'/%3E%3C/svg%3E" />
+<script>(function(){try{var t=localStorage.getItem('evalen-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-700-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-500-italic.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-600-italic.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-700-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-mono@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-mono@latest/latin-500-normal.css" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: ['selector', '[data-theme="dark"]'],
+  theme: {
+    extend: {
+      colors: {
+        paper:'#F6F1E6', paper2:'#EFE7D6', card:'#FCFAF3',
+        ink:'#15261E', ink2:'#4C5B51', ink3:'#828E84',
+        green:'#1C5B44', greendeep:'#0F3A2C', greentint:'#E4ECE4',
+        onmark:'#F6F1E6',
+        yellow:'#F3E94E', yellow2:'#FBF6AE',
+        cta:'#D64518', ctah:'#B5370F', ctatext:'#FFF7EC',
+        line:'rgba(21,38,30,.13)', line2:'rgba(21,38,30,.24)',
+        good:'#1C5B44', goodt:'#E4ECE4',
+        mid:'#A9760F', midt:'#F6ECCF',
+        low:'#B23B2E', lowt:'#F4DDD8'
+      },
+      fontFamily: {
+        serif: ['Fraunces','Georgia','Times New Roman','serif'],
+        sans: ['Instrument Sans','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'],
+        mono: ['IBM Plex Mono','ui-monospace','SFMono-Regular','Menlo','monospace']
+      },
+      boxShadow: {
+        card: '0 22px 48px -28px rgba(15,40,30,.5)',
+        soft: '0 10px 26px -18px rgba(15,40,30,.45)',
+        cta:  '0 12px 22px -12px rgba(214,69,24,.6)',
+        pop:  '0 18px 40px -22px rgba(15,40,30,.55)',
+        gold: '0 10px 24px -12px rgba(243,233,78,.45)'
+      },
+      backgroundImage: {
+        grain: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
+      }
+    }
+  }
+}
+</script>
+
+<style>
+  :root {
+    color-scheme: light;
+    --ink:#15261E; --ink2:#4C5B51; --ink3:#828E84;
+    --green:#1C5B44; --greendeep:#0F3A2C; --greentint:#E4ECE4;
+    --onmark:#F6F1E6; --yellow:#F3E94E; --yellow2:#FBF6AE;
+    --cta:#D64518; --ctah:#B5370F; --ctatext:#FFF7EC;
+    --good:#1C5B44; --goodt:#E4ECE4; --mid:#A9760F; --midt:#F6ECCF; --low:#B23B2E; --lowt:#F4DDD8;
+    --paper:#F6F1E6; --paper2:#EFE7D6; --card:#FCFAF3;
+    --line:rgba(21,38,30,.13); --line2:rgba(21,38,30,.24);
+  }
+  html[data-theme="dark"] {
+    --paper:#0E1813; --paper2:#13201A; --card:#16241C;
+    --ink:#F1EBDC; --ink2:#AAB6A8; --ink3:#7E8C7E;
+    --green:#5BAE88; --greendeep:#163528; --greentint:#1C3329;
+    --onmark:#F1EBDC; --yellow:#F3E94E; --yellow2:#5A5418;
+    --cta:#FF6A38; --ctah:#FF8455; --ctatext:#10231A;
+    --line:rgba(241,235,220,.13); --line2:rgba(241,235,220,.26);
+    --good:#62B78F; --goodt:#173327; --mid:#E0A93A; --midt:#3A2E12;
+    --low:#E0695A; --lowt:#3A1C18;
+    color-scheme: dark;
+  }
+  html[data-theme="dark"] body { background: var(--paper); color: var(--ink); }
+  html[data-theme="dark"] .t-paper{background:var(--paper)!important}
+  html[data-theme="dark"] .t-paper2{background:var(--paper2)!important}
+  html[data-theme="dark"] .t-card{background:var(--card)!important}
+  html[data-theme="dark"] .t-ink{color:var(--ink)!important}
+  html[data-theme="dark"] .t-ink2{color:var(--ink2)!important}
+  html[data-theme="dark"] .t-ink3{color:var(--ink3)!important}
+  html[data-theme="dark"] .t-line{border-color:var(--line)!important}
+  html[data-theme="dark"] .t-line2{border-color:var(--line2)!important}
+  html[data-theme="dark"] .t-goodt{background:var(--goodt)!important}
+  html[data-theme="dark"] .t-midt{background:var(--midt)!important}
+  html[data-theme="dark"] .t-lowt{background:var(--lowt)!important}
+  html[data-theme="dark"] .t-greentint{background:var(--greentint)!important}
+  html[data-theme="dark"] .t-good{color:var(--good)!important}
+  html[data-theme="dark"] .t-mid{color:var(--mid)!important}
+  html[data-theme="dark"] .t-low{color:var(--low)!important}
+  html[data-theme="dark"] .t-green{color:var(--green)!important}
+  html[data-theme="dark"] .t-cta{color:var(--cta)!important}
+  html[data-theme="dark"] .bg-cta{background:var(--cta)!important}
+  html[data-theme="dark"] .hover\:bg-ctah:hover{background:var(--ctah)!important}
+  html[data-theme="dark"] .text-ctatext{color:var(--ctatext)!important}
+  html[data-theme="dark"] .bg-greendeep{background:var(--greendeep)!important}
+  html[data-theme="dark"] .bg-good{background:var(--good)!important}
+  html[data-theme="dark"] .text-onmark{color:var(--onmark)!important}
+  html[data-theme="dark"] .bg-yellow{background:var(--yellow)!important}
+  html[data-theme="dark"] .text-greendeep{color:var(--greendeep)!important}
+  html[data-theme="dark"] .border-green{border-color:var(--green)!important}
+  html[data-theme="dark"] .border-cta{border-color:var(--cta)!important}
+  html[data-theme="dark"] .border-mid{border-color:var(--mid)!important}
+  html[data-theme="dark"] .border-low{border-color:var(--low)!important}
+
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) body { background-color:#F6F1E6 !important; color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper   { background-color:#F6F1E6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper2  { background-color:#EFE7D6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-card    { background-color:#FCFAF3 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-greendeep { background-color:#0F3A2C !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-green,
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-good    { background-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-cta     { background-color:#D64518 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-yellow  { background-color:#F3E94E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-greentint,
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-goodt   { background-color:#E4ECE4 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-midt    { background-color:#F6ECCF !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-lowt    { background-color:#F4DDD8 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-line2   { background-color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper\/80  { background-color:rgba(246,241,230,.80) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper\/85  { background-color:rgba(246,241,230,.85) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper\/60  { background-color:rgba(246,241,230,.60) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-good\/55   { background-color:rgba(28,91,68,.55) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-ink3\/40   { background-color:rgba(130,142,132,.40) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ink   { color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ink2  { color:#4C5B51 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ink3  { color:#828E84 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-green,
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-good  { color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-mid   { color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-low   { color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-cta   { color:#D64518 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark{ color:#F6F1E6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-greendeep { color:#0F3A2C !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ctatext { color:#FFF7EC !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-yellow { color:#F3E94E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-line2 { color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/70 { color:rgba(246,241,230,.70) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/80 { color:rgba(246,241,230,.80) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/90 { color:rgba(246,241,230,.90) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .placeholder\:text-ink3\/80::placeholder { color:rgba(130,142,132,.80) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-line  { border-color:rgba(21,38,30,.13) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-line2 { border-color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-green { border-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-cta   { border-color:#D64518 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-mid   { border-color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-low   { border-color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-ink3\/40 { border-color:rgba(130,142,132,.40) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .divide-line > :not([hidden]) ~ :not([hidden]) { border-color:rgba(21,38,30,.13) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .ring-paper  { --tw-ring-color:#F6F1E6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .ring-paper2 { --tw-ring-color:#EFE7D6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .ring-line2  { --tw-ring-color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-paper2:hover  { background-color:#EFE7D6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-greentint:hover { background-color:#E4ECE4 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-goodt:hover   { background-color:#E4ECE4 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-lowt:hover    { background-color:#F4DDD8 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-ctah:hover    { background-color:#B5370F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-ink:hover   { color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-green:hover { color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-mid:hover   { color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-low:hover   { color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-ink:hover  { border-color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-ink3:hover { border-color:#828E84 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-green:hover{ border-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-mid:hover  { border-color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-low:hover  { border-color:#B23B2E !important; }
+
+  ::selection { background:#F3E94E; color:#15261E; }
+
+  @keyframes rise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+  @keyframes spotdrift { 0% { transform:translate3d(0,0,0) scale(1); } 100% { transform:translate3d(-3%,4%,0) scale(1.08); } }
+  @keyframes pulsering { 0% { box-shadow:0 0 0 0 rgba(28,91,68,.5); } 70% { box-shadow:0 0 0 7px rgba(28,91,68,0); } 100% { box-shadow:0 0 0 0 rgba(28,91,68,0); } }
+  @keyframes nodepulse { 0%,100% { opacity:.14; } 50% { opacity:.5; } }
+  @keyframes popin { from { opacity:0; transform:scale(.96) translateY(-4px); } to { opacity:1; transform:none; } }
+  @keyframes flashpulse {
+    0%   { background: rgba(243,233,78,.34); box-shadow: 0 0 0 6px rgba(243,233,78,.12); }
+    60%  { background: rgba(243,233,78,.10); box-shadow: 0 0 0 6px rgba(243,233,78,0); }
+    100% { background: transparent; box-shadow: 0 0 0 0 rgba(243,233,78,0); }
+  }
+  @keyframes hlwipe { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .animate-spotdrift { animation: spotdrift 17s ease-in-out infinite alternate; }
+  .animate-pulsering { animation: pulsering 2.2s infinite; }
+  .animate-nodepulse { animation: nodepulse 3.8s ease-in-out infinite; }
+
+  .report-watermark { color: var(--ink); }
+
+  .spotlight { background: radial-gradient(58% 78% at 76% 40%, rgba(243,233,78,.18), rgba(243,233,78,0) 70%); }
+
+  .hl { position: relative; padding: 0 .06em; border-radius: 2px; }
+  .hl-ink { position: relative; z-index: 1; color: #15261E; }
+  .hl-fill {
+    position: absolute; inset: .12em -.02em .06em; z-index: 0;
+    background: var(--yellow); border-radius: 3px;
+    transform: scaleX(1); transform-origin: left center;
+    animation: hlwipe .72s cubic-bezier(.22,.7,.2,1) both;
+    animation-delay: .5s;
+  }
+
+  .matchbar-fill { width: 0; transition: width 1.05s cubic-bezier(.2,.7,.2,1); }
+
+  .rise { opacity: 0; animation: rise .62s cubic-bezier(.2,.7,.2,1) both; }
+
+  .bar-fill { width:0; transition: width 1s cubic-bezier(.2,.7,.2,1); }
+  .crit-row { transition: border-color .2s ease, background-color .2s ease; }
+  .crit-row:hover { background-color: color-mix(in srgb, var(--paper2) 45%, transparent); }
+  .crit-row:hover .bar-fill { filter: brightness(1.06) saturate(1.05); }
+
+  .acc-body { display:grid; grid-template-rows:0fr; transition:grid-template-rows .32s ease; }
+  .acc.open .acc-body { grid-template-rows:1fr; }
+  .acc-body > div { overflow:hidden; }
+  .acc .acc-chev { transition:transform .3s ease; }
+  .acc.open .acc-chev { transform:rotate(180deg); }
+
+  .tl { position:relative; padding-left:26px; }
+  .tl::before { content:""; position:absolute; left:6px; top:9px; bottom:9px; width:2px; background:var(--line2); }
+  .tl-item { position:relative; }
+  .tl-item::before { content:""; position:absolute; left:-26px; top:7px; width:14px; height:14px; border-radius:50%; background:var(--card); border:2px solid var(--green); transition: transform .2s ease, box-shadow .2s ease; }
+  .tl-item:hover::before { transform: scale(1.22); }
+  .tl-item.is-current::before { background:var(--green); box-shadow:0 0 0 4px var(--greentint); }
+  .tl-item.is-current:hover::before { box-shadow:0 0 0 6px var(--greentint); }
+  /* viñeta alineada al interlineado (sin px mágicos) */
+  .bullet { margin-top: .62em; }
+
+  .ix-link { position:relative; color:var(--ink2); transition: color .2s ease; }
+  .ix-link:hover { color:var(--ink); }
+  .ix-link[aria-current="true"] { color:var(--ink); }
+  .ix-link::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; border-radius:2px; background:var(--cta); transform:scaleX(0); transform-origin:left; transition: transform .28s cubic-bezier(.2,.7,.2,1); }
+  .ix-link[aria-current="true"]::after { transform:scaleX(1); }
+
+  .sec-flash { animation: flashpulse 1.5s ease; border-radius:12px; }
+
+  .reveal { opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity:1; transform:none; }
+
+  .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+  .no-scrollbar::-webkit-scrollbar { display:none; }
+
+  [data-menu] { transform-origin: top right; }
+  .menu-hidden { display:none; }
+  .menu-show { display:block; animation: popin .16s cubic-bezier(.2,.8,.2,1) both; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important; transition:none!important}
+    .reveal{opacity:1;transform:none}
+    .bar-fill,.matchbar-fill{transition:none}
+    .hl-fill{transform:scaleX(1)!important}
+    .rise{opacity:1!important;transform:none!important}
+  }
+</style>
+</head>
+
+<body class="min-h-screen bg-paper text-ink font-sans antialiased [text-rendering:optimizeLegibility]">
+<!-- ESCALA TIPOGRÁFICA · 12.5 andamiaje mono · 13 notas/sans secundario · 14 cuerpo pequeño · 15–16 cuerpo · 22 titular · 25–30 voz serif · 43 nombre -->
+
+<div aria-hidden="true" class="pointer-events-none fixed inset-0 z-[60] bg-grain opacity-[0.045] mix-blend-overlay"></div>
+
+<!-- ===================== TOPBAR ===================== -->
+<header id="nav" class="sticky top-0 z-40 border-b border-transparent bg-paper/80 backdrop-blur-md backdrop-saturate-150 transition-colors">
+  <div class="mx-auto flex h-16 max-w-[1240px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+    <a href="/" class="flex shrink-0 items-center gap-2.5" aria-label="Evalen, inicio">
+      <svg class="h-8 w-8" viewBox="0 0 48 48" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="var(--greendeep)"/>
+        <rect x="13" y="12" width="5" height="24" rx="2.5" fill="var(--onmark)"/>
+        <rect x="13" y="12" width="18" height="5" rx="2.5" fill="var(--onmark)"/>
+        <rect x="13" y="21.5" width="13" height="5" rx="2.5" fill="var(--onmark)"/>
+        <rect x="13" y="31" width="21" height="5" rx="2.5" fill="var(--onmark)"/>
+        <circle cx="37" cy="14.5" r="4.5" fill="var(--yellow)"/>
+      </svg>
+      <span class="font-serif text-[1.35rem] font-semibold leading-none tracking-tight text-ink">evalen</span>
+    </a>
+
+    <nav class="ml-4 hidden items-center gap-1 lg:flex" aria-label="Principal">
+      <a href="#" class="rounded-lg px-3 py-2 text-[15px] font-medium text-ink2 transition hover:bg-paper2 hover:text-ink t-ink2">Panel</a>
+      <a href="#" aria-current="page" class="rounded-lg bg-greentint px-3 py-2 text-[15px] font-semibold text-green t-goodt t-green">Campañas</a>
+      <a href="#" class="rounded-lg px-3 py-2 text-[15px] font-medium text-ink2 transition hover:bg-paper2 hover:text-ink t-ink2">Candidatos</a>
+      <a href="#" class="rounded-lg px-3 py-2 text-[15px] font-medium text-ink2 transition hover:bg-paper2 hover:text-ink t-ink2">Equipo</a>
+    </nav>
+
+    <div class="relative ml-auto hidden md:block">
+      <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-ink3">
+        <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+      </span>
+      <input type="search" placeholder="Buscar campañas o candidatos…" aria-label="Buscar"
+        class="w-56 rounded-xl border border-line2 bg-card py-2 pl-10 pr-3 text-[16px] text-ink placeholder:text-ink3/80 transition focus:w-72 focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2" />
+      <kbd class="pointer-events-none absolute inset-y-0 right-2.5 my-auto hidden h-5 items-center rounded border border-line2 px-1.5 font-mono text-[12px] text-ink2 lg:flex t-line2 t-ink2">/</kbd>
+    </div>
+
+    <div class="ml-auto flex items-center gap-2 md:ml-3">
+      <span class="hidden items-center gap-2 rounded-full border border-line2 bg-card py-1.5 pl-2.5 pr-3 sm:flex t-card t-line2" title="Tu plan">
+        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-greendeep text-onmark">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12z"/></svg>
+        </span>
+        <span class="leading-tight">
+          <span class="block font-mono text-[12px] uppercase tracking-[0.1em] text-ink2 t-ink2">EvalenPro</span>
+          <span class="block text-[13px] font-semibold text-ink t-ink">128 CVs este mes</span>
+        </span>
+      </span>
+
+      <button id="themeBtn" type="button" aria-label="Cambiar tema" class="grid h-9 w-9 place-items-center rounded-xl border border-line2 bg-card text-ink transition hover:bg-paper2 t-card t-ink t-line2">
+        <svg class="ic-moon h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="ic-sun hidden h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+
+      <div class="relative">
+        <button id="avatarBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Menú de cuenta"
+          class="grid h-9 w-9 place-items-center rounded-full bg-green font-mono text-[13px] font-semibold text-onmark ring-2 ring-paper transition hover:ring-paper2 t-good">OL</button>
+        <div id="avatarMenu" data-menu class="menu-hidden absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-line2 bg-card shadow-pop t-card t-line2">
+          <div class="border-b border-line px-4 py-3 t-line">
+            <p class="text-[15px] font-semibold text-ink t-ink">Osiel E. Leiva Saldaña</p>
+            <p class="font-mono text-[12px] text-ink2 t-ink2">osiel@evalen.app</p>
+          </div>
+          <div class="p-1.5">
+            <a href="#" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[15px] text-ink2 transition hover:bg-paper2 hover:text-ink t-ink2"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20a7 7 0 0 1 14 0"/></svg> Mi perfil</a>
+            <a href="#" class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-[15px] text-ink2 transition hover:bg-paper2 hover:text-ink t-ink2"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg> Facturación y plan</a>
+          </div>
+          <div class="border-t border-line p-1.5 t-line">
+            <button type="button" data-toast="Cerrando sesión… (demo)" class="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[15px] font-medium text-low transition hover:bg-lowt t-low"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg> Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="burger" type="button" aria-label="Abrir menú" aria-expanded="false" class="grid h-9 w-9 place-items-center rounded-xl border border-line2 bg-card text-ink lg:hidden t-card t-ink t-line2">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobileMenu" class="hidden border-t border-line bg-paper px-4 pb-5 pt-2 lg:hidden t-line t-paper">
+    <nav class="mt-3 grid" aria-label="Principal móvil">
+      <a href="#" class="rounded-lg px-3 py-2.5 text-[15px] font-medium text-ink2 t-ink2">Panel</a>
+      <a href="#" class="rounded-lg bg-greentint px-3 py-2.5 text-[15px] font-semibold text-green t-goodt t-green">Campañas</a>
+      <a href="#" class="rounded-lg px-3 py-2.5 text-[15px] font-medium text-ink2 t-ink2">Candidatos</a>
+      <a href="#" class="rounded-lg px-3 py-2.5 text-[15px] font-medium text-ink2 t-ink2">Equipo</a>
+    </nav>
+  </div>
+</header>
+
+<main class="mx-auto max-w-[1240px] px-4 pb-24 pt-6 sm:px-6 lg:px-8">
+
+  <!-- breadcrumb + volver -->
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center gap-2 text-[13px] text-ink2 t-ink2">
+      <a href="#" class="transition hover:text-ink">Campañas</a>
+      <svg class="h-3 w-3 text-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      <a href="#" class="transition hover:text-ink">Full Stack (React/Node)</a>
+      <svg class="h-3 w-3 text-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      <span class="truncate font-medium text-ink t-ink">Análisis IA</span>
+    </div>
+    <a href="#" data-toast="Volviendo al panel de candidatos… (demo)" class="inline-flex items-center gap-1.5 rounded-lg border border-line2 bg-card px-3 py-2 text-[13px] font-semibold text-ink2 transition hover:border-ink hover:text-ink t-card t-ink2 t-line2">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+      Volver a candidatos
+    </a>
+  </div>
+
+  <!-- ===================== PORTADA SIN CAJA ===================== -->
+  <section class="relative">
+
+    <div aria-hidden="true" class="spotlight animate-spotdrift pointer-events-none absolute inset-0 -z-0"></div>
+    <svg aria-hidden="true" class="report-watermark pointer-events-none absolute inset-0 -z-0 h-full w-full opacity-[0.04]" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1">
+      <g>
+        <line x1="40" y1="48" x2="150" y2="34"/><line x1="150" y1="34" x2="262" y2="78"/><line x1="262" y1="78" x2="384" y2="42"/><line x1="384" y1="42" x2="506" y2="96"/>
+        <line x1="506" y1="96" x2="628" y2="58"/><line x1="628" y1="58" x2="720" y2="120"/><line x1="262" y1="78" x2="322" y2="146"/><line x1="150" y1="34" x2="92" y2="134"/>
+        <line x1="92" y1="134" x2="212" y2="166"/><line x1="212" y1="166" x2="322" y2="146"/><line x1="322" y1="146" x2="452" y2="188"/><line x1="506" y1="96" x2="452" y2="188"/>
+        <line x1="628" y1="58" x2="566" y2="158"/><line x1="452" y1="188" x2="566" y2="158"/>
+      </g>
+      <g fill="currentColor" stroke="none">
+        <circle cx="40" cy="48" r="2.2"/><circle cx="384" cy="42" r="2.2"/><circle cx="628" cy="58" r="2.2"/><circle cx="720" cy="120" r="2.2"/>
+        <circle cx="92" cy="134" r="2.2"/><circle cx="322" cy="146" r="2.2"/><circle cx="452" cy="188" r="2.2"/><circle cx="566" cy="158" r="2.2"/>
+        <circle class="animate-nodepulse" cx="150" cy="34" r="3"/><circle class="animate-nodepulse" cx="262" cy="78" r="3" style="animation-delay:.9s"/>
+        <circle class="animate-nodepulse" cx="212" cy="166" r="3" style="animation-delay:1.7s"/><circle class="animate-nodepulse" cx="506" cy="96" r="3" style="animation-delay:2.4s"/>
+      </g>
+    </svg>
+
+    <div class="relative z-10">
+
+      <!-- barra de herramientas suelta -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[13px] text-ink2 t-ink2">
+          <span class="inline-flex items-center gap-2 rounded-full bg-greendeep px-3 py-1.5 font-mono text-[12px] uppercase tracking-[0.1em] text-onmark">
+            <span class="h-1.5 w-1.5 rounded-full bg-yellow animate-pulsering"></span> Análisis IA
+          </span>
+          <span class="hidden sm:inline">Generado 18 mar 2026 · 19:14</span>
+          <span class="hidden items-center gap-2 sm:inline-flex" title="Confianza del parseo IA">
+            <span class="inline-block h-1.5 w-12 overflow-hidden rounded-full bg-paper2 t-paper2"><span class="block h-full rounded-full bg-good t-good" style="width:92%"></span></span>
+            <span><b class="font-semibold text-ink t-ink">92%</b> confianza de extracción</span>
+          </span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <div class="flex items-center gap-1.5 rounded-xl border border-line2 p-1 t-line2">
+            <button type="button" data-toast="Osiel movido a Entrevista." class="grid h-9 w-9 place-items-center rounded-lg text-ink2 transition hover:bg-goodt hover:text-green t-ink2" aria-label="Mover a entrevista" title="Mover a entrevista">
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </button>
+            <span class="h-5 w-px bg-line2 t-line2"></span>
+            <button type="button" data-toast="Osiel descartado del proceso." class="grid h-9 w-9 place-items-center rounded-lg text-ink2 transition hover:bg-lowt hover:text-low t-ink2" aria-label="Descartar" title="Descartar">
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+          </div>
+          <button type="button" data-toast="Descargando CV original… (demo)" class="inline-flex items-center gap-2 rounded-xl border border-line2 bg-card px-3.5 py-2.5 text-[14px] font-semibold text-ink transition hover:-translate-y-0.5 hover:border-ink t-card t-ink t-line2">
+            <svg class="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 11l4 4 4-4M5 21h14"/></svg> Descargar CV
+          </button>
+          <button type="button" data-toast="Abriendo WhatsApp Web… (demo)" class="inline-flex items-center gap-2 rounded-xl bg-cta px-3.5 py-2.5 text-[14px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah">
+            <svg class="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.1-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg> Contactar
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-6 border-t border-line t-line"></div>
+
+      <!-- cuerpo: IDENTIDAD · VEREDICTO -->
+      <div class="grid grid-cols-1 gap-10 py-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16 lg:py-14">
+
+        <!-- IDENTIDAD -->
+        <div class="rise min-w-0" style="animation-delay:.04s">
+          <p class="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">
+            <span class="inline-flex items-center gap-2">
+              <span class="h-1.5 w-1.5 rounded-full bg-good animate-pulsering t-good"></span>
+              Candidato evaluado · Full Stack React/Node
+            </span>
+            <span aria-hidden="true" class="hidden h-3 w-px bg-line2 sm:inline-block t-line2"></span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-midt px-2.5 py-0.5 font-sans text-[12.5px] font-semibold normal-case tracking-normal text-ink2 t-midt t-ink2">
+              <span class="h-1.5 w-1.5 rounded-full bg-mid"></span> Por contactar
+            </span>
+          </p>
+
+          <h1 class="mt-3.5 font-sans text-[2.1rem] font-bold leading-[1.02] tracking-[-0.02em] text-ink sm:text-[2.7rem] t-ink">Osiel Leiva Saldaña</h1>
+          <p class="mt-1.5 text-[15px] text-ink2 t-ink2">Ingeniero Informático · QA &amp; Automatización</p>
+
+          <div class="mt-5 flex flex-col gap-2.5 text-[15px] sm:flex-row sm:flex-wrap sm:gap-x-6">
+            <a href="mailto:osiel.leivasaldana@gmail.com" data-copy="email" class="group inline-flex items-center gap-2 text-ink2 transition hover:text-ink t-ink2">
+              <svg class="h-[18px] w-[18px] text-ink3 transition group-hover:text-green t-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
+              <span class="underline-offset-2 group-hover:underline">osiel.leivasaldana@gmail.com</span>
+            </a>
+            <a href="tel:+56967891153" data-copy="phone" class="group inline-flex items-center gap-2 text-ink2 transition hover:text-ink t-ink2">
+              <svg class="h-[18px] w-[18px] text-ink3 transition group-hover:text-green t-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+              <span class="underline-offset-2 group-hover:underline">+56 9 6789 1153</span>
+            </a>
+          </div>
+
+          <!-- match lineal -->
+          <div class="mt-8 max-w-[340px]">
+            <div class="flex items-center justify-between gap-3">
+              <span class="font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">Compatibilidad con el cargo</span>
+              <span class="flex items-baseline gap-2">
+                <span class="font-sans text-[17px] font-bold tabular-nums text-mid t-mid" title="Puntaje de match">63</span>
+                <span class="inline-flex items-center gap-1 rounded-full bg-midt px-2 py-0.5 font-sans text-[12.5px] font-semibold uppercase tracking-wide text-ink2 t-midt t-ink2"><span class="h-1 w-1 rounded-full bg-mid"></span> media</span>
+              </span>
+            </div>
+            <span class="mt-2.5 block h-2 overflow-hidden rounded-full bg-paper2 t-paper2">
+              <span class="matchbar-fill block h-full rounded-full bg-mid t-mid" data-w="63%"></span>
+            </span>
+            <p class="mt-3 text-[13px] leading-relaxed text-ink2 t-ink2">Cruce semántico entre el CV extraído y la rúbrica de esta campaña. El detalle, criterio por criterio, está más abajo.</p>
+          </div>
+        </div>
+
+        <!-- VEREDICTO -->
+        <div class="rise relative pl-1 sm:pl-2" style="animation-delay:.16s">
+          <!-- comilla decorativa: mismo recurso que el resumen, unifica la "voz" -->
+          <span aria-hidden="true" class="pointer-events-none absolute -left-1 -top-7 select-none font-serif text-[5rem] leading-none text-line2 t-line2">“</span>
+
+          <div class="relative z-10 flex items-center gap-2 font-mono text-[12.5px] uppercase tracking-[0.1em] text-cta t-cta">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 1.7 4.6L18 8l-4.3 1.4L12 14l-1.7-4.6L6 8l4.3-1.4z"/><path d="M18.5 13.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z"/></svg>
+            Veredicto de la IA
+          </div>
+
+          <blockquote class="relative z-10 mt-4 font-serif text-[1.55rem] font-medium italic leading-[1.42] tracking-[-0.01em] text-ink sm:text-[1.9rem] sm:leading-[1.4] t-ink">
+            El candidato tiene una sólida formación y experiencia en TI, especialmente en QA y testing. Sin embargo, <span class="hl"><span class="hl-fill"></span><span class="hl-ink">carece de experiencia en el stack tecnológico principal requerido</span></span> para el puesto. Se recomienda evaluar su capacidad de aprendizaje y adaptación a estas tecnologías.
+          </blockquote>
+
+          <p class="relative z-10 mt-4 flex items-center gap-2 text-[13px] text-ink2 t-ink2">
+            <svg class="h-4 w-4 shrink-0 text-yellow" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 1.7 4.6L18 8l-4.3 1.4L12 14l-1.7-4.6L6 8l4.3-1.4z"/></svg>
+            Subrayado: el hallazgo que más pesó en esta nota.
+          </p>
+
+          <div class="relative z-10 mt-6 flex flex-col gap-3.5 sm:flex-row sm:gap-8">
+            <div class="flex items-start gap-2.5">
+              <span class="bullet h-2 w-2 shrink-0 rounded-full bg-good t-good"></span>
+              <p class="text-[14px] leading-snug text-ink2 t-ink2"><span class="font-semibold text-ink t-ink">Lo que suma.</span> QA, automatización y Java / Spring Boot; trayectoria con liderazgo técnico.</p>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="bullet h-2 w-2 shrink-0 rounded-full bg-mid t-mid"></span>
+              <p class="text-[14px] leading-snug text-ink2 t-ink2"><span class="font-semibold text-ink t-ink">Lo que falta.</span> React, Node y TypeScript en producción; poca señal de cultural fit.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TIRA DE SALUD ===================== -->
+  <section class="grid grid-cols-2 divide-line border-t border-line pt-6 t-line sm:grid-cols-4 sm:divide-x" aria-label="Métricas del análisis">
+    <div class="px-1 py-1 sm:px-5">
+      <div class="flex items-center gap-2 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2"><span class="h-1.5 w-1.5 rounded-full bg-green t-green"></span> Criterios</div>
+      <p class="mt-1.5 font-sans text-[1.7rem] font-bold leading-none tracking-tight tabular-nums text-ink t-ink">6 <span class="text-[13px] font-medium text-ink2 t-ink2">evaluados</span></p>
+    </div>
+    <div class="px-1 py-1 sm:px-5">
+      <div class="flex items-center gap-2 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2"><span class="h-1.5 w-1.5 rounded-full bg-green t-green"></span> Experiencia</div>
+      <p class="mt-1.5 font-sans text-[1.7rem] font-bold leading-none tracking-tight tabular-nums text-ink t-ink">15+ <span class="text-[13px] font-medium text-ink2 t-ink2">años · 7 roles</span></p>
+    </div>
+    <div class="px-1 py-1 sm:px-5">
+      <div class="flex items-center gap-2 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2"><span class="h-1.5 w-1.5 rounded-full bg-mid t-mid"></span> Habilidades</div>
+      <p class="mt-1.5 font-sans text-[1.7rem] font-bold leading-none tracking-tight tabular-nums text-ink t-ink">31 <span class="text-[13px] font-medium text-ink2 t-ink2">29 téc. · 2 id.</span></p>
+    </div>
+    <div class="px-1 py-1 sm:px-5">
+      <div class="flex items-center gap-2 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2"><span class="h-1.5 w-1.5 rounded-full bg-good t-good"></span> Formación</div>
+      <p class="mt-1.5 font-sans text-[1.7rem] font-bold leading-none tracking-tight tabular-nums text-ink t-ink">1+4 <span class="text-[13px] font-medium text-ink2 t-ink2">título + certs.</span></p>
+    </div>
+  </section>
+
+  <!-- ===================== BANDA DEL JUICIO ===================== -->
+  <section class="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[1.5fr_1fr]">
+
+    <div>
+      <div class="flex items-end justify-between gap-3 border-b border-line pb-3 t-line">
+        <h2 class="font-sans text-[1.4rem] font-bold tracking-tight text-ink t-ink">Por qué esta nota</h2>
+        <span class="font-mono text-[12.5px] text-ink2 t-ink2">6 criterios · toca para el razonamiento</span>
+      </div>
+      <div id="criteria" class="mt-4 grid gap-1.5"></div>
+    </div>
+
+    <div class="lg:border-l lg:border-line lg:pl-10 t-line">
+      <div class="border-b border-line pb-3 t-line">
+        <h2 class="font-sans text-[1.4rem] font-bold tracking-tight text-ink t-ink">Fortalezas y brechas</h2>
+      </div>
+      <div class="mt-4 grid gap-6">
+        <div>
+          <div class="flex items-center gap-1.5 font-mono text-[12.5px] uppercase tracking-[0.1em] text-good t-good">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg> Fortalezas
+          </div>
+          <ul class="mt-3 grid gap-2.5">
+            <li class="flex gap-2.5 text-[14px] leading-snug text-ink2 t-ink2"><span class="bullet h-1.5 w-1.5 shrink-0 rounded-full bg-good t-good"></span> Amplia experiencia en TI y QA.</li>
+            <li class="flex gap-2.5 text-[14px] leading-snug text-ink2 t-ink2"><span class="bullet h-1.5 w-1.5 shrink-0 rounded-full bg-good t-good"></span> Testing y automatización (Selenium, Cypress, Jest).</li>
+            <li class="flex gap-2.5 text-[14px] leading-snug text-ink2 t-ink2"><span class="bullet h-1.5 w-1.5 shrink-0 rounded-full bg-good t-good"></span> Experiencia en Java / Spring Boot.</li>
+            <li class="flex gap-2.5 text-[14px] leading-snug text-ink2 t-ink2"><span class="bullet h-1.5 w-1.5 shrink-0 rounded-full bg-good t-good"></span> Formación académica sólida en computación.</li>
+          </ul>
+        </div>
+        <div class="border-t border-line pt-5 t-line">
+          <div class="flex items-center gap-1.5 font-mono text-[12.5px] uppercase tracking-[0.1em] text-mid t-mid">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg> Brechas
+          </div>
+          <ul class="mt-3 grid gap-2.5">
+            <li class="flex gap-2.5 text-[14px] leading-snug text-ink2 t-ink2"><span class="bullet h-1.5 w-1.5 shrink-0 rounded-full bg-mid t-mid"></span> Sin experiencia en el stack principal (React, Node, TS).</li>
+            <li class="flex gap-2.5 text-[14px] leading-snug text-ink2 t-ink2"><span class="bullet h-1.5 w-1.5 shrink-0 rounded-full bg-mid t-mid"></span> Poca información sobre el cultural fit.</li>
+            <li class="flex gap-2.5 text-[14px] leading-snug text-ink2 t-ink2"><span class="bullet h-1.5 w-1.5 shrink-0 rounded-full bg-mid t-mid"></span> Baja coincidencia de habilidades con el cargo.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ÍNDICE DE ANCLAS ===================== -->
+  <nav id="docIndex" aria-label="Secciones del expediente" class="no-scrollbar sticky top-16 z-30 -mx-4 mt-12 overflow-x-auto border-y border-line bg-paper/85 px-4 backdrop-blur-md sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 t-line t-paper">
+    <div class="flex items-center gap-6 py-3">
+      <span class="hidden shrink-0 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 sm:block t-ink2">Expediente extraído</span>
+      <a href="#resumen" data-ix="resumen" class="ix-link shrink-0 pb-3 text-[15px] font-semibold">Resumen</a>
+      <a href="#experiencia" data-ix="experiencia" class="ix-link shrink-0 pb-3 text-[15px] font-semibold">Experiencia</a>
+      <a href="#formacion" data-ix="formacion" class="ix-link shrink-0 pb-3 text-[15px] font-semibold">Formación</a>
+      <a href="#habilidades" data-ix="habilidades" class="ix-link shrink-0 pb-3 text-[15px] font-semibold">Habilidades</a>
+    </div>
+  </nav>
+
+  <!-- ===================== EXPEDIENTE FLUIDO ===================== -->
+  <div class="mt-8 grid gap-12">
+
+    <section data-section="resumen" id="resumen" class="reveal scroll-mt-32">
+      <div class="sec-head -mx-3 px-3 py-1">
+        <span class="font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">01 · Resumen profesional</span>
+        <h2 class="mt-1 font-sans text-[1.4rem] font-bold tracking-tight text-ink t-ink">Cómo se presenta el candidato</h2>
+      </div>
+      <div class="relative mt-4 pl-8 sm:pl-10">
+        <span aria-hidden="true" class="pointer-events-none absolute -left-1 -top-6 select-none font-serif text-[5rem] leading-none text-line2 t-line2">“</span>
+        <p class="relative text-[16px] leading-relaxed text-ink2 t-ink2">Ingeniero Informático con más de 15 años de experiencia en TI, especializado en el desarrollo de software full stack y la automatización de pruebas. He implementado soluciones completas tanto en el front-end como en el back-end, optimizando la experiencia del usuario y la integración con sistemas de terceros. Además, me he enfocado en prácticas avanzadas de desarrollo como BDD, CI/CD y observabilidad de datos, asegurando calidad y rendimiento en aplicaciones críticas. A lo largo de mi carrera he liderado iniciativas para mejorar la eficiencia en todo el ciclo de vida del software, integrando tecnologías innovadoras que impulsan la calidad y la entrega continua.</p>
+        <p class="mt-3 font-mono text-[12.5px] text-ink2 t-ink2">Extracto literal del CV · sin edición de Evalen</p>
+      </div>
+    </section>
+
+    <section data-section="experiencia" id="experiencia" class="reveal scroll-mt-32">
+      <div class="sec-head -mx-3 px-3 py-1">
+        <span class="font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">02 · Experiencia laboral</span>
+        <h2 class="mt-1 font-sans text-[1.4rem] font-bold tracking-tight text-ink t-ink">7 roles detectados</h2>
+      </div>
+
+      <div class="tl mt-6 grid gap-7">
+        <div class="tl-item is-current">
+          <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h3 class="font-sans text-[16px] font-semibold leading-snug text-ink t-ink">QA Test Lead Automation Engineer</h3>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-goodt px-2.5 py-0.5 font-sans text-[12.5px] font-semibold text-ink2 t-goodt t-ink2"><span class="h-1.5 w-1.5 rounded-full bg-good"></span> Actual</span>
+          </div>
+          <p class="text-[14px] font-medium text-green t-green">Kibernum S.A</p>
+          <p class="mt-1 inline-flex items-center gap-1.5 font-sans text-[13px] text-ink2 t-ink2"><svg class="h-3.5 w-3.5 text-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 3v3M16 3v3"/></svg> Ene 2024 – Presente</p>
+          <ul class="mt-2.5 grid gap-2">
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Automaticé pruebas de flujos críticos en un proyecto interno de Citi Bank, reduciendo errores en ambientes de prueba en más de un 50% con Selenium, Java, Cucumber y Jenkins.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Con Zephyr Enterprise diseñé planes de prueba de historias de usuario para ejecución manual, cubriendo casos borde no especificados en los criterios de aceptación.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Participé en la planificación y análisis de nuevas funcionalidades con equipos multinacionales.</li>
+          </ul>
+        </div>
+
+        <div class="tl-item">
+          <h3 class="font-sans text-[16px] font-semibold leading-snug text-ink t-ink">Full Stack Developer &amp; QA Test Lead en Automatización</h3>
+          <p class="text-[14px] font-medium text-green t-green">Zippy SpA</p>
+          <p class="mt-1 inline-flex items-center gap-1.5 font-sans text-[13px] text-ink2 t-ink2"><svg class="h-3.5 w-3.5 text-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 3v3M16 3v3"/></svg> Mar 2021 – Nov 2023</p>
+          <ul class="mt-2.5 grid gap-2">
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Lideré la integración de BDD con Gherkin para unificar el entendimiento del comportamiento esperado, reduciendo errores de comprensión de las historias.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Automaticé pruebas con Selenium, Java, Cucumber y BrowserStack, verificando compatibilidad en una amplia variedad de dispositivos.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Implementé un flujo de regresión con Postman integrado a CI/CD, detectando errores en el backend de forma temprana.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Con K6 ejecuté pruebas de performance en servicios críticos, disminuyendo cuellos de botella en un 90%.</li>
+          </ul>
+        </div>
+
+        <div class="tl-item">
+          <h3 class="font-sans text-[16px] font-semibold leading-snug text-ink t-ink">QA Test Automation Engineer</h3>
+          <p class="text-[14px] font-medium text-green t-green">23People</p>
+          <p class="mt-1 inline-flex items-center gap-1.5 font-sans text-[13px] text-ink2 t-ink2"><svg class="h-3.5 w-3.5 text-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 3v3M16 3v3"/></svg> Oct 2019 – Mar 2021</p>
+          <ul class="mt-2.5 grid gap-2">
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Con Zephyr y Microsoft Azure diseñé planes de prueba enfocados en ejecución manual, abordando casos no contemplados en los criterios de aceptación.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Participé en pruebas de regresión con Postman para Telefónica y la Asociación Chilena de Seguridad, identificando fallos tempranos en el backend.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Administré mi entorno de pruebas en Azure Deployment Environments, ganando independencia y control total.</li>
+          </ul>
+        </div>
+
+        <div class="tl-item">
+          <h3 class="font-sans text-[16px] font-semibold leading-snug text-ink t-ink">Full Stack Developer Engineer</h3>
+          <p class="text-[14px] font-medium text-green t-green">Ticblue</p>
+          <p class="mt-1 inline-flex items-center gap-1.5 font-sans text-[13px] text-ink2 t-ink2"><svg class="h-3.5 w-3.5 text-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 3v3M16 3v3"/></svg> May 2018 – Abr 2019</p>
+          <ul class="mt-2.5 grid gap-2">
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Diseñé y desarrollé servicios de API REST en Java Spring Boot para proyectos financieros y gubernamentales.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Desarrollé aplicaciones en Laravel y Node.js, participando en el análisis de nuevas funcionalidades con stakeholders.</li>
+          </ul>
+        </div>
+
+        <div class="tl-item">
+          <h3 class="font-sans text-[16px] font-semibold leading-snug text-ink t-ink">Ingeniero de Sistemas</h3>
+          <p class="text-[14px] font-medium text-green t-green">Ingesmart</p>
+          <p class="mt-1 inline-flex items-center gap-1.5 font-sans text-[13px] text-ink2 t-ink2"><svg class="h-3.5 w-3.5 text-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 3v3M16 3v3"/></svg> Ago 2017 – Abr 2018</p>
+          <ul class="mt-2.5 grid gap-2">
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Desplegué Microsoft Active Directory para gestionar dominios y servicios de directorio, centralizando la administración de usuarios y recursos.</li>
+          </ul>
+        </div>
+
+        <div class="tl-item">
+          <h3 class="font-sans text-[16px] font-semibold leading-snug text-ink t-ink">Jefe del departamento TI</h3>
+          <p class="text-[14px] font-medium text-green t-green">Coopeserau</p>
+          <p class="mt-1 inline-flex items-center gap-1.5 font-sans text-[13px] text-ink2 t-ink2"><svg class="h-3.5 w-3.5 text-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 3v3M16 3v3"/></svg> Abr 2014 – Mar 2017</p>
+          <ul class="mt-2.5 grid gap-2">
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Diseñé e implementé estándares de IT para asegurar consistencia en las operaciones tecnológicas, reduciendo errores y aumentando la productividad.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Implementé un flujo de pruebas de regresión con Postman integrado a CI/CD.</li>
+          </ul>
+        </div>
+
+        <div class="tl-item">
+          <h3 class="font-sans text-[16px] font-semibold leading-snug text-ink t-ink">Desarrollo freelance · E-commerce</h3>
+          <p class="text-[14px] font-medium text-green t-green">Proyecto independiente</p>
+          <p class="mt-1 inline-flex items-center gap-1.5 font-sans text-[13px] text-ink2 t-ink2"><svg class="h-3.5 w-3.5 text-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9h18M8 3v3M16 3v3"/></svg> Fechas no informadas</p>
+          <ul class="mt-2.5 grid gap-2">
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Lideré la implementación de una tienda de comercio electrónico con Magento Enterprise.</li>
+            <li class="flex gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2"><span class="bullet h-1 w-1 shrink-0 rounded-full bg-ink3 t-ink3"></span> Desarrollé aplicaciones internas con .NET y PHP, administrando servidores Linux y Windows.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section data-section="formacion" id="formacion" class="reveal scroll-mt-32">
+      <div class="sec-head -mx-3 px-3 py-1">
+        <span class="font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">03 · Formación académica</span>
+        <h2 class="mt-1 font-sans text-[1.4rem] font-bold tracking-tight text-ink t-ink">Título formal y formación complementaria</h2>
+      </div>
+
+      <div class="mt-5">
+        <div class="flex items-center gap-1.5 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2"><span class="h-1.5 w-1.5 rounded-full bg-good t-good"></span> Título formal</div>
+        <div class="mt-2.5 flex items-start justify-between gap-3 border-b border-line pb-4 t-line">
+          <div class="min-w-0">
+            <p class="font-sans text-[16px] font-semibold leading-snug text-ink t-ink">Ingeniería en Computación · Licenciatura en Ciencias de la Computación</p>
+            <p class="text-[14px] font-medium text-green t-green">Universidad Tecnológica de Chile Inacap</p>
+          </div>
+          <span class="shrink-0 font-sans text-[13px] text-ink2 t-ink2">2011 – 2015</span>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <div class="flex items-center gap-1.5 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2"><span class="h-1.5 w-1.5 rounded-full bg-mid t-mid"></span> Certificaciones y diplomados</div>
+        <ul class="mt-2.5">
+          <li class="flex items-start justify-between gap-3 border-b border-line py-3 t-line">
+            <div class="min-w-0"><p class="text-[15px] font-medium text-ink t-ink">Certificación en Big Data y Analytics</p><p class="text-[13px] text-ink2 t-ink2">Cisco Networking Academy</p></div>
+            <span class="shrink-0 font-sans text-[13px] text-ink2 t-ink2">2020</span>
+          </li>
+          <li class="flex items-start justify-between gap-3 border-b border-line py-3 t-line">
+            <div class="min-w-0"><p class="text-[15px] font-medium text-ink t-ink">Diplomado en Inteligencia Artificial</p><p class="text-[13px] text-ink2 t-ink2">Pontificia Universidad Católica de Valparaíso</p></div>
+            <span class="shrink-0 font-sans text-[13px] text-ink2 t-ink2">2017</span>
+          </li>
+          <li class="flex items-start justify-between gap-3 border-b border-line py-3 t-line">
+            <div class="min-w-0"><p class="text-[15px] font-medium text-ink t-ink">Diplomado en IoT y Ciudades Inteligentes</p><p class="text-[13px] text-ink2 t-ink2">Universidad de La Frontera</p></div>
+            <span class="shrink-0 font-sans text-[13px] text-ink2 t-ink2">2015</span>
+          </li>
+          <li class="flex items-start justify-between gap-3 py-3">
+            <div class="min-w-0"><p class="text-[15px] font-medium text-ink t-ink">Habilidades Tech: tu talento en la nube (AWS)</p><p class="text-[13px] text-ink2 t-ink2">AWS</p></div>
+            <span class="shrink-0 font-sans text-[13px] text-ink2 t-ink2">2020</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section data-section="habilidades" id="habilidades" class="reveal scroll-mt-32">
+      <div class="sec-head -mx-3 px-3 py-1">
+        <span class="font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">04 · Habilidades extraídas</span>
+        <h2 class="mt-1 font-sans text-[1.4rem] font-bold tracking-tight text-ink t-ink">Lo que la IA leyó en el CV</h2>
+      </div>
+
+      <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[12.5px] text-ink2 t-ink2">
+        <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-good t-good"></span> Avanzado / Experto</span>
+        <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-mid t-mid"></span> Intermedio</span>
+        <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-low t-low"></span> Básico</span>
+        <span class="ml-auto font-sans text-[13px] normal-case tracking-normal text-ink2 t-ink2">Coincidencia con el cargo: <b class="font-semibold text-low t-low">baja</b></span>
+      </div>
+
+      <div class="mt-5">
+        <p class="font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">Técnicas</p>
+        <div id="skillTech" class="mt-2.5 flex flex-wrap gap-1.5"></div>
+      </div>
+
+      <div class="mt-6">
+        <p class="font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">Idiomas</p>
+        <div id="skillLang" class="mt-2.5 flex flex-wrap gap-1.5"></div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col items-center justify-between gap-3 border-t border-line py-6 text-[13px] text-ink2 sm:flex-row t-line t-ink2">
+    <span>© 2026 Evalen · La IA lee, los humanos deciden.</span>
+    <span class="flex items-center gap-3">
+      <a href="#" class="transition hover:text-ink">Privacidad</a><span class="text-line2">·</span>
+      <a href="#" class="transition hover:text-ink">Términos</a><span class="text-line2">·</span>
+      <a href="#" class="transition hover:text-ink">Contacto</a>
+    </span>
+  </div>
+</footer>
+
+<div id="toast" aria-live="polite" role="status" class="pointer-events-none fixed inset-x-4 bottom-5 z-[90] mx-auto flex max-w-sm translate-y-[140%] items-start gap-3 rounded-xl border border-line2 bg-card px-4 py-3 text-[14px] text-ink opacity-0 shadow-card transition-all duration-300 sm:inset-x-auto sm:right-6 sm:max-w-sm t-card t-ink t-line2">
+  <span id="toastIcon" class="mt-0.5 shrink-0"></span>
+  <span id="toastMsg" class="leading-snug"></span>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var root = document.documentElement;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function syncThemeIcons() {
+    var dark = root.getAttribute('data-theme') === 'dark';
+    $$('.ic-moon').forEach(function (e) { e.classList.toggle('hidden', dark); });
+    $$('.ic-sun').forEach(function (e) { e.classList.toggle('hidden', !dark); });
+  }
+  syncThemeIcons();
+  $('#themeBtn').addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('evalen-theme', next); } catch (e) {}
+    syncThemeIcons();
+  });
+
+  var nav = $('#nav');
+  function onScroll() {
+    var y = window.scrollY || window.pageYOffset;
+    if (y > 8) { nav.classList.add('border-line', 'shadow-soft'); nav.classList.remove('border-transparent'); }
+    else { nav.classList.remove('border-line', 'shadow-soft'); nav.classList.add('border-transparent'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  var burger = $('#burger'), mmenu = $('#mobileMenu');
+  burger.addEventListener('click', function () {
+    var open = mmenu.classList.toggle('hidden') === false;
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  function closeMenus(except) {
+    $$('[data-menu].menu-show').forEach(function (m) {
+      if (m === except) return;
+      m.classList.remove('menu-show'); m.classList.add('menu-hidden');
+      var b = m.parentElement.querySelector('[aria-expanded]');
+      if (b) b.setAttribute('aria-expanded', 'false');
+    });
+  }
+  function toggleMenu(btn, menu) {
+    var willOpen = menu.classList.contains('menu-hidden');
+    closeMenus(willOpen ? menu : null);
+    menu.classList.toggle('menu-hidden', !willOpen);
+    menu.classList.toggle('menu-show', willOpen);
+    btn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+  }
+  var avatarBtn = $('#avatarBtn');
+  avatarBtn && avatarBtn.addEventListener('click', function (e) { e.stopPropagation(); toggleMenu(avatarBtn, $('#avatarMenu')); });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-menu]') || e.target.closest('#avatarBtn')) return;
+    closeMenus(null);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenus(null); });
+
+  var toast = $('#toast'), toastMsg = $('#toastMsg'), toastIcon = $('#toastIcon'), toastT = null;
+  var ICONS = {
+    ok: '<svg class="h-4 w-4 text-good" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    info: '<svg class="h-4 w-4 text-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+    warn: '<svg class="h-4 w-4 text-mid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>'
+  };
+  function showToast(msg, type) {
+    type = type || 'info';
+    toastMsg.textContent = msg;
+    toastIcon.innerHTML = ICONS[type] || ICONS.info;
+    toast.classList.remove('translate-y-[140%]', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+    clearTimeout(toastT); toastT = setTimeout(hideToast, 3200);
+  }
+  function hideToast() { toast.classList.add('translate-y-[140%]', 'opacity-0'); toast.classList.remove('translate-y-0', 'opacity-100'); }
+  $$('[data-toast]').forEach(function (el) { el.addEventListener('click', function () { showToast(el.getAttribute('data-toast'), 'info'); }); });
+
+  var CONTACT = { email: 'osiel.leivasaldana@gmail.com', phone: '+56 9 6789 1153' };
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-copy]'); if (!btn) return;
+    var key = btn.getAttribute('data-copy'); var val = CONTACT[key];
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(val).catch(function () {});
+    showToast((key === 'email' ? 'Correo' : 'Teléfono') + ' copiado al portapapeles.', 'ok');
+  });
+
+  function toneOf(v) { return v >= 80 ? 'good' : v >= 60 ? 'mid' : 'low'; }
+  function toneClass(t) { return t === 'good' ? 'bg-good t-good' : t === 'mid' ? 'bg-mid t-mid' : 'bg-low t-low'; }
+
+  function animateMatch() {
+    $$('.matchbar-fill').forEach(function (el) {
+      var w = el.getAttribute('data-w');
+      if (reduce) { el.style.width = w; return; }
+      requestAnimationFrame(function () { requestAnimationFrame(function () { el.style.width = w; }); });
+    });
+  }
+
+  var CRITERIA = [
+    { label: 'Educación', score: 100, target: 'formacion', why: 'El candidato posee Ingeniería en Computación y Licenciatura en Ciencias de la Computación, cumpliendo el nivel académico técnico requerido. Además, cuenta con certificaciones y diplomados relevantes en Big Data, IA e IoT.' },
+    { label: 'Logística', score: 100, target: 'resumen', why: 'No hay restricciones logísticas aparentes. Asumiendo que la ubicación del candidato no es un problema y que la modalidad presencial o remota es aceptable, el puntaje es alto.' },
+    { label: 'Experiencia', score: 75, target: 'experiencia', why: 'Tiene una amplia experiencia en TI (más de 15 años), con roles relevantes como QA Test Lead y Full Stack Developer. Sin embargo, la experiencia específica en el stack requerido (React, Node, etc.) no es tan prominente como la de testing y Java/Spring Boot. El puntaje refleja la experiencia general, con menor ponderación por la falta de coincidencia directa con el stack.' },
+    { label: 'Cultural Fit', score: 50, target: 'resumen', why: 'Demuestra habilidades de liderazgo y colaboración, pero se necesita más información sobre su adaptación a la cultura específica de la empresa y su alineación con los valores de la organización. Para aumentar este puntaje se requeriría información sobre su estilo de trabajo, preferencias de comunicación y ejemplos concretos de aporte a un ambiente positivo.' },
+    { label: 'Skills Match', score: 28, target: 'habilidades', why: 'Posee algunas habilidades técnicas listadas como mandatorias (Jest, Cypress, PostgreSQL), pero carece de la mayoría de las requeridas (React, Node, TypeScript, TailwindCSS, MongoDB, Docker, AWS, GCP, CI/CD, Git flow). El puntaje refleja esta falta de coincidencia significativa.' },
+    { label: 'Career Trajectory', score: 70, target: 'experiencia', why: 'La trayectoria profesional muestra una progresión constante en roles de mayor responsabilidad. Sin embargo, no se alinea completamente con el stack tecnológico específico deseado, lo que limita el puntaje.' }
+  ];
+  function renderCriteria() {
+    var wrap = $('#criteria');
+    if (!wrap) return;
+    wrap.innerHTML = CRITERIA.map(function (k, i) {
+      var t = toneOf(k.score);
+      return '<div class="acc crit-row rounded-xl border border-line2 transition t-line2" data-i="' + i + '">' +
+        '<div class="flex items-center gap-3 px-3.5 py-3">' +
+          '<button type="button" class="acc-head flex min-w-0 flex-1 items-center gap-3 text-left" aria-expanded="false">' +
+            '<span class="min-w-0 flex-1">' +
+              '<span class="flex items-center justify-between gap-3">' +
+                '<span class="font-sans text-[15px] font-semibold text-ink t-ink">' + k.label + '</span>' +
+                '<span class="font-sans text-[14px] font-bold tabular-nums text-ink t-ink">' + k.score + '<span class="text-ink2 t-ink2">/100</span></span>' +
+              '</span>' +
+              '<span class="mt-2 block h-1.5 rounded-full bg-paper2 t-paper2"><span class="bar-fill block h-full rounded-full ' + toneClass(t) + '" data-w="' + k.score + '%"></span></span>' +
+            '</span>' +
+            '<svg class="acc-chev h-4 w-4 shrink-0 text-ink3 t-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>' +
+          '</button>' +
+          '<button type="button" data-jump="' + k.target + '" class="inline-flex shrink-0 items-center gap-1 rounded-lg border border-line2 px-2.5 py-1.5 font-sans text-[12.5px] font-semibold text-ink2 transition hover:border-green hover:text-green t-ink2 t-line2" title="Ver esta evidencia en el CV">' +
+            'ver en el CV <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<div class="acc-body"><div><p class="px-3.5 pb-3.5 text-[14px] leading-relaxed text-ink2 t-ink2">' + k.why + '</p></div></div>' +
+      '</div>';
+    }).join('');
+    $$('.acc-head', wrap).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var acc = btn.closest('.acc');
+        var open = acc.classList.toggle('open');
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
+  }
+  renderCriteria();
+
+  function fillBars(scope) {
+    $$('.bar-fill', scope).forEach(function (el) {
+      var w = el.getAttribute('data-w');
+      if (reduce) { el.style.width = w; return; }
+      requestAnimationFrame(function () { requestAnimationFrame(function () { el.style.width = w; }); });
+    });
+  }
+
+  function setActiveIx(key) {
+    $$('#docIndex [data-ix]').forEach(function (a) {
+      a.setAttribute('aria-current', a.getAttribute('data-ix') === key ? 'true' : 'false');
+    });
+  }
+  function jumpTo(key) {
+    var sec = document.querySelector('[data-section="' + key + '"]');
+    if (!sec) return;
+    sec.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    var head = sec.querySelector('.sec-head');
+    if (head && !reduce) {
+      head.classList.remove('sec-flash'); void head.offsetWidth; head.classList.add('sec-flash');
+      head.addEventListener('animationend', function () { head.classList.remove('sec-flash'); }, { once: true });
+    }
+    setActiveIx(key);
+  }
+  document.addEventListener('click', function (e) {
+    var j = e.target.closest('[data-jump]'); if (!j) return;
+    e.preventDefault(); jumpTo(j.getAttribute('data-jump'));
+  });
+  $$('#docIndex [data-ix]').forEach(function (a) {
+    a.addEventListener('click', function (e) { e.preventDefault(); jumpTo(a.getAttribute('data-ix')); });
+  });
+
+  function initSpy() {
+    var secs = $$('[data-section]');
+    if (!('IntersectionObserver' in window) || !secs.length) { setActiveIx('resumen'); return; }
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) setActiveIx(en.target.getAttribute('data-section')); });
+    }, { rootMargin: '-132px 0px -55% 0px', threshold: 0 });
+    secs.forEach(function (s) { spy.observe(s); });
+    setActiveIx('resumen');
+  }
+
+  var SKILLS_TECH = [
+    ['Jest','Avanzado'],['Selenium Java/Python','Avanzado'],['Cypress','Avanzado'],['Appium','Avanzado'],
+    ['Java/Spring Boot','Avanzado'],['Postman','Avanzado'],['Rest Assured','Avanzado'],['Gherkin/Cucumber','Avanzado'],
+    ['Jira','Avanzado'],['Zephyr','Avanzado'],['SQL/MySQL','Avanzado'],['PostgreSQL','Avanzado'],['NoSQL Mongo/Firebase','Avanzado'],
+    ['Scrum','Intermedio'],['Lean','Intermedio'],['Grafana','Intermedio'],['Kanban','Intermedio'],['Datadog','Intermedio'],
+    ['Splunk','Intermedio'],['JMeter','Intermedio'],['K6','Intermedio'],['Python','Intermedio'],['Prometheus','Intermedio'],
+    ['Laravel','Intermedio'],['C++','Intermedio'],['C#','Intermedio'],['Scikit-learn','Intermedio'],['GIT','Intermedio'],
+    ['Jenkins','Intermedio'],['Katalon Studio','Intermedio'],['Node JavaScript/TypeScript','Básico'],['TensorFlow','Básico']
+  ];
+  var SKILLS_LANG = [['Portugués','Básico'],['Inglés','Básico']];
+  function lvlDot(lvl) { return lvl === 'Básico' ? 'bg-low t-low' : lvl === 'Intermedio' ? 'bg-mid t-mid' : 'bg-good t-good'; }
+  function renderSkills(arr, host) {
+    if (!host) return;
+    host.innerHTML = arr.map(function (s) {
+      return '<span class="inline-flex items-center gap-1.5 rounded-lg border border-line2 bg-paper/60 px-2.5 py-1 text-[13px] font-medium text-ink transition hover:border-green t-ink t-line2">' +
+        '<span class="h-2 w-2 shrink-0 rounded-full ' + lvlDot(s[1]) + '"></span>' + s[0] +
+        '<span class="font-sans text-[12.5px] font-medium text-ink2 t-ink2">' + s[1] + '</span></span>';
+    }).join('');
+  }
+  renderSkills(SKILLS_TECH, $('#skillTech'));
+  renderSkills(SKILLS_LANG, $('#skillLang'));
+
+  var reveals = $$('.reveal');
+  if (reduce || !('IntersectionObserver' in window)) {
+    reveals.forEach(function (el) { el.classList.add('in'); });
+    fillBars(document);
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          if (e.target.querySelector('.bar-fill')) fillBars(e.target);
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
+    reveals.forEach(function (el) { io.observe(el); });
+    var critHost = $('#criteria');
+    if (critHost) {
+      var cio = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { fillBars(critHost); cio.disconnect(); } });
+      }, { threshold: 0.15 });
+      cio.observe(critHost);
+    }
+  }
+
+  function init() { animateMatch(); initSpy(); }
+  window.addEventListener('load', init);
+  if (document.readyState === 'complete') init();
+})();
+</script>
+</body>
+</html>

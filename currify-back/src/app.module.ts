@@ -18,6 +18,7 @@ import { HealthModule } from './health/health.module';
 import { StorageModule } from './storage/storage.module';
 import { OwnerModule } from './owner/owner.module';
 import { PlansModule } from './plans/plans.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { PlansModule } from './plans/plans.module';
     StorageModule,
     OwnerModule,
     PlansModule,
+    DashboardModule,
   ],
   controllers: [],
   providers: [

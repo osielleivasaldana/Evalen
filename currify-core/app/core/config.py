@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     # Section extraction feature flag
     section_extraction_enabled: bool = True
 
+    # Fase B P3 (SDD Scoring Fase 2 §4.3/§9): re-clasificación determinista
+    # mandatory→nice-to-have de la rúbrica. Default OFF = comportamiento actual.
+    # Activación en prod SOLO por el Tech Lead tras harness de goldens verde.
+    rubric_tier_reclass: bool = False
+
     # Security — REQUIRED in production: set CURRIFY_SECRET_KEY via env
     api_secret_key: str = ""
     allowed_origins: str = "http://localhost:3000,http://localhost:8080,http://localhost:5173"

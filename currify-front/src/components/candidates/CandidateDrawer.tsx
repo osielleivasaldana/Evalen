@@ -77,9 +77,21 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
   const stageKey = useMemo(() => mapStage(candidate?.candidateStatus), [candidate]);
   const stage = STAGES[stageKey] || STAGES.revision;
   const hasProcess = !!candidate && hasCandidateProcess(candidate);
-  const stageChip = hasProcess ? STAGES.entrevista.chip : stage.chip;
-  const stageDot = hasProcess ? STAGES.entrevista.dot : stage.dot;
-  const stageLabel = hasProcess ? (getActiveStageName(candidate) || 'En proceso') : stage.label;
+  const activeName = hasProcess ? getActiveStageName(candidate) : null;
+  const stageByName = useMemo(() => {
+    if (!activeName) return null;
+    const n = activeName.toLowerCase();
+    if (n.includes('contact')) return STAGES.contactar;
+    if (n.includes('entrevista')) return STAGES.entrevista;
+    if (n.includes('oferta')) return STAGES.oferta;
+    if (n.includes('contrat')) return STAGES.contratado;
+    if (n.includes('descart')) return STAGES.descartado;
+    if (n.includes('filtr') || n.includes('revisi')) return STAGES.revision;
+    return null;
+  }, [activeName]);
+  const stageChip = hasProcess ? (stageByName?.chip ?? STAGES.entrevista.chip) : stage.chip;
+  const stageDot = hasProcess ? (stageByName?.dot ?? STAGES.entrevista.dot) : stage.dot;
+  const stageLabel = activeName || stage.label;
   const levelLabel = lvl === 'alto' ? 'Match alto' : lvl === 'medio' ? 'Match medio' : 'Match bajo';
   const levelChip = lvl === 'alto' ? 'bg-goodt text-good t-goodt t-good' : lvl === 'medio' ? 'bg-midt text-mid t-midt t-mid' : 'bg-lowt text-low t-lowt t-low';
   const badgeStyle = tone === 'good' ? 'bg-goodt text-good t-goodt t-good' : tone === 'mid' ? 'bg-yellow text-greendeep' : 'bg-lowt text-low t-lowt t-low';
@@ -339,33 +351,6 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                     </div>
                   </div>
 
-                  {/* === CONTACT ACTIONS === */}
-                  <div className="mt-5 rounded-xl border border-line2 p-3.5 t-line2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-wide ${stage.chip}`}>
-                        <span className={`h-1.5 w-1.5 rounded-full ${stage.dot}`}></span>{stage.label}
-                      </span>
-                      <span className="font-mono text-[10.5px] text-ink3 t-ink3">¿Cómo lo contactas?</span>
-                    </div>
-                    <div className="mt-3 grid grid-cols-2 gap-2.5">
-                      <button type="button" onClick={() => {
-                        const name = candidate.name?.split(' ')[0] || '';
-                        const msg = encodeURIComponent(`Hola ${name}, te escribo de Evalen sobre tu postulación a ${campaign?.title || 'la campaña'}. ¿Tienes un momento?`);
-                        window.open(`https://wa.me/${candidate.phone?.replace(/\D/g, '')}?text=${msg}`, '_blank');
-                      }}
-                        className="flex flex-col items-center gap-1.5 rounded-xl border border-line2 bg-card py-3 text-[12.5px] font-semibold text-ink transition hover:border-green hover:text-green t-card t-ink t-line2">
-                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.1-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>
-                        WhatsApp
-                      </button>
-                      <button type="button" onClick={() => {
-                        window.location.href = `mailto:${candidate.email}?subject=Postulación a ${campaign?.title || 'campaña'}`;
-                      }}
-                        className="flex flex-col items-center gap-1.5 rounded-xl border border-line2 bg-card py-3 text-[12.5px] font-semibold text-ink transition hover:border-green hover:text-green t-card t-ink t-line2">
-                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
-                        Email
-                      </button>
-                    </div>
-                  </div>
                 </div>
               )}
 
@@ -432,55 +417,19 @@ const CandidateDrawer: React.FC<CandidateDrawerProps> = ({
                 className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-line2 text-ink3 transition hover:border-low hover:bg-lowt hover:text-low t-ink3 t-line2">
                 <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
               </button>
-              <div className="relative flex-1">
+              <div className="flex-1">
                 <button type="button" onClick={() => {
                   if (hasProcess) { if (onViewProcess) { onViewProcess(candidate); } else { alert('Abre la campaña desde el listado para ver el proceso.'); } return; }
-                  if (candidate.candidateStatus === 'NOT_SELECTED') {
-                    onStartProcess(candidate);
-                  } else if (candidate.candidateStatus === 'NEW') {
-                    onStartProcess(candidate);
-                  } else if (onViewProcess) {
-                    onViewProcess(candidate);
-                  } else {
-                    setAdvanceOpen(!advanceOpen);
-                  }
+                  onStartProcess(candidate);
                 }}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-cta py-3 text-[13.5px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah">
+                  className={`flex w-full items-center justify-center gap-2 rounded-xl py-3 text-[13.5px] font-semibold shadow-cta transition hover:-translate-y-0.5 ${hasProcess ? 'border border-line2 bg-card text-ink hover:border-ink t-card t-ink t-line2 shadow-none' : 'bg-cta text-ctatext hover:bg-ctah'}`}>
                   {hasProcess ? (
                     <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M14 3h7v7M21 3l-9 9M19 14v7H5V5h7"/></svg>
                   ) : (
-                    <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.1-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>
                   )}
-                  <span>{hasProcess ? 'Ver proceso' : candidate.candidateStatus === 'NOT_SELECTED' ? 'Reactivar candidato' : 'Avanzar en el proceso'}</span>
-                  {!hasProcess && (
-                    <svg className={`h-4 w-4 opacity-80 transition-transform ${advanceOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-                  )}
+                  <span>{hasProcess ? 'Ver proceso' : candidate.candidateStatus === 'NOT_SELECTED' ? 'Reactivar candidato' : 'Contactar candidato'}</span>
                 </button>
-                {advanceOpen && (
-                  <div data-menu className="menu-show absolute bottom-full right-0 z-50 mb-2 w-60 overflow-hidden rounded-xl border border-line2 bg-card py-1.5 shadow-pop t-card t-line2">
-                    <button type="button" onClick={() => { setAdvanceOpen(false); onStartProcess(candidate); }}
-                      className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-ink2 transition hover:bg-paper2 t-ink2">
-                      <svg className="h-4 w-4 text-green t-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.1-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg>
-                      Marcar como contactado
-                    </button>
-                    <button type="button" onClick={() => { setAdvanceOpen(false); onStartProcess(candidate); }}
-                      className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-ink2 transition hover:bg-paper2 t-ink2">
-                      <svg className="h-4 w-4 text-green t-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 6.5a3 3 0 0 1 0 5.5"/></svg>
-                      Mover a Entrevista
-                    </button>
-                    <button type="button" onClick={() => { setAdvanceOpen(false); onStartProcess(candidate); }}
-                      className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-ink2 transition hover:bg-paper2 t-ink2">
-                      <svg className="h-4 w-4 text-green t-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z"/><path d="m9 12 2 2 4-4"/></svg>
-                      Mover a Oferta
-                    </button>
-                    <div className="my-1 h-px bg-line t-line" />
-                    <button type="button" onClick={() => { setAdvanceOpen(false); onStartProcess(candidate); }}
-                      className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-ink2 transition hover:bg-paper2 t-ink2">
-                      <svg className="h-4 w-4 text-green t-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
-                      Marcar como contratado
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>

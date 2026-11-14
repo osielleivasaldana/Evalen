@@ -227,20 +227,20 @@ const DashboardActivation: React.FC<DashboardActivationProps> = ({ user, onCreat
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 animate-fade-in-up py-10">
 
             <div className="mb-8">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-50 mb-6 relative">
-                    <SparklesIcon className="w-10 h-10 text-indigo-600 animate-pulse" />
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-ev-cta/10 dark:bg-ev-cta/20 mb-6 relative">
+                    <SparklesIcon className="w-10 h-10 text-ev-cta animate-pulse" />
                 </div>
-                <h2 className="text-3xl font-extrabold text-gray-900 mb-3 tracking-tight">
+                <h2 className="text-3xl font-extrabold text-ev-ink dark:text-ev-onmark mb-3 tracking-tight">
                     ¡Comencemos la magia, {user.name.split(' ')[0]}! ✨
                 </h2>
-                <p className="text-lg text-gray-600 max-w-xl mx-auto leading-relaxed">
+                <p className="text-lg text-ev-ink2/70 dark:text-ev-ink2/60 max-w-xl mx-auto leading-relaxed">
                     Selecciona un perfil y arrastra un CV. Nuestra IA creará la campaña y analizará al candidato en segundos.
                 </p>
             </div>
 
             {/* Template Selection Grid */}
             <div className="w-full max-w-4xl mx-auto mb-10">
-                <label className="block text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wider">
+                <label className="block text-sm font-semibold text-ev-ink2 dark:text-ev-ink2/80 mb-4 uppercase tracking-wider">
                     1. ¿Qué perfil estás buscando hoy?
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -257,17 +257,17 @@ const DashboardActivation: React.FC<DashboardActivationProps> = ({ user, onCreat
                                 className={`
                                     relative flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-200 group
                                     ${isSelected
-                                        ? `${template.color} shadow-md scale-105 ring-2 ring-offset-2 ring-indigo-500`
-                                        : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                        ? `${template.color} shadow-md scale-105 ring-2 ring-offset-2 ring-ev-cta`
+                                        : 'bg-ev-card dark:bg-[#16241C] border-ev-line/50 dark:border-white/[0.06] hover:border-ev-line dark:hover:border-white/20 hover:bg-ev-paper dark:hover:bg-[#0E1813]'
                                     }
                                 `}
                             >
-                                <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-current' : 'text-gray-400 group-hover:text-gray-600'}`} />
-                                <span className={`text-sm font-bold ${isSelected ? 'text-current' : 'text-gray-700'}`}>
+                                <Icon className={`w-8 h-8 mb-3 ${isSelected ? 'text-current' : 'text-ev-ink3 group-hover:text-ev-ink2'}`} />
+                                <span className={`text-sm font-bold ${isSelected ? 'text-current' : 'text-ev-ink2 dark:text-ev-ink2/70'}`}>
                                     {template.label}
                                 </span>
                                 {isSelected && (
-                                    <div className="absolute -top-2 -right-2 bg-indigo-600 text-white p-1 rounded-full">
+                                    <div className="absolute -top-2 -right-2 bg-ev-cta text-ev-onmark p-1 rounded-full">
                                         <SparklesIcon className="w-3 h-3" />
                                     </div>
                                 )}
@@ -278,15 +278,15 @@ const DashboardActivation: React.FC<DashboardActivationProps> = ({ user, onCreat
                     {/* Manual Option */}
                     <button
                         onClick={onCreateManual}
-                        className="flex flex-col items-center p-4 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-white hover:border-indigo-400 hover:text-indigo-600 transition-all duration-200 group"
+                        className="flex flex-col items-center p-4 rounded-xl border-2 border-dashed border-ev-line/50 dark:border-white/[0.08] bg-ev-paper dark:bg-[#0E1813] hover:bg-ev-card dark:hover:bg-[#16241C] hover:border-ev-cta hover:text-ev-cta transition-all duration-200 group"
                     >
-                        <PlusIcon className="w-8 h-8 mb-3 text-gray-400 group-hover:text-indigo-500" />
-                        <span className="text-sm font-bold text-gray-600 group-hover:text-indigo-600">
+                        <PlusIcon className="w-8 h-8 mb-3 text-ev-ink3 group-hover:text-ev-cta" />
+                        <span className="text-sm font-bold text-ev-ink2 dark:text-ev-ink2/70 group-hover:text-ev-cta">
                             Crear Manual
                         </span>
                     </button>
                 </div>
-                {error && <p className="text-red-500 text-sm mt-3 font-medium animate-bounce">{error}</p>}
+                {error && <p className="text-ev-red text-sm mt-3 font-medium animate-bounce">{error}</p>}
             </div>
 
             {/* Target Profile Card (Progressive Disclosure) */}
@@ -296,37 +296,37 @@ const DashboardActivation: React.FC<DashboardActivationProps> = ({ user, onCreat
                 const Icon = template.icon;
 
                 return (
-                    <div className="w-full max-w-2xl mx-auto mb-8 bg-white border border-indigo-100 rounded-2xl p-6 shadow-lg shadow-indigo-100/50 animate-fade-in-up text-left relative overflow-hidden">
+                    <div className="w-full max-w-2xl mx-auto mb-8 bg-ev-card dark:bg-[#16241C] border border-ev-cta/20 dark:border-ev-cta/30 rounded-2xl p-6 shadow-card-lg-evalen animate-fade-in-up text-left relative overflow-hidden">
                         <div className={`absolute top-0 right-0 p-2 opacity-10 ${template.color.split(' ')[0]}`}>
                             <Icon className="w-32 h-32 transform rotate-12 -translate-y-8 translate-x-8" />
                         </div>
 
                         <div className="relative z-10">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className={`p-2 rounded-lg bg-gray-50`}>
+                                <div className={`p-2 rounded-lg bg-ev-paper dark:bg-[#0E1813]`}>
                                     <Icon className={`w-6 h-6 ${template.color.split(' ')[0]}`} />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900 border-l-4 border-indigo-500 pl-3">
+                                    <h3 className="text-lg font-bold text-ev-ink dark:text-ev-onmark border-l-4 border-ev-cta pl-3">
                                         OBJETIVO: {template.title.toUpperCase()}
                                     </h3>
                                 </div>
                             </div>
 
-                            <p className="text-sm text-gray-500 mb-3 ml-1">
+                            <p className="text-sm text-ev-ink2/60 dark:text-ev-ink2/50 mb-3 ml-1">
                                 La IA buscará estas palabras clave en tu documento:
                             </p>
 
                             <div className="flex flex-wrap gap-2 mb-4 ml-1">
                                 {template.tags.map(tag => (
-                                    <span key={tag} className="px-3 py-1 bg-white text-gray-700 rounded-lg text-xs font-bold border border-gray-200 shadow-sm">
+                                    <span key={tag} className="px-3 py-1 bg-ev-card dark:bg-[#16241C] text-ev-ink2 dark:text-ev-ink2/70 rounded-lg text-xs font-bold border border-ev-line/50 dark:border-white/[0.06] shadow-sm">
                                         {tag}
                                     </span>
                                 ))}
                             </div>
 
-                            <div className="flex items-center gap-2 text-sm text-indigo-700 font-medium bg-indigo-50/80 p-3 rounded-lg border border-indigo-100">
-                                <SparklesIcon className="w-5 h-5 text-indigo-500" />
+                            <div className="flex items-center gap-2 text-sm text-ev-cta font-medium bg-ev-cta/10 dark:bg-ev-cta/20 p-3 rounded-lg border border-ev-cta/20 dark:border-ev-cta/30">
+                                <SparklesIcon className="w-5 h-5 text-ev-cta" />
                                 <span>Usaremos este perfil estándar para probar la IA. <strong>¿Tu candidato está a la altura?</strong></span>
                             </div>
                         </div>
@@ -347,9 +347,9 @@ const DashboardActivation: React.FC<DashboardActivationProps> = ({ user, onCreat
                         rootProps.onClick(e);
                     }
                 }}
-                className={`
+                    className={`
                     w-full max-w-2xl p-10 rounded-3xl border-3 border-dashed transition-all duration-300 cursor-pointer relative overflow-hidden group
-                    ${isDragActive ? 'border-indigo-500 bg-indigo-50/50 scale-102' : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'}
+                    ${isDragActive ? 'border-ev-cta bg-ev-cta/5 dark:bg-ev-cta/10 scale-[1.02]' : 'border-ev-line/50 dark:border-white/[0.08] hover:border-ev-cta/50 hover:bg-ev-paper dark:hover:bg-[#0E1813]'}
                     ${isProcessing ? 'pointer-events-none opacity-90' : ''}
                     ${!selectedTemplateId ? 'opacity-60 grayscale' : 'opacity-100'}
                 `}
@@ -358,23 +358,23 @@ const DashboardActivation: React.FC<DashboardActivationProps> = ({ user, onCreat
 
                 {isProcessing ? (
                     <div className="flex flex-col items-center py-8">
-                        <div className="w-full max-w-xs bg-gray-200 rounded-full h-3 mb-4 overflow-hidden">
+                        <div className="w-full max-w-xs bg-ev-line/30 dark:bg-white/[0.08] rounded-full h-3 mb-4 overflow-hidden">
                             <div
-                                className="bg-indigo-600 h-3 rounded-full transition-all duration-300"
+                                className="bg-ev-cta h-3 rounded-full transition-all duration-300"
                                 style={{ width: `${uploadProgress}%` }}
                             ></div>
                         </div>
-                        <p className="text-indigo-600 font-semibold animate-pulse">
+                        <p className="text-ev-cta font-semibold animate-pulse">
                             {uploadProgress < 100 ? 'Analizando documento con IA...' : '¡Listo! Redirigiendo...'}
                         </p>
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        <div className={`w-20 h-20 mx-auto bg-white rounded-2xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${!selectedTemplateId ? 'opacity-50' : ''}`}>
-                            <CloudArrowUpIcon className={`w-10 h-10 ${isDragActive ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-500'}`} />
+                        <div className={`w-20 h-20 mx-auto bg-ev-card dark:bg-[#16241C] rounded-2xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ${!selectedTemplateId ? 'opacity-50' : ''}`}>
+                            <CloudArrowUpIcon className={`w-10 h-10 ${isDragActive ? 'text-ev-cta' : 'text-ev-ink3 dark:text-ev-ink3/70 group-hover:text-ev-cta'}`} />
                         </div>
                         <div>
-                            <p className="text-xl font-bold text-gray-900 mb-1">
+                            <p className="text-xl font-bold text-ev-ink dark:text-ev-onmark mb-1">
                                 {isDragActive
                                     ? '¡Suéltalo aquí!'
                                     : selectedTemplateId
@@ -382,7 +382,7 @@ const DashboardActivation: React.FC<DashboardActivationProps> = ({ user, onCreat
                                         : '2. Arrastra el CV aquí'
                                 }
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-ev-ink2/60 dark:text-ev-ink2/50">
                                 Soporta PDF, DOCX (Max 10MB) - Requiere selección previa
                             </p>
                         </div>

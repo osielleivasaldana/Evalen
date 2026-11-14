@@ -72,6 +72,8 @@ currify-front/node_modules/
 # ========================================
 # Core específico (FastAPI)
 # ========================================
+__pycache__/
+*.py[cod]
 currify-core/__pycache__/
 currify-core/*.pyc
 currify-core/.env

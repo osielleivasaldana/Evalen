@@ -81,8 +81,9 @@ export class CandidatesController {
   updateStatus(
     @Param('id') id: string,
     @Body('status') status: string,
-    @Request() req: any
+    @Request() req: any,
+    @Body('reason') reason?: string,
   ) {
-    return this.candidatesService.updateStatus(id, req.user.id, status);
+    return this.candidatesService.updateStatus(id, req.user.id, status, reason);
   }
 }

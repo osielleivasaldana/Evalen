@@ -1,0 +1,657 @@
+[
+  {
+    "name": "S1 BASELINE (rubrica golden eval)",
+    "overall": 86.1,
+    "recommendation": "strong_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 80.0,
+        "weight": 30.0,
+        "weighted": 24.0
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 50.0,
+        "weight": 15.0,
+        "weighted": 7.5
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "comunicación con apoderados": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "evaluación del desarrollo infantil": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "gestión de curso": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      },
+      "primeros auxiliares": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "judge_calls": [],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos Nivel Medio"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "sim_count": 1,
+    "exp_count": 3,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ],
+    "fechas": [
+      [
+        "Fundación San Carlos de Maipo",
+        "2018-01",
+        "2023"
+      ],
+      [
+        "Corporación Educacional B",
+        "2010-01",
+        "2017-12"
+      ],
+      [
+        "Junta de Vecinos Los Aromos",
+        "2009-01",
+        "2010-12"
+      ]
+    ]
+  },
+  {
+    "name": "S2 STRESS (+2 mandatory ausentes en CV)",
+    "overall": 82.67,
+    "recommendation": "strong_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 68.57142857142857,
+        "weight": 30.0,
+        "weighted": 20.57
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 50.0,
+        "weight": 15.0,
+        "weighted": 7.5
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "comunicación con apoderados": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "convivencia escolar": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "curriculum nacional": {
+        "banda": "SIN-CREDITO(judge no disp.)",
+        "credito": 0.0
+      },
+      "evaluación del desarrollo infantil": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "gestión de curso": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      },
+      "primeros auxiliares": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "judge_calls": [
+      {
+        "prompt_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tecnología, etc. Determ",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "convivencia escolar",
+        "score": 0.0,
+        "evidence": null
+      }
+    ],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos Nivel Medio"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "sim_count": 11,
+    "exp_count": 3,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ],
+    "fechas": [
+      [
+        "Fundación San Carlos de Maipo",
+        "2018-01",
+        "2023"
+      ],
+      [
+        "Corporación Educacional B",
+        "2010-01",
+        "2017-12"
+      ],
+      [
+        "Junta de Vecinos Los Aromos",
+        "2009-01",
+        "2010-12"
+      ]
+    ]
+  },
+  {
+    "name": "S3 CULTURAL (soft skills del job pobladas)",
+    "overall": 93.6,
+    "recommendation": "strong_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 80.0,
+        "weight": 30.0,
+        "weighted": 24.0
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "comunicación con apoderados": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "evaluación del desarrollo infantil": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "gestión de curso": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      },
+      "primeros auxiliares": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "judge_calls": [],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos Nivel Medio"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "sim_count": 1,
+    "exp_count": 3,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ],
+    "fechas": [
+      [
+        "Fundación San Carlos de Maipo",
+        "2018-01",
+        "2023"
+      ],
+      [
+        "Corporación Educacional B",
+        "2010-01",
+        "2017-12"
+      ],
+      [
+        "Junta de Vecinos Los Aromos",
+        "2009-01",
+        "2010-12"
+      ]
+    ]
+  },
+  {
+    "name": "S4 LOGISTICS (ubicacion requerida no match)",
+    "overall": 86.1,
+    "recommendation": "strong_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 80.0,
+        "weight": 30.0,
+        "weighted": 24.0
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 50.0,
+        "weight": 15.0,
+        "weighted": 7.5
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "comunicación con apoderados": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "evaluación del desarrollo infantil": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "gestión de curso": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      },
+      "primeros auxiliares": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "judge_calls": [],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos Nivel Medio"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "sim_count": 1,
+    "exp_count": 3,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ],
+    "fechas": [
+      [
+        "Fundación San Carlos de Maipo",
+        "2018-01",
+        "2023"
+      ],
+      [
+        "Corporación Educacional B",
+        "2010-01",
+        "2017-12"
+      ],
+      [
+        "Junta de Vecinos Los Aromos",
+        "2009-01",
+        "2010-12"
+      ]
+    ]
+  },
+  {
+    "name": "S5 EXPANSION (sinonimos pedagogicos en latentes)",
+    "overall": 86.1,
+    "recommendation": "strong_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 80.0,
+        "weight": 30.0,
+        "weighted": 24.0
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 50.0,
+        "weight": 15.0,
+        "weighted": 7.5
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "comunicación con apoderados": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "evaluación del desarrollo infantil": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "gestión de curso": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      },
+      "primeros auxiliares": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "judge_calls": [],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos Nivel Medio"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "sim_count": 1,
+    "exp_count": 3,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ],
+    "fechas": [
+      [
+        "Fundación San Carlos de Maipo",
+        "2018-01",
+        "2023"
+      ],
+      [
+        "Corporación Educacional B",
+        "2010-01",
+        "2017-12"
+      ],
+      [
+        "Junta de Vecinos Los Aromos",
+        "2009-01",
+        "2010-12"
+      ]
+    ]
+  },
+  {
+    "name": "S3b CULTURAL-FULL (job blandas + puente semantico exacto)",
+    "overall": 93.6,
+    "recommendation": "strong_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 80.0,
+        "weight": 30.0,
+        "weighted": 24.0
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "comunicación con apoderados": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "evaluación del desarrollo infantil": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "gestión de curso": {
+        "banda": "LITERAL(expandidas)",
+        "credito": 1.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      },
+      "primeros auxiliares": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "judge_calls": [],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos Nivel Medio"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "sim_count": 1,
+    "exp_count": 3,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ],
+    "fechas": [
+      [
+        "Fundación San Carlos de Maipo",
+        "2018-01",
+        "2023"
+      ],
+      [
+        "Corporación Educacional B",
+        "2010-01",
+        "2017-12"
+      ],
+      [
+        "Junta de Vecinos Los Aromos",
+        "2009-01",
+        "2010-12"
+      ]
+    ]
+  }
+]

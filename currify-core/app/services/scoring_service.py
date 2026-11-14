@@ -5,16 +5,190 @@ Evaluates candidate-job fit using AI and structured rubric
 
 import json
 import logging
-from typing import Dict, Any, Optional
+import re
+from typing import Dict, Any, List, Optional
 from app.services.llm_service import LLMService
 from app.core.scoring_rubric import ScoringRubric
 from app.services.dynamic_rubric_service import DynamicRubricService
-from app.models.scoring import ScoringResponse, DimensionScore
+from app.models.scoring import ScoringResponse, DimensionScore, SkillJudgeResult
 from app.services.education_normalizer import EducationNormalizer
 from app.services.semantic_service import SemanticService # Moved to top
+from app.services.domain_expansion import expand_rubric_skill, normalize_text
+from app.services.geo_chile import resolve_geo_match, GEO_CHILE_VERSION
 import asyncio
 
 logger = logging.getLogger(__name__)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  TRAJECTORY / YEARS — Constantes centralizadas (SDD Fase 2 §4.2, P2)
+#  Único lugar autorizado para estos números: PROHIBIDO dispersar mágicos.
+# ══════════════════════════════════════════════════════════════════════════════
+TRAJECTORY_WEIGHT_YEARS = 0.50
+TRAJECTORY_WEIGHT_STABILITY = 0.30
+TRAJECTORY_WEIGHT_PROGRESSION = 0.20
+
+STABILITY_TENURE_FULL_MONTHS = 24      # tenencia promedio ≥24 meses → 100
+STABILITY_TENURE_PARTIAL_MONTHS = 12   # 12–24 meses → 70 · <12 → 40
+STABILITY_SCORE_FULL = 100
+STABILITY_SCORE_PARTIAL = 70
+STABILITY_SCORE_LOW = 40
+
+PROGRESSION_SCORE_ASCENDING = 100      # tiers léxicos ascendentes
+PROGRESSION_SCORE_LATERAL = 70         # mismo tier entre empleadores
+PROGRESSION_SCORE_INSUFFICIENT = 60    # <2 entradas con tier resoluble / no clasificable
+
+TRAJECTORY_FALLBACK_SCORE = 70         # <1 entrada o fechas no parseables (preservado)
+
+YEARS_FALLBACK_MULTI_ENTRIES = 100     # ≥2 entradas (fallback lógica actual)
+YEARS_FALLBACK_SINGLE_ENTRY = 60       # 1 entrada
+YEARS_FALLBACK_NO_ENTRIES = 0
+
+MONTHS_PER_YEAR = 12
+
+# Tiers léxicos de progresión (SDD §4.2): asistente/ayudante < profesional/titulado
+# < coordinador/encargado/jefe. Extensible añadiendo keywords al tier.
+_PROGRESSION_TIERS: List[tuple] = [
+    (0, ["asistente", "ayudante", "auxiliar", "practicante", "aprendiz", "pasante"]),
+    (1, ["profesional", "titulado", "titulada", "senior", "experto", "especialista"]),
+    (2, ["coordinador", "coordinadora", "encargado", "encargada", "jefe", "jefa",
+         "jefatura", "director", "directora", "gerente", "gerenta", "supervisor",
+         "supervisora", "lider"]),
+]
+
+
+def _parse_year_month(value):
+    """'2018' | '2018-03' | 'mar 2018' -> (year, month|None) · 'presente/actual' -> 'now'.
+    Retorna None si no es parseable (anti-invención: nunca deducir años ausentes)."""
+    if value is None:
+        return None
+    s = str(value).strip().lower()
+    if not s:
+        return None
+    if any(k in s for k in ("presente", "actual", "current", "hoy", "today")):
+        return "now"
+    m = re.search(r"(\d{4})(?:[-/](\d{1,2}))?", s)
+    if not m:
+        return None
+    year = int(m.group(1))
+    if not (1900 <= year <= 2100):
+        return None
+    month = int(m.group(2)) if m.group(2) else None
+    if month is not None and not (1 <= month <= 12):
+        month = None
+    return (year, month)
+
+
+def compute_timeline_months(experiencias) -> List[Dict[str, Any]]:
+    """Timeline determinista por entrada: cargo parseable + tenencia en meses.
+    Entradas sin fechas parseables quedan con months=None (no se inventan)."""
+    from datetime import datetime
+    timeline: List[Dict[str, Any]] = []
+    now_ym = (datetime.now().year, datetime.now().month)
+    for exp in (experiencias or []):
+        periodo = exp.get('periodo') or {} if isinstance(exp, dict) else {}
+        start = _parse_year_month(periodo.get('fecha_inicio'))
+        end_raw = periodo.get('fecha_fin')
+        end = _parse_year_month(end_raw)
+        months = None
+        if start and start != "now" and end is not None:
+            ey, em = now_ym if end == "now" else end
+            sy, sm = start
+            months = max(0, (ey * MONTHS_PER_YEAR + (em or 1)) - (sy * MONTHS_PER_YEAR + (sm or 1)))
+        timeline.append({
+            "cargo": str(exp.get('cargo') or '') if isinstance(exp, dict) else '',
+            "start": start,
+            "months": months,
+        })
+    return timeline
+
+
+def total_real_years(timeline) -> Optional[float]:
+    """Suma de tenencias reales parseadas en años; None si ninguna fecha parseó."""
+    months = [t["months"] for t in timeline if t.get("months") is not None]
+    if not months:
+        return None
+    return sum(months) / MONTHS_PER_YEAR
+
+
+def years_component(min_years: int, timeline) -> int:
+    """years_c (SDD §4.2): con min_years>0 y fechas reales → min(100, años/min·100);
+    si no aplica → fallback lógica actual por entradas (única fuente de verdad)."""
+    real_years = total_real_years(timeline)
+    if min_years and min_years > 0 and real_years is not None:
+        return int(round(min(100, (real_years / min_years) * 100)))
+    n_entries = len(timeline)
+    if n_entries >= 2:
+        return YEARS_FALLBACK_MULTI_ENTRIES
+    if n_entries == 1:
+        return YEARS_FALLBACK_SINGLE_ENTRY
+    return YEARS_FALLBACK_NO_ENTRIES
+
+
+def stability_component(timeline) -> Optional[int]:
+    """stability_c: tenencia promedio por empleo ≥24m→100 · 12–24m→70 · <12m→40.
+    None si ninguna entrada tiene fechas parseables."""
+    tenures = [t["months"] for t in timeline if t.get("months") is not None]
+    if not tenures:
+        return None
+    avg = sum(tenures) / len(tenures)
+    if avg >= STABILITY_TENURE_FULL_MONTHS:
+        return STABILITY_SCORE_FULL
+    if avg >= STABILITY_TENURE_PARTIAL_MONTHS:
+        return STABILITY_SCORE_PARTIAL
+    return STABILITY_SCORE_LOW
+
+
+def progression_component(timeline) -> int:
+    """progression_c: tiers léxicos ordenados cronológicamente.
+    Ascendente→100 · lateral→70 · insuficiente/no clasificable→60."""
+    def _tier(cargo: str):
+        c = normalize_text(cargo)
+        for level, keywords in _PROGRESSION_TIERS:
+            for kw in keywords:
+                if re.search(rf"(^| ){re.escape(kw)}( |$)", c):
+                    return level
+        return None
+
+    tiered = [(t["start"], _tier(t["cargo"])) for t in timeline]
+    tiered = [lvl for _, lvl in sorted(
+        (s for s in tiered if s[0] and s[0] != "now"), key=lambda x: x[0]) if lvl is not None]
+    if len(tiered) < 2:
+        return PROGRESSION_SCORE_INSUFFICIENT
+    first, last = tiered[0], tiered[-1]
+    if last > first:
+        return PROGRESSION_SCORE_ASCENDING
+    if last == first:
+        return PROGRESSION_SCORE_LATERAL
+    return PROGRESSION_SCORE_INSUFFICIENT  # descendente/zigzag: señal no clara
+
+
+def trajectory_signal(min_years: int, experiencias) -> tuple:
+    """Fórmula SDD §4.2: round(0.50·years_c + 0.30·stability_c + 0.20·progression_c).
+    Fallback preservado: <1 entrada o fechas no parseables → 70.
+    Retorna (score:int, componentes:dict) — componentes SIEMPRE trazables."""
+    timeline = compute_timeline_months(experiencias)
+    if len(timeline) < 1:
+        return TRAJECTORY_FALLBACK_SCORE, {"reason": "sin_experiencia"}
+    stability = stability_component(timeline)
+    if stability is None:
+        return TRAJECTORY_FALLBACK_SCORE, {"reason": "fechas_no_parseables"}
+    years_c = years_component(min_years, timeline)
+    progression_c = progression_component(timeline)
+    score = int(round(
+        TRAJECTORY_WEIGHT_YEARS * years_c
+        + TRAJECTORY_WEIGHT_STABILITY * stability
+        + TRAJECTORY_WEIGHT_PROGRESSION * progression_c
+    ))
+    real_years = total_real_years(timeline)
+    components = {
+        "years": years_c,
+        "stability": stability,
+        "progression": progression_c,
+        "years_total": round(real_years, 1) if real_years is not None else None,
+        "min_years": min_years,
+    }
+    return score, components
 
 
 class ScoringService:
@@ -26,6 +200,15 @@ class ScoringService:
         self.dynamic_rubric_service = DynamicRubricService(llm_service=self.llm_service)
         self.education_normalizer = EducationNormalizer()
         self.semantic_service = SemanticService(llm_service=self.llm_service)
+        # Cache del Skill Judge: clave (skill_normalizada, hash_contexto_candidato).
+        # Gracias a este cache el presupuesto neto típico es ≤ +2 llamadas LLM/evaluación.
+        self._skill_judge_cache: Dict[tuple, Any] = {}
+
+    # Presupuesto del Skill Judge (Bug 3): máximo 6 llamadas por evaluación.
+    MAX_SKILL_JUDGE_CALLS = 6
+    # Bandas de crédito parcial por similitud semántica
+    SKILL_SIM_FULL_CREDIT = 0.80   # ≥ 0.80 → 1.0
+    SKILL_SIM_HALF_CREDIT = 0.65   # ≥ 0.65 → 0.5 ; < 0.65 → elegible para judge
 
     async def evaluate_candidate(
         self,
@@ -159,7 +342,7 @@ class ScoringService:
             
             input_data = json.dumps({
                 "candidate": candidate_data,
-                "job_rubric": structured_rubric.dict(),
+                "job_rubric": structured_rubric.model_dump(),
                 "semantic_analysis": {
                     "expanded_skills": expanded_skills_list,
                     "normalized_degrees": normalized_degrees,
@@ -192,6 +375,53 @@ class ScoringService:
             logger.error(f"Error during scoring evaluation: {e}", exc_info=True)
             return None
     
+    # ------------------------------------------------------------------ #
+    #  SKILL JUDGE (Bug 3) — acotado, con evidencia literal obligatoria   #
+    # ------------------------------------------------------------------ #
+
+    async def _judge_single_skill(self, req_skill: str, candidate_context: str) -> SkillJudgeResult:
+        """
+        Juzga UNA mandatory skill que quedó en 0 tras similitud semántica.
+        - Schema Pydantic SkillJudgeResult (evidencia LITERAL obligatoria → si no, score 0).
+        - Anti-alucinación: la evidencia devuelta DEBE ser substring literal del contexto.
+        - El resultado alimenta la MATRIZ de matching; NUNCA el score final.
+        """
+        context_excerpt = candidate_context[:3000]
+        prompt = f"""Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,
+oficios, retail, tecnología, etc. Determina si el candidato demuestra la skill requerida.
+
+SKILL REQUERIDA: "{req_skill}"
+
+CONTEXTO DEL CANDIDATO (texto literal de su CV):
+<contexto>
+{context_excerpt}
+</contexto>
+
+REGLAS ESTRICTAS:
+1. "evidence" debe ser una cita LITERAL (substring exacto) del contexto. PROHIBIDO parafrasear o inventar.
+2. Si NO puedes citar evidencia literal → score = 0.0 y evidence = null.
+3. score: 1.0 = evidencia clara e inequívoca; 0.5 = evidencia parcial/adyacente razonable; 0.0 = sin evidencia.
+4. Devuelve EXCLUSIVAMENTE JSON válido:
+{{"score": 0.0 | 0.5 | 1.0, "evidence": "<cita literal o null>"}}
+"""
+        try:
+            raw = await self.llm_service.call_agent(
+                prompt=prompt,
+                input_data="",
+                stage_name="SKILL_JUDGE",
+                temperature=0.0,
+            )
+            result = SkillJudgeResult.model_validate(raw)
+            # Anti-alucinación: la evidencia debe existir LITERALMENTE en el contexto
+            if result.evidence and str(result.evidence).strip().lower() not in candidate_context.lower():
+                logger.warning(f"⚖️ Judge evidencia no literal para '{req_skill}' → score forzado a 0")
+                return SkillJudgeResult(skill=req_skill, score=0.0, evidence=None)
+            result.skill = req_skill
+            return result
+        except Exception as e:
+            logger.warning(f"⚖️ Skill Judge falló para '{req_skill}': {e} → score 0")
+            return SkillJudgeResult(skill=req_skill, score=0.0, evidence=None)
+
     async def _calculate_matrix_scores(self, candidate, rubric, expanded_skills=None, normalized_degrees=None, normalized_candidate_roles=None, normalized_rubric_roles=None, job_soft_skills=None, job_title="") -> Dict[str, Any]:
         """
         Executes the Detailed Scoring Matrix (The Contract).
@@ -368,9 +598,12 @@ class ScoringService:
                 role_match_score = 15  # Sin transferibilidad → score muy bajo
                 roles_mismatch = True
 
-        # B. Years Constraint
+        # B. Years Constraint (SDD Fase 2 P2: fechas reales + rubric.min_years como
+        # única fuente de verdad; fallback por entradas cuando min_years no aplica).
         # If roles don't match (e.g. Accountant in Trucking Co), years are less valuable.
-        base_years = 100 if len(cand_exps) >= 2 else (60 if len(cand_exps) == 1 else 0)
+        _min_years_req = int(getattr(rubric.experience, 'min_years', 0) or 0)
+        _timeline = compute_timeline_months(cand_exps)
+        base_years = years_component(_min_years_req, _timeline)
         years_score = base_years if not roles_mismatch else (base_years * 0.5)
         
         # C. Industry
@@ -386,36 +619,131 @@ class ScoringService:
         expanded_cand_skills = set()
         if expanded_skills:
             expanded_cand_skills = set(str(s).lower() for s in expanded_skills if s)
-        
+
+        # Contexto textual del candidato (para deep search y evidencia del judge)
+        context_parts = []
+        if candidate.get('resumen_profesional'):
+            context_parts.append(str(candidate['resumen_profesional'].get('resumen', '')))
+        for exp in cand_exps:
+            context_parts.append(str(exp.get('responsabilidades', '')))
+            context_parts.append(str(exp.get('cargo', '')))
+        full_text_lower = " ".join(context_parts).lower()
+
         if not mandatory:
             minutes_skills_score = 50 # Neutral if no skills listed 
             # If candidate has tech skills, boost
             if expanded_cand_skills: minutes_skills_score = 70
             mandatory_score = minutes_skills_score
         else:
-            matches = mandatory.intersection(expanded_cand_skills)
-            missing = mandatory - expanded_cand_skills
-            
-            # DEEP SEARCH for Missing Skills in Experience/Summary Text
-            if missing:
-                # Build context text (Summary + Responsibilities)
-                context_parts = []
-                if candidate.get('resumen_profesional'):
-                    context_parts.append(str(candidate['resumen_profesional'].get('resumen', '')))
-                for exp in cand_exps:
-                    context_parts.append(str(exp.get('responsabilidades', '')))
-                    context_parts.append(str(exp.get('cargo', '')))
-                
-                full_text_lower = " ".join(context_parts).lower()
-                
-                for skill in missing:
-                    # Simple check: is skill name in text?
-                    # TODO: Robust word boundary check
-                    if skill in full_text_lower:
-                        matches.add(skill)
-                        logger.info(f"🔍 Deep Search found '{skill}' in candidate text!")
+            # ── BUG 3: Crédito parcial en TRES BANDAS (1.0 / 0.5 / 0.0) ──
+            # Bandas por similitud: ≥0.80 → 1.0 ; ≥0.65 → 0.5 ; <0.65 → judge acotado.
+            # Batch-fix F3 (2026-08-25): expansión léxica LADO RÚBRICA antes de las
+            # bandas (léxico estático de dominio — CNEP primero—, NUNCA vía LLM).
+            # Las sondas alimentan el matching literal y las bandas existentes; el
+            # judge mantiene rol/umbral <0.65/cache/presupuesto intactos.
+            total_credit = 0.0
+            pending_judge: List[str] = []
 
-            coverage = len(matches) / len(mandatory) if mandatory else 0.0
+            expanded_norm = {normalize_text(s) for s in expanded_cand_skills}
+            full_text_norm = normalize_text(full_text_lower)
+
+            for req_skill in sorted(mandatory):
+                req_l = str(req_skill).lower().strip()
+                if not req_l:
+                    continue
+
+                # Sondas = skill requerida + sinónimos de dominio (si aplica)
+                probes = [req_l]
+                for probe in sorted(expand_rubric_skill(req_l)):
+                    if probe not in probes:
+                        probes.append(probe)
+
+                # Banda instantánea: match literal (evidencia directa, original o sonda)
+                literal_hit = False
+                for probe in probes:
+                    if probe in expanded_cand_skills or probe in full_text_lower:
+                        literal_hit = True
+                        break
+                    p_norm = normalize_text(probe)
+                    if p_norm in expanded_norm or p_norm in full_text_norm:
+                        literal_hit = True
+                        break
+                if literal_hit:
+                    total_credit += 1.0
+                    continue
+
+                # Bandas de similitud semántica contra skills expandidas del candidato
+                best_sim = 0.0
+                for probe in probes:
+                    for cand_skill in expanded_cand_skills:
+                        sim = await self.semantic_service.calculate_similarity(probe, cand_skill)
+                        if sim > best_sim:
+                            best_sim = sim
+                            if best_sim >= self.SKILL_SIM_FULL_CREDIT:
+                                break
+                    if best_sim >= self.SKILL_SIM_FULL_CREDIT:
+                        break
+
+                if best_sim >= self.SKILL_SIM_FULL_CREDIT:
+                    total_credit += 1.0
+                elif best_sim >= self.SKILL_SIM_HALF_CREDIT:
+                    total_credit += 0.5
+                else:
+                    pending_judge.append(req_l)
+
+            # ── Judge LLM acotado: SOLO para skills que quedaron en 0 tras similitud ──
+            # Máximo MAX_SKILL_JUDGE_CALLS llamadas por evaluación; cache por
+            # (skill + hash candidato). El judge alimenta la MATRIZ (crédito de
+            # matching), NUNCA el score final (overall sigue siendo Σ ponderada).
+            # ── Hotfix 408: paralelizado máx 3 concurrentes (wall-time ~⅓) ──
+            # Preserva: presupuesto 6 (check antes de encolar), cache por (skill+hash),
+            # validación evidencia literal (delegada a _judge_single_skill), determinismo
+            # total_credit (suma conmutativa) y log ⚖️ por resultado. Orden sorted(mandatory)
+            # garantiza prioridad alfabética determinista si >6 pendientes.
+            import time as _time_mod
+            _judge_wall_start = _time_mod.monotonic()
+            _hits_credit = 0.0
+            _misses: List[str] = []
+            _skipped_budget: List[str] = []
+            for req_l in pending_judge:
+                cache_key = (req_l, hash(full_text_lower))
+                cached = self._skill_judge_cache.get(cache_key)
+                if cached is not None:
+                    _hits_credit += float(cached.get("score", 0.0))
+                    continue
+                if len(_misses) >= self.MAX_SKILL_JUDGE_CALLS:
+                    _skipped_budget.append(req_l)
+                    logger.warning(f"⚖️ Skill Judge: presupuesto agotado ({self.MAX_SKILL_JUDGE_CALLS}); "
+                                   f"'{req_l}' queda en 0 sin juzgar")
+                    continue
+                _misses.append(req_l)
+            total_credit += _hits_credit
+
+            if _misses:
+                _sem = asyncio.Semaphore(3)
+
+                async def _judge_bounded(req: str):
+                    async with _sem:
+                        judged = await self._judge_single_skill(req, full_text_lower)
+                        return req, judged
+
+                _results = await asyncio.gather(*[_judge_bounded(r) for r in _misses])
+                # Procesar en orden de _misses para determinismo de cache/log
+                for req_l, judged in _results:
+                    cache_key = (req_l, hash(full_text_lower))
+                    self._skill_judge_cache[cache_key] = {"score": judged.score, "evidence": judged.evidence}
+                    if judged.score > 0:
+                        logger.info(f"⚖️ Skill Judge '{req_l}' → {judged.score} con evidencia literal")
+                    total_credit += float(judged.score)
+
+            _judge_wall_elapsed = _time_mod.monotonic() - _judge_wall_start
+            logger.info(
+                f"⏱️ Skill Judge bloque wall-time: {_judge_wall_elapsed:.3f}s "
+                f"| pending={len(pending_judge)} hits={len(pending_judge)-len(_misses)-len(_skipped_budget)} "
+                f"misses={len(_misses)} skipped_budget={len(_skipped_budget)} max_concurrent=3"
+            )
+
+            coverage = total_credit / len(mandatory) if mandatory else 0.0
             mandatory_score = coverage * 100
             
         nice = set(s.lower() for s in rubric.skills.nice_to_have_skills)
@@ -426,71 +754,114 @@ class ScoringService:
 
         # --- 4. OTHERS ---
         
-        # LOGISTICS (City/Region Match)
-        # If strict location required, check match.
-        logistics_score = 100
-        if rubric.logistics.location:
-            req_loc = rubric.logistics.location.lower()
-            # Try to match with ANY location in candidate contact info
-            cand_loc = ""
-            if candidate.get('datos_contacto'):
-                cand_loc = str(candidate['datos_contacto'].get('ubicacion', '')).lower()
-            
-            # Simple substring match (e.g. "Temuco" in "Temuco, Chile")
-            if req_loc in cand_loc:
-                logistics_score = 100
-            else:
-                # If specific location requested but not found -> 0 (Kill Clause for logistics)
-                logistics_score = 0
-        
-        scores['logistics'] = logistics_score
+        # LOGISTICS (SDD Fase 2 §4.1 — geográfico jerárquico, determinista, cero LLM)
+        # Escalera: comuna=100 · provincia=70 · región=50 · sin match=0 ·
+        # campaña sin requisito=100 · CV sin ubicación con requisito=50 neutral.
+        # Trazabilidad obligatoria: tier + texto contra el que matcheó.
+        cv_location_texts: List[str] = []
+        contact = candidate.get('datos_contacto') or {}
+        if isinstance(contact, dict):
+            for _loc_key in ('ubicacion', 'ciudad', 'comuna', 'provincia', 'region'):
+                _loc_val = contact.get(_loc_key)
+                if _loc_val and str(_loc_val).strip():
+                    cv_location_texts.append(str(_loc_val))
+
+        geo_result = resolve_geo_match(getattr(rubric.logistics, 'location', None), cv_location_texts)
+        scores['logistics'] = geo_result.score
+        # Traza informativa aditiva (los consumidores iteran WEIGHTS; no altera HTTP)
+        scores['_logistics_geo'] = {
+            "geo_version": GEO_CHILE_VERSION,
+            "tier": geo_result.tier,
+            "matched_on": geo_result.matched_on,
+            "score": geo_result.score,
+        }
         
         # Cultural Fit - Soft Skills Match
-        # If soft skills provided in job description (parsedJobData), check for them
+        # Batch-fix F1 (2026-08-25): fuentes de blandas de la oferta = parámetro
+        # parsedJobData.habilidades_blandas (retrocompat) + campo estructurado
+        # rubric.skills.soft_skills (dedup case-insensitive, sin cambiar firma ni HTTP).
         cultural_score = 50 # Default
-        if job_soft_skills and isinstance(job_soft_skills, list) and len(job_soft_skills) > 0:
+        job_soft_list: List[str] = []
+        _seen_job_soft = set()
+        for _src in (list(job_soft_skills or []) + list(getattr(rubric.skills, 'soft_skills', None) or [])):
+            _s = str(_src).strip()
+            _k = _s.lower()
+            if _s and _k not in _seen_job_soft:
+                _seen_job_soft.add(_k)
+                job_soft_list.append(_s)
+
+        if job_soft_list:
              # Build Text
              context_parts = []
              if candidate.get('resumen_profesional'):
                  context_parts.append(str(candidate['resumen_profesional'].get('resumen', '')))
              for exp in cand_exps:
                  context_parts.append(str(exp.get('responsabilidades', '')))
-             
-             full_text_lower = " ".join(context_parts).lower()
-             
-             soft_matches = 0
-             for ss in job_soft_skills:
-                 ss_lower = str(ss).lower()
-                 # 1. Direct Match
-                 if ss_lower in full_text_lower:
-                     soft_matches += 1
+
+             # ── Batch-fix F1: blandas DECLARADAS por el CV (habilidades.habilidades_blandas)
+             #    entran al corpus literal Y al set puenteable. Evidencia trazable:
+             #    la declaración del propio CV (literal) o similitud documentada ≥0.65. ──
+             declared_softs: List[str] = []
+             habs_cand = candidate.get('habilidades')
+             raw_declared = habs_cand.get('habilidades_blandas', []) or [] if isinstance(habs_cand, dict) else []
+             for ds in raw_declared:
+                 if isinstance(ds, str):
+                     val = ds
+                 elif isinstance(ds, dict):
+                     val = ds.get('habilidad') or ds.get('name') or ds.get('skill') or ''
                  else:
-                     # 2. Semantic Soft Skill Match (New)
-                     # Check against chunks of text or just trust the Semantic Service if we implement it for soft skills.
-                     # For now, let's try to match against the extracted skills list causing a "bridge"
-                     # It's 'expanded_skills' in this scope (argument)
-                     skills_to_check = expanded_skills if expanded_skills else []
-                     found_semantic = False # Initialize variable
-                     for cand_skill in skills_to_check:
-                         # Use lower threshold (0.65) for Soft Skills to be more lenient
-                         if await _semantic_match(ss_lower, str(cand_skill).lower(), threshold=0.65):
-                             found_semantic = True
-                             break
-                     if found_semantic:
-                         soft_matches += 1
-             
-             # Calculate Coverage
-             coverage = soft_matches / len(job_soft_skills)
+                     val = str(ds)
+                 val = str(val).strip()
+                 if val:
+                     declared_softs.append(val)
+             declared_lower = [d.lower() for d in declared_softs]
+             if declared_lower:
+                 context_parts.append(" ".join(declared_lower))
+
+             full_text_lower = " ".join(context_parts).lower()
+
+             # Set puenteable de la dimensión: técnicas+latentes expandidas + blandas declaradas
+             bridge_skills: List[str] = []
+             _seen_bridge = set()
+             for _b in (list(expanded_skills or []) + declared_lower):
+                 _bl = str(_b).lower().strip()
+                 if _bl and _bl not in _seen_bridge:
+                     _seen_bridge.add(_bl)
+                     bridge_skills.append(_bl)
+
+             soft_matches = 0
+             for ss in job_soft_list:
+                  ss_lower = str(ss).lower()
+                  # 1. Direct Match (el corpus ahora incluye las blandas declaradas del CV)
+                  if ss_lower in full_text_lower:
+                      soft_matches += 1
+                  else:
+                      # 2. Semantic Soft Skill Match (puente documentado, umbral 0.65)
+                      found_semantic = False # Initialize variable
+                      for cand_skill in bridge_skills:
+                          if await _semantic_match(ss_lower, cand_skill, threshold=0.65):
+                              found_semantic = True
+                              break
+                      if found_semantic:
+                          soft_matches += 1
+
+              # Calculate Coverage
+             coverage = soft_matches / len(job_soft_list)
              # Base 50 + up to 50 based on coverage
              cultural_score = 50 + (coverage * 50)
-        
-        scores['cultural_fit'] = cultural_score 
+
+        scores['cultural_fit'] = cultural_score
         
         # Penalize trajectory if roles are completely mismatched
         # (e.g. Accountant applying for Medical Tech -> Trajectory is irrelevant)
         # RECOVERY: If role_match_score was recovered to 60 via adjacency, trajectory shouldn't be 30
+        # SDD Fase 2 P2: el branch "rol matcheado" deja el hardcode 70 y calcula por
+        # componentes (years/stability/progression) con fallback 70 preservado.
         if role_match_score >= 60:
-            scores['career_trajectory'] = 70
+            traj_score, traj_components = trajectory_signal(_min_years_req, cand_exps)
+            scores['career_trajectory'] = traj_score
+            # Traza informativa aditiva (no altera contrato HTTP)
+            scores['_trajectory_components'] = traj_components
         elif roles_mismatch:
             scores['career_trajectory'] = 30
         else:

@@ -2,8 +2,29 @@
 Pydantic models for scoring service
 """
 
-from typing import Dict, List, Any
-from pydantic import BaseModel, Field, field_validator
+from typing import Dict, List, Any, Optional
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+
+class SkillJudgeResult(BaseModel):
+    """
+    Resultado del Judge LLM para UNA mandatory skill que quedó en 0 tras similitud.
+
+    Invariantes (hotfix parvularia):
+    - El judge alimenta la MATRIZ de evaluación (matching de skills), NUNCA el score final.
+    - Debe citar evidencia LITERAL del CV; si no puede → score forzado a 0.0.
+    - Presupuesto acotado: máximo 6 llamadas por evaluación, cache por (skill, hash candidato).
+    """
+    skill: str = Field("", description="Skill requerida evaluada (asignada por el caller)")
+    score: float = Field(0.0, ge=0.0, le=1.0, description="Crédito parcial: 0.0 | 0.5 | 1.0")
+    evidence: Optional[str] = Field(None, description="Cita LITERAL del CV que respalda la skill")
+
+    @model_validator(mode='after')
+    def force_zero_without_literal_evidence(self) -> 'SkillJudgeResult':
+        if self.evidence is None or not str(self.evidence).strip():
+            self.score = 0.0
+            self.evidence = None
+        return self
 
 
 class DimensionScore(BaseModel):

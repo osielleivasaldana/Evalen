@@ -1,0 +1,151 @@
+{
+  "modo": "MOCK DETERMINISTA (sin API key en entorno); ruta real DynamicRubricService.generate_rubric ejercitada",
+  "campaign_title": "Educadora de Párvulos",
+  "rubrica_mock_declarada": {
+    "education": {
+      "required_degrees": [
+        "Educadora de Párvulos"
+      ],
+      "academic_level": "Universitario",
+      "kill_clause": true
+    },
+    "experience": {
+      "min_years": 0,
+      "key_roles": [
+        "Educadora de Párvulos"
+      ]
+    },
+    "skills": {
+      "mandatory_skills": [
+        "Currículum Nacional de Educación Parvularia",
+        "adaptaciones educativas",
+        "estrategias pedagógicas diferenciadas",
+        "liderazgo de equipos",
+        "comunicación oral y escrita",
+        "herramientas tecnológicas básicas",
+        "planificación educativa"
+      ],
+      "nice_to_have_skills": []
+    },
+    "logistics": {
+      "location": null,
+      "modality": "Presencial"
+    },
+    "languages": {
+      "required_languages": []
+    },
+    "certifications": {
+      "mandatory_certs": []
+    }
+  },
+  "job_blandas_mock": [
+    "comunicación efectiva",
+    "liderazgo",
+    "trabajo en equipo",
+    "proactividad",
+    "creatividad",
+    "inclusión"
+  ],
+  "r3_requisitos_parsed": [
+    "Currículum Nacional de Educación Parvularia",
+    "Adaptaciones educativas",
+    "Estrategias pedagógicas diferenciadas",
+    "Liderazgo y coordinación de equipos",
+    "Comunicación oral y escrita",
+    "Herramientas tecnológicas básicas",
+    "Proactividad",
+    "Creatividad",
+    "Resolución de desafíos pedagógicos"
+  ],
+  "rubrica_post_procesada_R1": {
+    "education": {
+      "required_degrees": [
+        "Educadora de Párvulos"
+      ],
+      "academic_level": "Universitario",
+      "kill_clause": true,
+      "inferred_field": null,
+      "is_inferred_degree": false
+    },
+    "experience": {
+      "min_years": 0,
+      "key_roles": [
+        "Educadora de Párvulos"
+      ],
+      "industry_mandatory": false,
+      "target_industries": []
+    },
+    "skills": {
+      "mandatory_skills": [
+        "Currículum Nacional de Educación Parvularia",
+        "adaptaciones educativas",
+        "estrategias pedagógicas diferenciadas",
+        "liderazgo de equipos",
+        "comunicación oral y escrita",
+        "herramientas tecnológicas básicas",
+        "planificación educativa"
+      ],
+      "nice_to_have_skills": [],
+      "soft_skills": []
+    },
+    "logistics": {
+      "location": null,
+      "requires_shift_work": false,
+      "modality": "Presencial"
+    },
+    "certifications": {
+      "mandatory_certs": []
+    },
+    "languages": {
+      "required_languages": []
+    }
+  },
+  "rubrica_post_procesada_R3_injection": {
+    "education": {
+      "required_degrees": [
+        "Educadora de Párvulos"
+      ],
+      "academic_level": "Universitario",
+      "kill_clause": true,
+      "inferred_field": null,
+      "is_inferred_degree": false
+    },
+    "experience": {
+      "min_years": 0,
+      "key_roles": [
+        "Educadora de Párvulos"
+      ],
+      "industry_mandatory": false,
+      "target_industries": []
+    },
+    "skills": {
+      "mandatory_skills": [
+        "Currículum Nacional de Educación Parvularia",
+        "adaptaciones educativas",
+        "estrategias pedagógicas diferenciadas",
+        "liderazgo de equipos",
+        "comunicación oral y escrita",
+        "herramientas tecnológicas básicas",
+        "planificación educativa"
+      ],
+      "nice_to_have_skills": [],
+      "soft_skills": [
+        "Liderazgo y coordinación de equipos",
+        "Proactividad",
+        "Creatividad",
+        "Resolución de desafíos pedagógicos"
+      ]
+    },
+    "logistics": {
+      "location": null,
+      "requires_shift_work": false,
+      "modality": "Presencial"
+    },
+    "certifications": {
+      "mandatory_certs": []
+    },
+    "languages": {
+      "required_languages": []
+    }
+  }
+}

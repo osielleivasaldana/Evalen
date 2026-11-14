@@ -15,7 +15,7 @@ import logging
 import re
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from app.models.resume import SectionDetection, SectionType
 
@@ -50,6 +50,17 @@ PROMPT_EXPERIENCE = r"""Eres un extractor de historial laboral. Extrae del texto
 4. Fechas: "Enero 2019" → "2019-01", "A la Fecha" → "Presente"
 5. NO mezcles información entre distintas experiencias.
 6. Si una experiencia no tiene fechas, NO las inventes. Usa null.
+7. ⛔ PROHIBIDO usar "N/A" en fechas: si el año está presente en la línea de la empresa o cerca de ella, extráelo SIEMPRE. "N/A" solo se permite si REALMENTE no hay ningún año en el texto.
+
+Few-Shot de layouts con separador pipe o guión-corta (CRÍTICO para fechas):
+Input: "Fundación San Carlos de Maipo | 2018 - 2023"
+Output: {"cargo": null, "empresa": "Fundación San Carlos de Maipo", "periodo": {"fecha_inicio": "2018", "fecha_fin": "2023", "texto_original": "Fundación San Carlos de Maipo | 2018 - 2023"}}
+
+Input: "Corporación Educativa – 2018–2023"
+Output: {"cargo": null, "empresa": "Corporación Educativa", "periodo": {"fecha_inicio": "2018", "fecha_fin": "2023", "texto_original": "Corporación Educativa – 2018–2023"}}
+
+Input: "Colegio A | ene 2018 - dic 2023"
+Output: {"cargo": null, "empresa": "Colegio A", "periodo": {"fecha_inicio": "2018-01", "fecha_fin": "2023-12", "texto_original": "Colegio A | ene 2018 - dic 2023"}}
 
 Output JSON: {"experiencias": [{"cargo": "...", "empresa": "...", "periodo": {"fecha_inicio": "...", "fecha_fin": "...", "texto_original": "..."}, "responsabilidades": ["...", "..."]}]}"""
 
@@ -660,7 +671,8 @@ class SectionExtractor:
                     method="exception",
                 )
             else:
-                output[key] = result
+                # cast solo-tipos: gather(return_exceptions=True) -> rama no-Exception es SectionResult
+                output[key] = cast(SectionResult, result)
 
         return output
 

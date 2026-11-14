@@ -207,7 +207,7 @@ async def test_scoring_llm_judge_evaluation():
     CANDIDATO: {json.dumps(scenario['candidate'], ensure_ascii=False)}
 
     SCORES GENERADOS:
-    {json.dumps(result.dict(), ensure_ascii=False, indent=2)}
+    {json.dumps(result.model_dump(), ensure_ascii=False, indent=2)}
 
     Evalúa usando la escala 1-5:
     5 = Perfectamente plausible y correcto

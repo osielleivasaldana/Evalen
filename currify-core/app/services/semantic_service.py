@@ -1,9 +1,62 @@
 
 import logging
-from typing import List, Set, Optional
+import re
+import unicodedata
+from typing import List, Set, Optional, Dict
 from app.services.llm_service import LLMService
 
 logger = logging.getLogger(__name__)
+
+# ──────────────────────────────────────────────────────────────────────────────
+# BUG 4 — Clusters de dominio para normalización de títulos (match exacto ANTES
+# de recurrir a embeddings/LLM). Genérico y extensible: agregar un dominio es
+# solo añadir entradas canonical → aliases (normalizadas sin tildes/puntuación).
+# ──────────────────────────────────────────────────────────────────────────────
+
+_JOB_TITLE_DOMAIN_CLUSTERS: Dict[str, List[str]] = {
+    # ── Educación ──
+    "educadora de párvulos": [
+        "educadora de parvulos", "educadora parvulos", "educadora párvulos",
+        "educadora inicial", "educadora de educacion inicial",
+        "educadora educación inicial", "educadora nivel medio",
+        "educadora de párvulos nivel medio", "educadora de parvulos nivel medio",
+        "educadora nivel transición", "educadora nivel transicion",
+        "educadora básica infantil", "educadora basica infantil",
+    ],
+    "profesor": ["profesora", "docente", "profesor de aula", "docente de aula", "profesor titular"],
+    "director/a escolar": ["directora escolar", "director escolar", "directora de colegio", "director de colegio"],
+    # ── Salud ──
+    "enfermera": ["enfermero", "enfermera clínica", "enfermera clinica", "enfermera universitaria", "enfermera asistencial"],
+    "médico cirujano": ["medico cirujano", "médico", "medico", "médico general", "medico general"],
+    "auxiliar paramédico": ["auxiliar paramedico", "técnico paramédico", "tecnico paramedico", "técnico en enfermería", "tecnico en enfermeria"],
+    "matrona": ["matrón", "matron", "matrona/r"],
+    "kinesiólogo": ["kinesiologo", "kinesióloga", "kinesiologa"],
+    "dentista": ["odontólogo", "odontologo", "odontóloga", "cirujano dentista"],
+    # ── Oficios ──
+    "electricista": ["electricista industrial", "electricista en mantenimiento", "electromecánico", "electromecanico"],
+    "gasfíter": ["gasfiter", "instalador de gas", "técnico en gas", "tecnico en gas"],
+    "carpintero": ["carpintera", "carpintero metálico", "carpintero metalico"],
+    # ── Tecnología (existentes) ──
+    "desarrollador de software": ["desarrollador", "programador", "software engineer", "developer", "full stack developer"],
+    "qa automation engineer": ["qa automation", "automatizador de pruebas", "qa engineer", "test automation engineer"],
+}
+
+
+def _normalize_title_key(title: str) -> str:
+    """Normaliza un título: lowercase, sin tildes, sin puntuación, espacios colapsados."""
+    t = unicodedata.normalize('NFD', str(title or '').lower())
+    t = ''.join(c for c in t if not unicodedata.combining(c))
+    t = re.sub(r'[^\w\s]', ' ', t)
+    return re.sub(r'\s+', ' ', t).strip()
+
+
+# Mapa alias-normalizado → canónico (construido una sola vez al importar)
+_ALIAS_TO_CANONICAL: Dict[str, str] = {}
+for _canonical, _aliases in _JOB_TITLE_DOMAIN_CLUSTERS.items():
+    _ALIAS_TO_CANONICAL[_normalize_title_key(_canonical)] = _canonical
+    for _alias in _aliases:
+        _ALIAS_TO_CANONICAL[_normalize_title_key(_alias)] = _canonical
+
 
 class SemanticService:
     """
@@ -194,8 +247,10 @@ class SemanticService:
     async def extract_skills_from_description(self, text: str) -> Set[str]:
         """
         Extracts implicit skills and domain knowledge from free text.
-        This handles cases where a candidate describes experience (e.g. "Managed a Magento store") 
-        but forgets to list "E-commerce" or "Magento" in their skills section.
+        DOMAIN-AGNOSTIC (hotfix parvularia): funciona para educación, salud,
+        oficios, retail, tecnología o cualquier industria. Handles cases where a
+        candidate describes experience (e.g. "Diseñé proyectos pedagógicos" or
+        "Managed a Magento store") but doesn't list the competency explicitly.
         """
         if not text or len(text) < 50:
             return set()
@@ -207,20 +262,36 @@ class SemanticService:
             truncated_text = text[:4000]
 
             prompt = f"""
-            You are a Technical Recruiter and Domain Expert.
-            
-            TASK: Analyze the following professional experience text and EXTRACT all technical skills, 
-            tools, software, methodologies, and DOMAIN KNOWLEDGE mentioned or strongly implied.
-            
+            You are an expert HR Analyst with deep knowledge across ALL industries and domains:
+            education, healthcare, construction, trades, retail, finance, logistics, law,
+            hospitality, agriculture, technology, and any other professional field.
+
+            TASK: Analyze the following professional experience text and EXTRACT all competencies
+            mentioned or strongly implied — tools, methodologies, domain knowledge, procedures,
+            certifications, and specialized techniques — REGARDLESS of industry.
+
             RULES:
-            1. Extract explicit tools (e.g., "Excel", "Python", "SAP").
-            2. Extract DOMAIN knowledge (e.g., "Retail", "E-commerce", "Banking", "Logistics"). 
+            1. Extract explicit tools and procedures from ANY domain
+               (e.g., "Excel", "Python", "SAP", "primeros auxiliares", "Triage", "conciliación bancaria").
+            2. Extract DOMAIN knowledge (e.g., "Retail", "E-commerce", "Banking", "Logistics",
+               "educación inicial", "atención de párvulos").
                If the text says "worked at Walmart", you MUST extract "Retail".
-            3. Extract implied roles/skills (e.g., "Managed cash register" -> "POS", "Cash Handling").
+               If the text says "diseñó proyectos pedagógicos", you MUST extract "proyectos pedagogicos".
+            3. Extract implied skills (e.g., "Managed cash register" -> "POS", "Cash Handling";
+               "apliqué primeros auxiliares" -> "primeros auxilios", "protocolos de emergencia";
+               "elaboré planificaciones por ámbitos" -> "planificacion curricular").
             4. Normalize to standard English or Spanish terms (lowercase).
             5. Return a flat JSON list of strings.
             6. Be generous but accurate.
-            
+
+            EXAMPLES (multi-domain):
+            Input: "Managed a Magento store"
+            Output: ["magento", "e-commerce"]
+            Input: "Diseñé proyectos pedagógicos para párvulos de nivel medio"
+            Output: ["proyectos pedagogicos", "educacion inicial", "planificacion curricular"]
+            Input: "Appliqué primeros auxiliares y protocolos de emergencia en obra"
+            Output: ["primeros auxilios", "protocolos de emergencia", "seguridad industrial"]
+
             TEXT TO ANALYZE:
             "{truncated_text}"
             
@@ -249,8 +320,15 @@ class SemanticService:
     async def normalize_job_titles(self, titles: List[str]) -> List[str]:
         """
         Normalizes job titles to a standard industry form to allow fuzzy matching.
-        Example: "Automatizador QA" -> "QA Automation Engineer"
-        Example: "Vendedor de Terreno" -> "Field Sales Representative"
+        
+        BUG 4 (hotfix parvularia): match EXACTO sobre título normalizado
+        (lowercase, sin tildes/puntuación) contra clusters de dominio ANTES de
+        recurrir al LLM. Los títulos resueltos localmente no generan llamada;
+        solo los pendientes van al LLM. Genérico y extensible vía
+        _JOB_TITLE_DOMAIN_CLUSTERS (educación, salud, oficios, tech...).
+        
+        Example: "Automatizador QA" -> "qa automation engineer"
+        Example: "Educadora de Párvulos Nivel Medio" -> "educadora de párvulos" (cluster, sin LLM)
         """
         if not titles:
             return []
@@ -261,42 +339,63 @@ class SemanticService:
             
             logger.info(f"👔 Normalizing Job Titles: {unique_titles}")
             
-            prompt = f"""
-            You are a HR Classification Expert.
+            # ── PASO 1: Match exacto contra clusters de dominio (sin LLM) ──
+            resolved: Dict[str, str] = {}
+            pending: List[str] = []
+            for title in unique_titles:
+                key = _normalize_title_key(title)
+                canonical = _ALIAS_TO_CANONICAL.get(key)
+                if canonical:
+                    resolved[title] = canonical.lower()
+                else:
+                    pending.append(title)
             
-            TASK: Normalize the following job titles to their STANDARD INDUSTRY FORM (English or Spanish Neutral).
-             The goal is to make them comparable.
-            
-            RULES:
-            1. Use the most common international standard (e.g., "QA Automation" is better than "Automatizador de Pruebas").
-            2. Preserve seniority if present (Senior, Junior, Lead).
-            3. Output a 1-to-1 mapped JSON list corresponding to the input order (or just a flat list of normalized unique titles).
-            4. If a title is already standard, keep it.
-            
-            INPUT TITLES:
-            {unique_titles}
-            
-            OUTPUT EXAMPLE:
-            Input: ["Jefe de Ventas", "Software Eng."]
-            Output: ["sales manager", "software engineer"]
-            
-            Return JSON list only.
-            """
-            
-            result_list = await self.llm_service.call_agent(
-                prompt=prompt,
-                input_data={},
-                stage_name="ROLE_NORMALIZATION",
-                temperature=0.0
-            )
-            
-            if result_list and isinstance(result_list, list):
-                normalized = [str(t).lower().strip() for t in result_list]
-                logger.info(f"👔 Normalized Titles Result: {normalized}")
-                return normalized
+            # ── PASO 2: Solo los pendientes van al LLM ──
+            if pending:
+                logger.info(f"👔 {len(pending)} título(s) sin cluster → ROLE_NORMALIZATION: {pending}")
                 
-            return unique_titles # Fallback
+                prompt = f"""
+                You are a HR Classification Expert.
+                
+                TASK: Normalize the following job titles to their STANDARD INDUSTRY FORM (English or Spanish Neutral).
+                 The goal is to make them comparable.
+                
+                RULES:
+                1. Use the most common international standard (e.g., "QA Automation" is better than "Automatizador de Pruebas").
+                2. Preserve seniority if present (Senior, Junior, Lead).
+                3. Output a 1-to-1 mapped JSON list corresponding to the input order (or just a flat list of normalized unique titles).
+                4. If a title is already standard, keep it.
+                
+                INPUT TITLES:
+                {pending}
+                
+                OUTPUT EXAMPLE:
+                Input: ["Jefe de Ventas", "Software Eng."]
+                Output: ["sales manager", "software engineer"]
+                
+                Return JSON list only.
+                """
+                
+                result_list = await self.llm_service.call_agent(
+                    prompt=prompt,
+                    input_data={},
+                    stage_name="ROLE_NORMALIZATION",
+                    temperature=0.0
+                )
+                
+                if result_list and isinstance(result_list, list):
+                    normalized_pending = [str(t).lower().strip() for t in result_list]
+                    for original, norm in zip(pending, normalized_pending):
+                        resolved[original] = norm
+                else:
+                    # Fallback: títulos pendientes sin cambios
+                    for original in pending:
+                        resolved[original] = original.lower()
+            
+            final = [resolved[t] for t in unique_titles]
+            logger.info(f"👔 Normalized Titles Result: {final}")
+            return final
             
         except Exception as e:
             logger.error(f"Error normalizing job titles: {e}")
-            return titles
+            return [t.lower().strip() for t in titles]

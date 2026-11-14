@@ -29,6 +29,11 @@ class RubricExperience(BaseModel):
 class RubricSkills(BaseModel):
     mandatory_skills: List[str] = Field(default_factory=list, description="Habilidades técnicas OBLIGATORIAS (Hard Skills)")
     nice_to_have_skills: List[str] = Field(default_factory=list, description="Habilidades deseables (Bonus points)")
+    # Batch-fix 2026-08-25 (F1/F2): blandas del lado de la oferta. Campo OPCIONAL y
+    # aditivo — retrocompatible con rúbricas persistidas (default []) y sin cambios
+    # de contrato HTTP. Las blandas NUNCA entran a mandatory_skills: el filtro
+    # anti-soft de DynamicRubricService las redirige aquí.
+    soft_skills: List[str] = Field(default_factory=list, description="Habilidades blandas requeridas por la oferta (NO obligatorias-técnicas)")
     
 class RubricLogistics(BaseModel):
     location: Optional[str] = Field(None, description="Ubicación física del trabajo (Ciudad/Comuna)")

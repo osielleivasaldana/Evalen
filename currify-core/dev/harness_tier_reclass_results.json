@@ -1,0 +1,280 @@
+{
+  "meta": {
+    "fecha": "2026-08-26",
+    "sdd": "docs/SDD Calidad de Scoring Fase 2 - Currify Core.md §4.3/§8-B.4/§10",
+    "modo": "LLM mockeado determinista (cero tokens); ruta REAL generate_rubric + matriz",
+    "flag_env": "RUBRIC_TIER_RECLASS",
+    "baseline_fase_a": {
+      "R4": 73.17,
+      "S4": 86.1
+    }
+  },
+  "escenarios": [
+    {
+      "scenario": "parvularia_golden_job",
+      "flag_off": {
+        "name": "parvularia_golden_job [flag=OFF]",
+        "overall": 86.1,
+        "recommendation": "strong_fit",
+        "breakdown": {
+          "skills_match": {
+            "score": 80.0,
+            "weight": 30.0,
+            "weighted": 24.0
+          },
+          "experience": {
+            "score": 100.0,
+            "weight": 25.0,
+            "weighted": 25.0
+          },
+          "education": {
+            "score": 100.0,
+            "weight": 15.0,
+            "weighted": 15.0
+          },
+          "cultural_fit": {
+            "score": 50.0,
+            "weight": 15.0,
+            "weighted": 7.5
+          },
+          "logistics": {
+            "score": 100.0,
+            "weight": 10.0,
+            "weighted": 10.0
+          },
+          "career_trajectory": {
+            "score": 92.0,
+            "weight": 5.0,
+            "weighted": 4.6
+          }
+        },
+        "judge_calls": 0,
+        "reclass_events": []
+      },
+      "flag_on": {
+        "name": "parvularia_golden_job [flag=ON]",
+        "overall": 86.1,
+        "recommendation": "strong_fit",
+        "breakdown": {
+          "skills_match": {
+            "score": 80.0,
+            "weight": 30.0,
+            "weighted": 24.0
+          },
+          "experience": {
+            "score": 100.0,
+            "weight": 25.0,
+            "weighted": 25.0
+          },
+          "education": {
+            "score": 100.0,
+            "weight": 15.0,
+            "weighted": 15.0
+          },
+          "cultural_fit": {
+            "score": 50.0,
+            "weight": 15.0,
+            "weighted": 7.5
+          },
+          "logistics": {
+            "score": 100.0,
+            "weight": 10.0,
+            "weighted": 10.0
+          },
+          "career_trajectory": {
+            "score": 92.0,
+            "weight": 5.0,
+            "weighted": 4.6
+          }
+        },
+        "judge_calls": 0,
+        "reclass_events": []
+      },
+      "delta_overall": 0.0,
+      "cae_mas_de_2pts": false,
+      "requisitos_reclasificados": []
+    },
+    {
+      "scenario": "parvularia_campana_real_R4 [PRIMARIO]",
+      "flag_off": {
+        "name": "parvularia_campana_real_R4 [PRIMARIO] [flag=OFF]",
+        "overall": 73.17,
+        "recommendation": "moderate_fit",
+        "breakdown": {
+          "skills_match": {
+            "score": 28.57,
+            "weight": 30.0,
+            "weighted": 8.57
+          },
+          "experience": {
+            "score": 100.0,
+            "weight": 25.0,
+            "weighted": 25.0
+          },
+          "education": {
+            "score": 100.0,
+            "weight": 15.0,
+            "weighted": 15.0
+          },
+          "cultural_fit": {
+            "score": 66.67,
+            "weight": 15.0,
+            "weighted": 10.0
+          },
+          "logistics": {
+            "score": 100.0,
+            "weight": 10.0,
+            "weighted": 10.0
+          },
+          "career_trajectory": {
+            "score": 92.0,
+            "weight": 5.0,
+            "weighted": 4.6
+          }
+        },
+        "judge_calls": 0,
+        "reclass_events": []
+      },
+      "flag_on": {
+        "name": "parvularia_campana_real_R4 [PRIMARIO] [flag=ON]",
+        "overall": 74.6,
+        "recommendation": "moderate_fit",
+        "breakdown": {
+          "skills_match": {
+            "score": 33.33,
+            "weight": 30.0,
+            "weighted": 10.0
+          },
+          "experience": {
+            "score": 100.0,
+            "weight": 25.0,
+            "weighted": 25.0
+          },
+          "education": {
+            "score": 100.0,
+            "weight": 15.0,
+            "weighted": 15.0
+          },
+          "cultural_fit": {
+            "score": 66.67,
+            "weight": 15.0,
+            "weighted": 10.0
+          },
+          "logistics": {
+            "score": 100.0,
+            "weight": 10.0,
+            "weighted": 10.0
+          },
+          "career_trajectory": {
+            "score": 92.0,
+            "weight": 5.0,
+            "weighted": 4.6
+          }
+        },
+        "judge_calls": 0,
+        "reclass_events": [
+          {
+            "requisito_original": "herramientas tecnológicas básicas",
+            "decision": "nice",
+            "pista_disparadora": "herramientas+basicas",
+            "destino": "nice_to_have_skills"
+          }
+        ]
+      },
+      "delta_overall": 1.43,
+      "cae_mas_de_2pts": false,
+      "requisitos_reclasificados": [
+        "herramientas tecnológicas básicas"
+      ]
+    },
+    {
+      "scenario": "qa_lead_golden_job",
+      "flag_off": {
+        "name": "qa_lead_golden_job [flag=OFF]",
+        "overall": 87.3,
+        "recommendation": "strong_fit",
+        "breakdown": {
+          "skills_match": {
+            "score": 84.0,
+            "weight": 30.0,
+            "weighted": 25.2
+          },
+          "experience": {
+            "score": 100.0,
+            "weight": 25.0,
+            "weighted": 25.0
+          },
+          "education": {
+            "score": 100.0,
+            "weight": 15.0,
+            "weighted": 15.0
+          },
+          "cultural_fit": {
+            "score": 50.0,
+            "weight": 15.0,
+            "weighted": 7.5
+          },
+          "logistics": {
+            "score": 100.0,
+            "weight": 10.0,
+            "weighted": 10.0
+          },
+          "career_trajectory": {
+            "score": 92.0,
+            "weight": 5.0,
+            "weighted": 4.6
+          }
+        },
+        "judge_calls": 0,
+        "reclass_events": []
+      },
+      "flag_on": {
+        "name": "qa_lead_golden_job [flag=ON]",
+        "overall": 87.3,
+        "recommendation": "strong_fit",
+        "breakdown": {
+          "skills_match": {
+            "score": 84.0,
+            "weight": 30.0,
+            "weighted": 25.2
+          },
+          "experience": {
+            "score": 100.0,
+            "weight": 25.0,
+            "weighted": 25.0
+          },
+          "education": {
+            "score": 100.0,
+            "weight": 15.0,
+            "weighted": 15.0
+          },
+          "cultural_fit": {
+            "score": 50.0,
+            "weight": 15.0,
+            "weighted": 7.5
+          },
+          "logistics": {
+            "score": 100.0,
+            "weight": 10.0,
+            "weighted": 10.0
+          },
+          "career_trajectory": {
+            "score": 92.0,
+            "weight": 5.0,
+            "weighted": 4.6
+          }
+        },
+        "judge_calls": 0,
+        "reclass_events": []
+      },
+      "delta_overall": 0.0,
+      "cae_mas_de_2pts": false,
+      "requisitos_reclasificados": []
+    }
+  ],
+  "criterios": {
+    "bloqueante_ningun_golden_cae_mas_de_2pts": true,
+    "exito_s10_r4_ge_74": true,
+    "exito_s43_estimacion_delta_ge_2": false
+  }
+}

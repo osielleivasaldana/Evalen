@@ -1,0 +1,1265 @@
+[
+  {
+    "name": "R1 PISO (blandas vacías + sims cero) [hipótesis producción-flat]",
+    "overall": 70.67,
+    "recommendation": "moderate_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 28.57,
+        "weight": 30.0,
+        "weighted": 8.57
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 50.0,
+        "weight": 15.0,
+        "weighted": 7.5
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "adaptaciones educativas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "comunicación oral y escrita": {
+        "banda": "JUDGE(0.5) ev=Reuniones periódicas con apoderados y comunidad educativa",
+        "credito": 0.5
+      },
+      "currículum nacional de educación parvularia": {
+        "banda": "SIN-CREDITO",
+        "credito": 0.0
+      },
+      "estrategias pedagógicas diferenciadas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "herramientas tecnológicas básicas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "liderazgo de equipos": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "cultural_trace": [],
+    "final_rubric": {
+      "education": {
+        "required_degrees": [
+          "Educadora de Párvulos"
+        ],
+        "academic_level": "Universitario",
+        "kill_clause": true,
+        "inferred_field": null,
+        "is_inferred_degree": false
+      },
+      "experience": {
+        "min_years": 0,
+        "key_roles": [
+          "Educadora de Párvulos"
+        ],
+        "industry_mandatory": false,
+        "target_industries": []
+      },
+      "skills": {
+        "mandatory_skills": [
+          "Currículum Nacional de Educación Parvularia",
+          "adaptaciones educativas",
+          "estrategias pedagógicas diferenciadas",
+          "liderazgo de equipos",
+          "comunicación oral y escrita",
+          "herramientas tecnológicas básicas",
+          "planificación educativa"
+        ],
+        "nice_to_have_skills": [],
+        "soft_skills": []
+      },
+      "logistics": {
+        "location": null,
+        "requires_shift_work": false,
+        "modality": "Presencial"
+      },
+      "certifications": {
+        "mandatory_certs": []
+      },
+      "languages": {
+        "required_languages": []
+      }
+    },
+    "judge_calls": [
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "adaptaciones educativas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.5,
+        "evidence": "Reuniones periódicas con apoderados y comunidad educativa"
+      },
+      {
+        "skill": "comunicación oral y escrita",
+        "score": 0.5,
+        "evidence": "Reuniones periódicas con apoderados y comunidad educativa"
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "estrategias pedagógicas diferenciadas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "herramientas tecnológicas básicas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "liderazgo de equipos",
+        "score": 0.0,
+        "evidence": null
+      }
+    ],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "expanded_skills_count": 10,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ]
+  },
+  {
+    "name": "R2 BLANDAS-SIN-PUENTE (blandas campaña + sims cero)",
+    "overall": 71.92,
+    "recommendation": "moderate_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 28.57,
+        "weight": 30.0,
+        "weighted": 8.57
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 58.33,
+        "weight": 15.0,
+        "weighted": 8.75
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "adaptaciones educativas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "comunicación oral y escrita": {
+        "banda": "JUDGE(0.5) ev=Reuniones periódicas con apoderados y comunidad educativa",
+        "credito": 0.5
+      },
+      "currículum nacional de educación parvularia": {
+        "banda": "SIN-CREDITO",
+        "credito": 0.0
+      },
+      "estrategias pedagógicas diferenciadas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "herramientas tecnológicas básicas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "liderazgo de equipos": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "cultural_trace": [
+      {
+        "blanda": "comunicación efectiva",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)",
+        "f1_fix_habría_creditado": true
+      },
+      {
+        "blanda": "liderazgo",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "trabajo en equipo",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)",
+        "f1_fix_habría_creditado": true
+      },
+      {
+        "blanda": "proactividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "creatividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "inclusión",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      }
+    ],
+    "final_rubric": {
+      "education": {
+        "required_degrees": [
+          "Educadora de Párvulos"
+        ],
+        "academic_level": "Universitario",
+        "kill_clause": true,
+        "inferred_field": null,
+        "is_inferred_degree": false
+      },
+      "experience": {
+        "min_years": 0,
+        "key_roles": [
+          "Educadora de Párvulos"
+        ],
+        "industry_mandatory": false,
+        "target_industries": []
+      },
+      "skills": {
+        "mandatory_skills": [
+          "Currículum Nacional de Educación Parvularia",
+          "adaptaciones educativas",
+          "estrategias pedagógicas diferenciadas",
+          "liderazgo de equipos",
+          "comunicación oral y escrita",
+          "herramientas tecnológicas básicas",
+          "planificación educativa"
+        ],
+        "nice_to_have_skills": [],
+        "soft_skills": []
+      },
+      "logistics": {
+        "location": null,
+        "requires_shift_work": false,
+        "modality": "Presencial"
+      },
+      "certifications": {
+        "mandatory_certs": []
+      },
+      "languages": {
+        "required_languages": []
+      }
+    },
+    "judge_calls": [
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "adaptaciones educativas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.5,
+        "evidence": "Reuniones periódicas con apoderados y comunidad educativa"
+      },
+      {
+        "skill": "comunicación oral y escrita",
+        "score": 0.5,
+        "evidence": "Reuniones periódicas con apoderados y comunidad educativa"
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "estrategias pedagógicas diferenciadas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "herramientas tecnológicas básicas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "liderazgo de equipos",
+        "score": 0.0,
+        "evidence": null
+      }
+    ],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "expanded_skills_count": 10,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ]
+  },
+  {
+    "name": "R3 INYECCION-PARSED (requisitos del parser -> mandatory)",
+    "overall": 71.61,
+    "recommendation": "moderate_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 28.57,
+        "weight": 30.0,
+        "weighted": 8.57
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 56.25,
+        "weight": 15.0,
+        "weighted": 8.44
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "adaptaciones educativas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "comunicación oral y escrita": {
+        "banda": "JUDGE(0.5) ev=Reuniones periódicas con apoderados y comunidad educativa",
+        "credito": 0.5
+      },
+      "currículum nacional de educación parvularia": {
+        "banda": "SIN-CREDITO",
+        "credito": 0.0
+      },
+      "estrategias pedagógicas diferenciadas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "herramientas tecnológicas básicas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "liderazgo de equipos": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "cultural_trace": [
+      {
+        "blanda": "comunicación efectiva",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)",
+        "f1_fix_habría_creditado": true
+      },
+      {
+        "blanda": "liderazgo",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "trabajo en equipo",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)",
+        "f1_fix_habría_creditado": true
+      },
+      {
+        "blanda": "proactividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "creatividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "inclusión",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      }
+    ],
+    "final_rubric": {
+      "education": {
+        "required_degrees": [
+          "Educadora de Párvulos"
+        ],
+        "academic_level": "Universitario",
+        "kill_clause": true,
+        "inferred_field": null,
+        "is_inferred_degree": false
+      },
+      "experience": {
+        "min_years": 0,
+        "key_roles": [
+          "Educadora de Párvulos"
+        ],
+        "industry_mandatory": false,
+        "target_industries": []
+      },
+      "skills": {
+        "mandatory_skills": [
+          "Currículum Nacional de Educación Parvularia",
+          "adaptaciones educativas",
+          "estrategias pedagógicas diferenciadas",
+          "liderazgo de equipos",
+          "comunicación oral y escrita",
+          "herramientas tecnológicas básicas",
+          "planificación educativa"
+        ],
+        "nice_to_have_skills": [],
+        "soft_skills": [
+          "Liderazgo y coordinación de equipos",
+          "Proactividad",
+          "Creatividad",
+          "Resolución de desafíos pedagógicos"
+        ]
+      },
+      "logistics": {
+        "location": null,
+        "requires_shift_work": false,
+        "modality": "Presencial"
+      },
+      "certifications": {
+        "mandatory_certs": []
+      },
+      "languages": {
+        "required_languages": []
+      }
+    },
+    "judge_calls": [
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "adaptaciones educativas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.5,
+        "evidence": "Reuniones periódicas con apoderados y comunidad educativa"
+      },
+      {
+        "skill": "comunicación oral y escrita",
+        "score": 0.5,
+        "evidence": "Reuniones periódicas con apoderados y comunidad educativa"
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "estrategias pedagógicas diferenciadas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "herramientas tecnológicas básicas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "liderazgo de equipos",
+        "score": 0.0,
+        "evidence": null
+      }
+    ],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "expanded_skills_count": 10,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ]
+  },
+  {
+    "name": "R4 REPLICA-CAL (blandas + puente CAL) [PRIMARIO]",
+    "overall": 73.17,
+    "recommendation": "moderate_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 28.57,
+        "weight": 30.0,
+        "weighted": 8.57
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 66.67,
+        "weight": 15.0,
+        "weighted": 10.0
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "adaptaciones educativas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "comunicación oral y escrita": {
+        "banda": "SIM 0.65-0.80 (0.75)",
+        "credito": 0.5
+      },
+      "currículum nacional de educación parvularia": {
+        "banda": "SIN-CREDITO",
+        "credito": 0.0
+      },
+      "estrategias pedagógicas diferenciadas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "herramientas tecnológicas básicas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "liderazgo de equipos": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "cultural_trace": [
+      {
+        "blanda": "comunicación efectiva",
+        "via": "PUENTE-SEMANTICO vs 'comunicación con apoderados' (sim=0.75)"
+      },
+      {
+        "blanda": "liderazgo",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "trabajo en equipo",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)",
+        "f1_fix_habría_creditado": true
+      },
+      {
+        "blanda": "proactividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "creatividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "inclusión",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      }
+    ],
+    "final_rubric": {
+      "education": {
+        "required_degrees": [
+          "Educadora de Párvulos"
+        ],
+        "academic_level": "Universitario",
+        "kill_clause": true,
+        "inferred_field": null,
+        "is_inferred_degree": false
+      },
+      "experience": {
+        "min_years": 0,
+        "key_roles": [
+          "Educadora de Párvulos"
+        ],
+        "industry_mandatory": false,
+        "target_industries": []
+      },
+      "skills": {
+        "mandatory_skills": [
+          "Currículum Nacional de Educación Parvularia",
+          "adaptaciones educativas",
+          "estrategias pedagógicas diferenciadas",
+          "liderazgo de equipos",
+          "comunicación oral y escrita",
+          "herramientas tecnológicas básicas",
+          "planificación educativa"
+        ],
+        "nice_to_have_skills": [],
+        "soft_skills": []
+      },
+      "logistics": {
+        "location": null,
+        "requires_shift_work": false,
+        "modality": "Presencial"
+      },
+      "certifications": {
+        "mandatory_certs": []
+      },
+      "languages": {
+        "required_languages": []
+      }
+    },
+    "judge_calls": [
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "adaptaciones educativas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "estrategias pedagógicas diferenciadas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "herramientas tecnológicas básicas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "liderazgo de equipos",
+        "score": 0.0,
+        "evidence": null
+      }
+    ],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "expanded_skills_count": 10,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ]
+  },
+  {
+    "name": "R5 F1-FIX (R4 + blandas declaradas del CV en el puente)",
+    "overall": 73.17,
+    "recommendation": "moderate_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 28.57,
+        "weight": 30.0,
+        "weighted": 8.57
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 66.67,
+        "weight": 15.0,
+        "weighted": 10.0
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "adaptaciones educativas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "comunicación oral y escrita": {
+        "banda": "SIM 0.65-0.80 (0.75)",
+        "credito": 0.5
+      },
+      "currículum nacional de educación parvularia": {
+        "banda": "SIN-CREDITO",
+        "credito": 0.0
+      },
+      "estrategias pedagógicas diferenciadas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "herramientas tecnológicas básicas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "liderazgo de equipos": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "cultural_trace": [
+      {
+        "blanda": "comunicación efectiva",
+        "via": "PUENTE-SEMANTICO vs 'comunicación efectiva' (sim=1.0)"
+      },
+      {
+        "blanda": "liderazgo",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "trabajo en equipo",
+        "via": "PUENTE-SEMANTICO vs 'trabajo colaborativo con familias' (sim=0.75)"
+      },
+      {
+        "blanda": "proactividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "creatividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "inclusión",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      }
+    ],
+    "final_rubric": {
+      "education": {
+        "required_degrees": [
+          "Educadora de Párvulos"
+        ],
+        "academic_level": "Universitario",
+        "kill_clause": true,
+        "inferred_field": null,
+        "is_inferred_degree": false
+      },
+      "experience": {
+        "min_years": 0,
+        "key_roles": [
+          "Educadora de Párvulos"
+        ],
+        "industry_mandatory": false,
+        "target_industries": []
+      },
+      "skills": {
+        "mandatory_skills": [
+          "Currículum Nacional de Educación Parvularia",
+          "adaptaciones educativas",
+          "estrategias pedagógicas diferenciadas",
+          "liderazgo de equipos",
+          "comunicación oral y escrita",
+          "herramientas tecnológicas básicas",
+          "planificación educativa"
+        ],
+        "nice_to_have_skills": [],
+        "soft_skills": []
+      },
+      "logistics": {
+        "location": null,
+        "requires_shift_work": false,
+        "modality": "Presencial"
+      },
+      "certifications": {
+        "mandatory_certs": []
+      },
+      "languages": {
+        "required_languages": []
+      }
+    },
+    "judge_calls": [
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "adaptaciones educativas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "estrategias pedagógicas diferenciadas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "herramientas tecnológicas básicas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "liderazgo de equipos",
+        "score": 0.0,
+        "evidence": null
+      }
+    ],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "expanded_skills_count": 13,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ]
+  },
+  {
+    "name": "R6 JUDGE-DOMINANTE (sin embeddings + judge generoso comunicacion=1.0)",
+    "overall": 73.64,
+    "recommendation": "moderate_fit",
+    "breakdown": {
+      "skills_match": {
+        "score": 34.29,
+        "weight": 30.0,
+        "weighted": 10.29
+      },
+      "experience": {
+        "score": 100.0,
+        "weight": 25.0,
+        "weighted": 25.0
+      },
+      "education": {
+        "score": 100.0,
+        "weight": 15.0,
+        "weighted": 15.0
+      },
+      "cultural_fit": {
+        "score": 58.33,
+        "weight": 15.0,
+        "weighted": 8.75
+      },
+      "logistics": {
+        "score": 100.0,
+        "weight": 10.0,
+        "weighted": 10.0
+      },
+      "career_trajectory": {
+        "score": 92.0,
+        "weight": 5.0,
+        "weighted": 4.6
+      }
+    },
+    "bands": {
+      "adaptaciones educativas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "comunicación oral y escrita": {
+        "banda": "JUDGE(1.0) ev=Reuniones periódicas con apoderados y comunidad educativa",
+        "credito": 1.0
+      },
+      "currículum nacional de educación parvularia": {
+        "banda": "SIN-CREDITO",
+        "credito": 0.0
+      },
+      "estrategias pedagógicas diferenciadas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "herramientas tecnológicas básicas": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "liderazgo de equipos": {
+        "banda": "JUDGE(0.0) ev=None",
+        "credito": 0.0
+      },
+      "planificación educativa": {
+        "banda": "LITERAL(texto)",
+        "credito": 1.0
+      }
+    },
+    "cultural_trace": [
+      {
+        "blanda": "comunicación efectiva",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)",
+        "f1_fix_habría_creditado": true
+      },
+      {
+        "blanda": "liderazgo",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "trabajo en equipo",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)",
+        "f1_fix_habría_creditado": true
+      },
+      {
+        "blanda": "proactividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "creatividad",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      },
+      {
+        "blanda": "inclusión",
+        "via": "FALLO (mejor puente=None:0.0 <=0.65)"
+      }
+    ],
+    "final_rubric": {
+      "education": {
+        "required_degrees": [
+          "Educadora de Párvulos"
+        ],
+        "academic_level": "Universitario",
+        "kill_clause": true,
+        "inferred_field": null,
+        "is_inferred_degree": false
+      },
+      "experience": {
+        "min_years": 0,
+        "key_roles": [
+          "Educadora de Párvulos"
+        ],
+        "industry_mandatory": false,
+        "target_industries": []
+      },
+      "skills": {
+        "mandatory_skills": [
+          "Currículum Nacional de Educación Parvularia",
+          "adaptaciones educativas",
+          "estrategias pedagógicas diferenciadas",
+          "liderazgo de equipos",
+          "comunicación oral y escrita",
+          "herramientas tecnológicas básicas",
+          "planificación educativa"
+        ],
+        "nice_to_have_skills": [],
+        "soft_skills": []
+      },
+      "logistics": {
+        "location": null,
+        "requires_shift_work": false,
+        "modality": "Presencial"
+      },
+      "certifications": {
+        "mandatory_certs": []
+      },
+      "languages": {
+        "required_languages": []
+      }
+    },
+    "judge_calls": [
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "adaptaciones educativas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 1.0,
+        "evidence": "Reuniones periódicas con apoderados y comunidad educativa"
+      },
+      {
+        "skill": "comunicación oral y escrita",
+        "score": 1.0,
+        "evidence": "Reuniones periódicas con apoderados y comunidad educativa"
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "estrategias pedagógicas diferenciadas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "herramientas tecnológicas básicas",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill_head": "Eres un evaluador de competencias (judge) NEUTRAL al dominio: educación, salud,\noficios, retail, tec",
+        "score": 0.0,
+        "evidence": null
+      },
+      {
+        "skill": "liderazgo de equipos",
+        "score": 0.0,
+        "evidence": null
+      }
+    ],
+    "norm_trace": [
+      {
+        "in": [
+          "Educadora de Párvulos",
+          "Educadora de Párvulos Nivel Medio",
+          "Educadora en programa comunitario"
+        ],
+        "out": [
+          "educadora de párvulos",
+          "educadora de párvulos",
+          "educadora en programa comunitario"
+        ]
+      },
+      {
+        "in": [
+          "Educadora de Párvulos"
+        ],
+        "out": [
+          "educadora de párvulos"
+        ]
+      }
+    ],
+    "expanded_skills_count": 10,
+    "expresas": [
+      "Fundación San Carlos de Maipo",
+      "Corporación Educacional B",
+      "Junta de Vecinos Los Aromos"
+    ]
+  }
+]

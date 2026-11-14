@@ -1,262 +1,451 @@
----
-name: Evalen
-description: AI-Powered Recruitment Platform
-colors:
-  ink: "#0a0f1d"
-  paper: "#ffffff"
-  paper-alt: "#f8fafc"
-  navy: "#0f172a"
-  brand: "#4f46e5"
-  brand-hover: "#4338ca"
-  brand-soft: "#eef2ff"
-  brand-foreground: "#a5b4fc"
-  accent: "#9333ea"
-  accent-soft: "#f3e8ff"
-  muted-slate: "#64748b"
-  cool-border: "#e2e8f0"
-  cool-surface: "#f1f5f9"
-  signal-green: "#16a34a"
-  signal-red: "#ef4444"
-  signal-amber: "#d97706"
-  oklch:
-    brand: "oklch(0.55 0.22 277)"
-    brand-hover: "oklch(0.52 0.22 277)"
-    accent: "oklch(0.55 0.28 301)"
-    brand-soft: "oklch(0.97 0.02 277)"
-typography:
-  display:
-    fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
-    fontSize: "clamp(2rem, 5vw, 3.5rem)"
-    fontWeight: 800
-    lineHeight: 1.1
-    letterSpacing: "-0.03em"
-  headline:
-    fontFamily: '"Plus Jakarta Sans", sans-serif'
-    fontSize: "clamp(1.25rem, 3vw, 1.875rem)"
-    fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: "-0.02em"
-  title:
-    fontFamily: '"Plus Jakarta Sans", sans-serif'
-    fontSize: "1.125rem"
-    fontWeight: 600
-    lineHeight: 1.3
-    letterSpacing: "-0.01em"
-  body:
-    fontFamily: '"Plus Jakarta Sans", sans-serif'
-    fontSize: "0.9375rem"
-    fontWeight: 400
-    lineHeight: 1.6
-    letterSpacing: "normal"
-  label:
-    fontFamily: '"Plus Jakarta Sans", sans-serif'
-    fontSize: "0.8125rem"
-    fontWeight: 500
-    lineHeight: 1.25
-    letterSpacing: "0.02em"
-rounded:
-  sm: "4px"
-  md: "6px"
-  lg: "8px"
-  xl: "16px"
-  full: "9999px"
-spacing:
-  xs: "4px"
-  sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "32px"
-  2xl: "48px"
-components:
-  button-primary:
-    backgroundColor: "{colors.brand}"
-    textColor: "{colors.paper}"
-    rounded: "{rounded.md}"
-    padding: "16px 32px"
-    typography: "{typography.label}"
-  button-primary-hover:
-    backgroundColor: "{colors.brand-hover}"
-    textColor: "{colors.paper}"
-    rounded: "{rounded.md}"
-    padding: "16px 32px"
-  button-outline:
-    backgroundColor: "transparent"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.md}"
-    padding: "14px 30px"
-  card-default:
-    backgroundColor: "{colors.paper}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.lg}"
-  input-default:
-    backgroundColor: "{colors.paper}"
-    rounded: "{rounded.md}"
-    padding: "10px 12px"
+# evalen — Sistema visual
+### Brand book & design tokens · v1 · abril 2026
+
+> *La IA lee. Los humanos deciden.* Y el diseño tiene que sonar a eso: a un **informe bien hecho**, no a un dashboard pintado con degradados. Este documento es, a la vez, la regla y el ejemplo. Copia el bloque que necesites — ya viene con su look.
+
+**Stack de referencia** (ver §09): `currify-front` = React + TypeScript + **Tailwind CSS** + componentes tipo shadcn/Radix. Tipografías vía fontsource CDN: **Fraunces** (serif), **Instrument Sans** (sans), **IBM Plex Mono** (mono). Dos temas: claro (por defecto) y oscuro, conmutables y persistidos en `localStorage['evalen-theme']`.
+
 ---
 
-# Design System: Evalen
+#### Leyenda de señales de este documento
+Usamos un vocabulario fijo para que escanees rápido. No es decoración: cada marca tiene un significado.
 
-## 1. Overview
+- **[MANIFIESTO]** un principio que manda sobre todo lo demás.
+- **[TOKEN]** un valor técnico copiable tal cual (hex, rem, px, easing, variable CSS).
+- **[SÍ] / [NO]** haz esto / no hagas esto.
+- **[GESTO]** un recurso de marca reconocible (losa verde, filigrana, cita, gauge, resaltado, nota a mano).
+- **[RECETA]** cómo componer el recurso paso a paso.
+- **[PRODUCTO]** anclaje a la app real y a su arquitectura (rutas, flujos, módulos).
+- **[⚠]** cuidado / patrón que huele a *AI slop* y cómo evitarlo.
 
-**Creative North Star: "Talento en evidencia"**
+En la paleta semántica, el color **es** la información: 🟢 `good` (≥ 80) · 🟡 `mid` (≥ 60) · 🔴 `low` (< 60).
 
-Evalen es una plataforma de reclutamiento que pone al candidato y al reclutador frente a datos, no frente a effects. La identidad visual es indigo y púrpura — una elección que rompe con el azul-corporativo del HR-tech heredado de LinkedIn y con el verde-IA que saturó el mercado en 2024-2025. Indigo comunica precisión técnica (es el color del instrumento, del IDE); púrpura aporta el contrapunto de singularidad (no es工作中的 "otro SaaS").
+---
 
-La interfaz es precisa como un instrumento y honesta como una tabla de datos. Cada píxel existe para que el reclutador decida más rápido y con menos sesgo — el diseño no compite con los datos, los sirve. Los colores son sólidos; la identidad no necesita gradients ni glassmorphism decorativo. El mayor momento de marca en toda la landing no es un efecto: es el parser procesando un CV real frente al usuario.
+## 00 · Manifiesto
 
-**Key Characteristics:**
-- Colores sólidos, sin gradients decorativos en CTAs, textos, o borders.
-- Indigo (`#4f46e5`) como color dominante (60-70% de presencia cromática); púrpura (`#9333ea`) como acento dosificado (10-15%) en highlights, badges diferenciadores, y un momento editorial por página.
-- Neutros fríos (slate) sobre fondos paper true white (no cream/sand warm-neutral) — el "AI default 2026" queda prohibido.
-- Táctil y seguro: botones con peso visual, hover evidente con indigo glow, feedback inmediato.
-- Modo oscuro nativo con navy `#0f172a` y foreground indigo `#a5b4fc`.
-- TypeScript color tokens vía OKLCH en CSS custom properties — todos los componentes referencian `--brand`, no hex.
+**[MANIFIESTO] 01 — Una familia tipográfica por función.** Fraunces es la *voz*; Instrument Sans son los *datos*; IBM Plex Mono son las *etiquetas*. Nunca mezclar roles. La serif no va en una tabla; la sans no va en un titular emocional; el mono no va en un párrafo.
 
-## 2. Colors: La Paleta Indigo y Púrpura
+**[MANIFIESTO] 02 — El recuadro es un acento, no un contenedor.** Por defecto el contenido vive sobre el papel y se separa con tipografía, espacio y líneas finas. Solo tres cosas merecen superficie propia: el objeto sobre el que *actúas*, un *callout* (cita o consejo) y una *barra de navegación*. Lo demás respira.
 
-La paleta se construye alrededor de indigo (precisión, confianza técnica) y púrpura (singularidad, diferenciación). Los neutros son fríos (slate) sobre paper true white — `#fdfdfd` y `#fafbfc` (off-whites cálidos) están prohibidos explícitamente por ser el "AI default 2026".
+**[MANIFIESTO] 03 — El drama viene del contraste y del vacío.** Un único héroe con escala grande y silencio alrededor destaca más que cuatro widgets gritando. Si todo tiene el mismo volumen visual, nada importa. *El aire entre bloques es jerarquía.*
 
-### Primary
+**[MANIFIESTO] 04 — El verde profundo es escaso, por eso funciona.** Es el color de la marca y de la "magia de IA" puntual. **Una losa verde por vista, como máximo.** Si lo pones en cada cabecera, deja de ser especial y la página se aplasta en una masa oscura.
 
-- **Brand Indigo** (`#4f46e5`, `oklch(0.55 0.22 277)`): El color principal de Evalen. Aparece en botones primarios, links, acentos de navegación, y elementos focus. Es sólido — nunca en gradient. Comunica precisión técnica y confianza.
-- **Brand Indigo Hover** (`#4338ca`, `oklch(0.52 0.22 277)`): Variante más profunda para hover states de botones primarios y elementos interactivos. Acompañado de `0 0 25px rgba(79, 70, 229, 0.35)` (indigo glow).
+**[MANIFIESTO] 05 — Decora con metáforas del producto, no con clichés.** La malla de nodos conectados no es adorno: es la imagen del *matching semántico* que hace `currify-core`. Un *sparkle* genérico o un *blob* aurora es slop; una metáfora del propio producto es diseño.
 
-### Secondary Accent
+---
 
-- **Accent Purple** (`#9333ea`, `oklch(0.55 0.28 301)`): El contrapunto de singularidad. Usado dosificado (10-15%) en: badges diferenciadores ("Top Match"), highlights únicos por sección, y un momento editorial por página. **No en CTAs primarios** (indigo domina la acción). **No en gradient backgrounds.**
+## 01 · Color
 
-### Neutral
+El sistema tiene **tres acentos con trabajo distinto** y un lienzo crema. Confundirlos es el error más común.
 
-- **Navy** (`#0f172a`): Fondo en modo oscuro y foreground de alto contraste.
-- **Ink** (`#0a0f1d`): Texto corporal en modo claro. Casi negro con tinte frío.
-- **Paper** (`#ffffff`): Fondo principal en modo claro. **True white, no off-white.** El warm-neutral cream/sand (`#fdfdfd`, `#fafbfc`, `#f8f5f0`) está prohibido por ser el AI-default.
-- **Paper Alt** (`#f8fafc`, `oklch(0.98 0.005 250)`): Fondo alternativo para secciones destacadas, con tinte frío mínimo hacia el propio hue de la marca (no hacia warm-by-default).
-- **Brand Soft** (`#eef2ff`, `oklch(0.97 0.02 277)`): Fondo tint-indigo para highlights editorialles, badges suaves, fondos de cards activas.
-- **Muted Slate** (`#64748b`): Texto secundario, placeholders, metadatos.
-- **Cool Border** (`#e2e8f0`): Bordes de inputs, dividers.
-- **Cool Surface** (`#f1f5f9`): Fondos secundarios, hover states de superficies neutral.
+| Acento | Variable | Claro | Oscuro | Trabajo (único) |
+|---|---|---|---|---|
+| Naranja | `--cta` | `#D64518` | `#FF6A38` | **La acción.** El único color de "haz clic aquí". Una acción primaria por vista. |
+| Naranja hover | `--ctah` | `#B5370F` | `#FF8455` | Hover del primario. |
+| Texto sobre naranja | `--ctatext` | `#FFF7EC` | `#10231A` | Legibilidad sobre `--cta`. |
+| Amarillo | `--yellow` | `#F3E94E` | `#F3E94E` | **Magia / destacar.** Resaltador `.hl`, punto "en vivo", badge de match, glow del gauge. |
+| Amarillo suave | `--yellow2` | `#FBF6AE` | `#5A5418` | Resaltador `.hl-soft` dentro de párrafos. |
+| Verde | `--green` | `#1C5B44` | `#5BAE88` | **Marca / éxito.** Acento positivo, eyebrows, iconos de criterio. |
+| Verde profundo | `--greendeep` | `#0F3A2C` | `#163528` | **Marca fuerte.** Logo, login, losa "magia IA", *una* card destacada. |
+| Verde tint | `--greentint` | `#E4ECE4` | `#1C3329` | Fondo de chip verde / hover suave. |
+| Sobre marca | `--onmark` | `#F6F1E6` | `#F1EBDC` | Texto e iconos sobre fondos oscuros. |
 
-### Dark Mode Brand Foreground
+**Lienzo y tinta**
 
-- **Brand Foreground** (`#a5b4fc`, `oklch(0.78 0.08 277)`): Indigo-claro para texto de marca y acentos sobre fondos oscuros. Reemplaza al `#2dd4bf` teal anterior.
+| Rol | Variable | Claro | Oscuro |
+|---|---|---|---|
+| Fondo app | `--paper` | `#F6F1E6` | `#0E1813` |
+| Fondo secundario / hover | `--paper2` | `#EFE7D6` | `#13201A` |
+| Superficie elevada (cards) | `--card` | `#FCFAF3` | `#16241C` |
+| Texto principal | `--ink` | `#15261E` | `#F1EBDC` |
+| Texto secundario | `--ink2` | `#4C5B51` | `#AAB6A8` |
+| Texto terciario / meta | `--ink3` | `#828E84` | `#7E8C7E` |
+| Divisor suave | `--line` | `rgba(21,38,30,.13)` | `rgba(241,235,220,.13)` |
+| Borde / divisor | `--line2` | `rgba(21,38,30,.24)` | `rgba(241,235,220,.26)` |
 
-### Semantic
+**[TOKEN] Contrato copiable — variables CSS** (pega en tu `:root`; el tema oscuro sobrescribe):
 
-- **Signal Green** (`#16a34a`): Éxito, completado.
-- **Signal Red** (`#ef4444`): Error, destructivo.
-- **Signal Amber** (`#d97706`): Advertencia.
+```css
+:root {
+  --paper:#F6F1E6; --paper2:#EFE7D6; --card:#FCFAF3;
+  --ink:#15261E; --ink2:#4C5B51; --ink3:#828E84;
+  --green:#1C5B44; --greendeep:#0F3A2C; --greentint:#E4ECE4; --onmark:#F6F1E6;
+  --yellow:#F3E94E; --yellow2:#FBF6AE;
+  --cta:#D64518; --ctah:#B5370F; --ctatext:#FFF7EC;
+  --good:#1C5B44; --goodt:#E4ECE4; --mid:#A9760F; --midt:#F6ECCF; --low:#B23B2E; --lowt:#F4DDD8;
+  --line:rgba(21,38,30,.13); --line2:rgba(21,38,30,.24);
+}
+html[data-theme="dark"] {
+  --paper:#0E1813; --paper2:#13201A; --card:#16241C;
+  --ink:#F1EBDC; --ink2:#AAB6A8; --ink3:#7E8C7E;
+  --green:#5BAE88; --greendeep:#163528; --greentint:#1C3329; --onmark:#F1EBDC;
+  --yellow:#F3E94E; --yellow2:#5A5418;
+  --cta:#FF6A38; --ctah:#FF8455; --ctatext:#10231A;
+  --good:#62B78F; --goodt:#173327; --mid:#E0A93A; --midt:#3A2E12; --low:#E0695A; --lowt:#3A1C18;
+  --line:rgba(241,235,220,.13); --line2:rgba(241,235,220,.26);
+}
+```
 
-### Named Rules
+### Tono semántico (good / mid / low)
+Cada puntaje de 0–100 que devuelve `scoring_service.py` se colorea por umbrales. Cada tono es un **par fondo/texto** para que chips y barras sean legibles en ambos temas.
 
-**The Solid Color Rule.** Todos los botones, links, CTAs, badges y borders de cards usan colores sólidos. Sin gradients en background, sin `background-clip: text` con gradient, sin glassmorphism en elementos interactivos. La identidad está en el color indigo mismo, no en un efecto sobre él.
+| Tono | Umbral | Texto claro / oscuro | Fondo claro / oscuro |
+|---|---|---|---|
+| 🟢 `good` | ≥ 80 | `#1C5B44` / `#62B78F` | `#E4ECE4` / `#173327` |
+| 🟡 `mid` | ≥ 60 | `#A9760F` / `#E0A93A` | `#F6ECCF` / `#3A2E12` |
+| 🔴 `low` | < 60 | `#B23B2E` / `#E0695A` | `#F4DDD8` / `#3A1C18` |
 
-**The Indigo-Purple Axis.** El indigo es dominante (60-70% de presencia cromática). El púrpura aparece dosificado (10-15%) como acento en badges diferenciadores, highlights únicos, y un momento editorial por página. Nunca compiten; el púrpura acentúa, no domina. **Stars de testimonios** usan púrpura-claro en dark y púrpura sólido en light — no amber.
+**[RECETA]** En JS, deriva el tono una sola vez y reutilízalo en anillo, barra y chip del mismo candidato, para que nunca se contradigan:
 
-**The True White Rule.** El fondo de cualquier superficie clara es `#ffffff` (paper) o como mucho `#f8fafc` (paper-alt, tinte frío mínimo hacia el hue de la marca). Nunca `#fdfdfd`, `#fafbfc`, `#f8f5f0`, ni ningún warm-neutral off-white. Esa banda es el AI-default de 2026.
+```js
+const toneOf = v => v >= 80 ? 'good' : v >= 60 ? 'mid' : 'low';
+```
 
-## 3. Typography
+### ¿Quién manda? (regla de prioridad del color)
 
-**Display & Body Font:** Plus Jakarta Sans (with -apple-system, BlinkMacSystemFont fallback stack)
+```
+   ACCIÓN (naranja)  ──►  una por vista, el CTA principal
+        │
+   MAGIA (amarillo)  ──►  destacar / IA / "en vivo" / .hl
+        │
+   MARCA (verde)     ──►  acento positivo; losa verde = 1 por vista
+        │
+   LIENZO (crema)    ──►  todo lo demás vive aquí, sin caja
+```
 
-Una sola familia versátil que cubre desde displays bold de 48px hasta labels de 13px. La elección de peso (300-800) y tracking crea la jerarquía sin necesidad de una segunda fuente.
+**[⚠]** El naranja y el amarillo **nunca compiten** en el mismo componente: amarillo *señala*, naranja *ejecuta*. Si un botón es amarillo, ya no es una acción, es un distintivo.
 
-**Character:** Geométrica pero humanista — técnica sin ser fría, redonda sin ser blanda. Las curvas abiertas (a, e, g) le dan la calidez que equilibra el indigo frío.
+---
 
-### Hierarchy
+## 02 · Tipografía
 
-- **Display** (800, `clamp(2rem, 5vw, 3.5rem)`, 1.1, -0.03em): Hero de landing page y títulos de alto impacto. `text-wrap: balance`.
-- **Headline** (700, `clamp(1.25rem, 3vw, 1.875rem)`, 1.2, -0.02em): Títulos de página interna. `text-wrap: balance`.
-- **Title** (600, `1.125rem`, 1.3, -0.01em): Títulos de cards, headers de tabla.
-- **Body** (400, `0.9375rem`, 1.6): Texto corrido. Máximo 75ch.
-- **Label** (500, `0.8125rem`, 1.25, 0.02em): Botones, badges, inputs.
+Tres familias, tres trabajos, cero ambigüedad. Cargadas con sus pesos reales (no sintéticos):
 
-### Named Rules
+- **Fraunces** — 400 / 500 / 600 / 700 + itálica 500 / 600. *La voz y la marca.*
+- **Instrument Sans** — 400 / 500 / 600 / 700. *Interfaz y datos.*
+- **IBM Plex Mono** — 400 / 500. *Etiquetas y metadatos.*
 
-**The One-Family Rule.** Plus Jakarta Sans en todos los roles. Sin segunda fuente display.
+### Escala de uso
 
-**The Minimum Size Rule.** Texto en mockups y data-dense surfaces mínimo `text-xs` (12px) en desktop; mínimo `text-[11px]` en mobile. Nunca `text-[9px]` ni `text-[10px]` para información que el reclutador necesita leer (nombres de candidatos, scores, badges).
+| Rol | Familia | Tamaño / peso | Tracking | Dónde |
+|---|---|---|---|---|
+| Hero / display | Fraunces | 2.4–4rem / 600 | -0.02em | Apertura de landing, titular de análisis |
+| Titular de sección | Fraunces | 1.3–1.8rem / 600 | -0.01em | Encabezados de bloque |
+| Veredicto / cita | Fraunces | 1.0–1.14rem / 500 *itálica* | normal | Insight de la IA, consejos |
+| Nombre / número héroe | Fraunces | 1.9–4.1rem / 600 | -0.02/-0.03em | Nombre del candidato, gauge numérico |
+| Wordmark | Fraunces | 1.35rem / 600 | -0.02em | `evalen` |
+| Título UI / dato | Instrument Sans | 1.05–1.3rem / 600–700 | -0.01em | Títulos de campaña, datos, expediente |
+| Cuerpo | Instrument Sans | 13–15px / 400 | normal | Texto corrido, justificaciones |
+| Botón | Instrument Sans | 13–15px / 600 | normal | Toda acción |
+| Eyebrow / label | IBM Plex Mono | 10–11px / 500 | +0.12–0.18em, **CAPS** | Etiquetas, secciones numeradas |
+| Chip de estado | IBM Plex Mono | 10.5px / 500 | +0.08–0.14em, CAPS | Etapas, niveles |
+| Meta / fecha / kbd | IBM Plex Mono | 10–11.5px / 400 | normal o +0.04em | Timestamps, contadores, atajos |
 
-## 4. Elevation
+**[SÍ]** Usa el mono en mayúsculas **solo en etiquetas cortas** (1–3 palabras).
+**[NO]** Párrafos enteros en CAPS: cansan la vista y gritan "plantilla".
 
-Evalen usa un sistema híbrido: sombras suaves para profundidad contextual (dropdowns, modales) y capas tonales para diferenciación de superficies en reposo.
+**[SÍ]** Contraste de tamaño *dentro* de una misma línea para crear jerarquía sin cajas: p. ej. un número en `2.2rem/700` seguido de su unidad en `12px/500 ink3`.
 
-### Shadow Vocabulary
+**[TOKEN] `tailwind.config` — fontFamily** (copia tal cual en `theme.extend`):
 
-- **Card Rest** (`0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)`): Cards en reposo.
-- **Card Hover** (`0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)`): Hover de cards interactivas.
-- **Dropdown** (`0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)`): Menús, popovers.
-- **Modal** (`0 25px 50px -12px rgb(0 0 0 / 0.25)`): Modales.
-- **Indigo Glow** (`0 0 25px rgb(79 70 229 / 0.35)`): Glow en botones primarios hover.
-- **Stat** (`0 4px 14px 0 rgb(79 70 229 / 0.25)`): Stat cards del dashboard.
+```js
+fontFamily: {
+  serif: ['Fraunces','Georgia','Times New Roman','serif'],
+  sans:  ['Instrument Sans','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'],
+  mono:  ['IBM Plex Mono','ui-monospace','SFMono-Regular','Menlo','monospace']
+}
+```
 
-### Named Rules
+---
 
-**The Flat-By-Default Rule.** Superficies planas en reposo. Sombras solo como respuesta a interacción.
+## 03 · Resaltado y notas a mano
 
-**The Colored Shadow Rule.** Sombras con tinto solo en elementos que refuerzan la identidad de marca (indigo glow en hover de botones primarios, indigo stat shadows en dashboard). Ningún otro elemento usa sombra tintada.
+Los dos gestos que hacen que el texto parezca *subrayado por una persona*. Úsalos con medida: resaltan, no decoran.
 
-## 5. Components
+### 03.1 · El marcador amarillo `.hl`
 
-### Buttons
+**[GESTO]** Un resaltado con puntas irregulares, como un rotulador pasado a mano. La variante `.hl-soft` es el mismo amarillo pero claro y sin skew, para resaltar dentro de párrafos sin tanto drama.
 
-- **Shape:** 6px radius. Tamaño compacto (h-10 default).
-- **Primary:** Fondo Brand Indigo (`#4f46e5`), texto blanco, padding 16px 32px. Hover: Brand Indigo Hover (`#4338ca`) con indigo glow. Focus: ring ink de 2px.
-- **Secondary / Outline:** Borde Cool Border, fondo transparente, texto Ink. Hover: fondo Cool Surface.
-- **Ghost:** Sin borde. Hover: fondo Cool Surface.
-- **Destructive:** Fondo Signal Red, texto blanco.
-- **Tamaños:** sm (h-9), default (h-10), lg (h-11), icon (h-10 w-10).
-- **Estados:** Disabled = opacidad 50%. Transición 200ms.
+**[TOKEN]**
 
-### Cards / Containers
+```css
+.hl {
+  background: linear-gradient(104deg,
+    transparent .6%, var(--yellow) 2.2%, var(--yellow) 96%, transparent 97.4%);
+  padding: .02em .2em; margin: 0 -.06em; border-radius: 3px;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+.hl-soft {
+  background: var(--yellow2); padding: .02em .22em; border-radius: 3px;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+}
+html[data-theme="dark"] .hl-soft { background: var(--yellow2); color: var(--ink); }
+```
 
-- **Shape:** 8px radius. Padding 24px.
-- **Standard Card:** Fondo Paper, borde Cool Border, shadow card-rest.
-- **Stat Card:** Bordered sólido `ring-2 ring-brand` o sin ring con shadow-stat. 16px radius. Exclusivo del dashboard.
-- **No Glass Cards.** El componente anterior "Glass Card" (`backdrop-blur` + `rgba(255,255,255,0.8)`) queda retirado del design system porque era glassmorphism decorativo sin función.
+**[RECETA] Por qué funciona:** el `linear-gradient` con `transparent` en los extremos da las *puntas* diagonales; `box-decoration-break: clone` hace que el resaltado se rompa correctamente cuando el texto salta de línea; el padding mínimo y el `border-radius: 3px` evitan que parezca un `<mark>` cuadrado de navegador.
 
-### Inputs / Fields
+### 03.2 · La anotación a mano `.hand-note`
 
-- **Shape:** 6px radius, borde Cool Border, fondo Paper, padding 10px 12px.
-- **Focus:** Ring Indigo de 2px con offset 2px (`#4f46e5`).
-- **Placeholder:** Muted Slate (`#64748b`) — verificar contraste 4.5:1.
-- **Error:** Borde Signal Red.
+**[GESTO]** Una flecha curva dibujada en SVG (trazo naranja, puntas redondeadas) + un texto en mono ligeramente rotado. Parece una nota garabateada al margen señalando algo.
 
-### Badges / Chips
+**[TOKEN] Contenedor**
 
-- **Shape:** Pill, padding 2.5px 10px, texto 13px semibold. Mínimo text-xs (12px) si el contexto aprieta — nunca 9-10px.
-- **Variants:** default (Navy), success (Signal Green), warning (Signal Amber), destructive (Signal Red), **brand** (Indigo sobre Brand Soft bg), **accent** (Purple sobre Accent Soft bg).
+```css
+.hand-note {
+  position: absolute; display: flex; align-items: center; gap: .5rem;
+  color: var(--cta); font-family: 'IBM Plex Mono', monospace;
+  font-size: .78rem; line-height: 1.3; max-width: 170px; pointer-events: none;
+}
+.hand-note svg { flex: none; overflow: visible; }
+```
 
-### Navigation (App Shell)
+**[RECETA] Tres variantes** (el trazo es el mismo SVG; cambia orientación y rotación):
 
-- **Sticky top bar** (z-50), fondo Paper sólido (no glass blur sobre content). Borde inferior Cool Border cuando scrolled; transparente en top.
-- **Desktop:** Hover a Brand Indigo. CTA primario en indigo sólido.
-- **Mobile:** Hamburger con panel slide-in sólido (no `backdrop-blur-3xl` sobre page).
+```html
+<!-- A · entra por la derecha, rotada -5° -->
+<div class="hand-note" style="right:-6px; top:-2px; transform:rotate(-5deg)">
+  <svg width="58" height="34" viewBox="0 0 58 34" fill="none"
+       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M54 4 C 38 4, 22 12, 8 26"/>      <!-- curva -->
+    <path d="M8 26 l 9 -1 M8 26 l 1 -9"/>       <!-- punta de flecha -->
+  </svg>
+  <span>¡este sí!</span>
+</div>
 
-## 6. Do's and Don'ts
+<!-- B · entra por la izquierda (espejada con scaleX(-1)) -->
+<div class="hand-note" style="left:-8px; bottom:-6px; transform:rotate(3deg); flex-direction:row-reverse">
+  <svg width="58" height="34" viewBox="0 0 58 34" fill="none" stroke="currentColor"
+       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1)">
+    <path d="M54 4 C 38 4, 22 12, 8 26"/><path d="M8 26 l 9 -1 M8 26 l 1 -9"/>
+  </svg>
+  <span class="text-right">se paga solo</span>
+</div>
 
-### Do:
+<!-- C · subrayado ondulado (sin texto, bajo una palabra) -->
+<svg width="150" height="12" viewBox="0 0 150 12" fill="none"
+     stroke="var(--cta)" stroke-width="2.4" stroke-linecap="round">
+  <path d="M2 7 C 20 2, 34 11, 52 6 S 86 2, 104 7 S 134 11, 148 5"/>
+</svg>
+```
 
-- **Do** usar Brand Indigo (`#4f46e5`) como color sólido en botones, links, focus rings, y elementos interactivos principales.
-- **Do** usar Accent Purple (`#9333ea`) como acento dosificado (10-15%) en badges diferenciadores, highlights únicos, y un momento editorial por página.
-- **Do** mantener neutros fríos (slate) sobre paper true white `#ffffff` o `#f8fafc`.
-- **Do** usar colores sólidos en CTAs — sin gradients, sin text-gradient, sin gradient borders.
-- **Do** reservar el indigo glow solo para hover de botones primarios y stat cards del dashboard.
-- **Do** mantener 8px de padding como estándar en cards.
-- **Do** usar Signal Green / Red / Amber semánticos para estados (no para decoración).
-- **Do** mostrar el producto real funcionando: el hero de la landing procesa un CV live contra el backend, no un loop animado.
+**[⚠]** Máximo **una** nota a mano por zona visible. Dos ya parecen un cuaderno de primaria; cero en una vista de datos densos está bien. Son un *acento humano*, no un patrón de layout.
 
-### Don't:
+---
 
-- **Don't** usar gradients en botones, CTAs, texto (`background-clip: text`), o borders (1px gradient wrappers). Colores sólidos siempre, `ring-2 ring-brand` para destacar.
-- **Don't** usar teal, amber, ni la combinación teal+ámbar como paleta de marca — fue la paleta anterior y caía en el SaaS-look que queremos romper. Tampoco azul-corporativo (`#0072EF`-style), ni verde-IA. La diferenciación es indigo/púrpura.
-- **Don't** usar glassmorphism decorativo (`backdrop-blur` sobre superficies que no necesitan leer a través). La navbar y el mobile menu usan bg sólido.
-- **Don't** usar side-stripe borders (`border-l`, `border-r`, o top-stripe `border-t` de >1px) como acento de cards o callouts. Bordes uniformes o nada.
-- **Don't** usar tiny uppercase tracked eyebrow (`text-xs uppercase tracking-wider`) como cadencia por defecto sobre cada sección. Un eyebrow deliberado como sistema de marca, en una sola sección de la página, es voz; el eyebrow en cada sección es AI grammar.
-- **Don't** usar numbered "01/02/03" section markers como scaffolding automático. Los números ganan su lugar cuando la sección ES una secuencia (3-pasos de un workflow, timeline ordenado); uno deliberado por página ok, en cada sección no.
-- **Don't** usar `text-[9px]` ni `text-[10px]` en mockups, badges, o cualquier texto que el reclutador necesita leer. Mínimo `text-xs` (12px).
-- **Don't** usar placeholders con bajo contraste (gray-pálido sobre warm-neutral).
-- **Don't** superponer cards (nested cards).
-- **Don't** usar grain overlay / SVG noise como textura "AI-quality" en la landing.
-- **Don't** usar aurora orbs (`blur-100px animate-orb`) como background del hero.
-- **Don't** usar logos de empresas que no son clientes (Stripe, Spotify, Notion, etc.), ni métricas inventadas, ni testimonials con nombres genéricos en empresas-fake ("TechCorp", "FutureLabs"). Si no hay prueba real, omitir la sección.
+## 04 · Gestos de marca
+
+Cuatro recursos que "suenan" a Evalen. Cada uno con su **cuándo sí / cuándo no**. El error típico es usar los cuatro a la vez: elige **uno por zona**.
+
+### 04.1 · Losa verde profunda
+**[GESTO]** Fondo `--greendeep` con un *glow* radial amarillo en una esquina y la malla de nodos en crema al ~8%. Es el gesto de "aquí pasa magia de marca/IA".
+
+**[SÍ]** Pantalla de login, bloque *Smart Fill* del wizard, **una** card de stat destacada por vista.
+**[NO]** Cabecera de contenido (ahí el fondo es *papel*; ver §04.2). Repetirla en cada sección aplasta la jerarquía.
+
+### 04.2 · Filigrana de nodos (membrete de informe)
+**[GESTO]** La misma malla semántica, pero en **tinta** al ~5% sobre fondo claro. Convierte una card en la portada de un *expediente*. Es la metáfora visual del matching: nodos = criterios/candidatos conectados.
+
+**[TOKEN] SVG base** (recorta el `viewBox` a tu proporción; `preserveAspectRatio="xMidYMid slice"`):
+
+```html
+<svg aria-hidden="true" class="report-watermark"
+     style="position:absolute;inset:0;width:100%;height:100%;opacity:.05;color:var(--ink)"
+     viewBox="0 0 760 320" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1">
+  <g>
+    <line x1="40" y1="48" x2="150" y2="34"/><line x1="150" y1="34" x2="262" y2="78"/>
+    <line x1="262" y1="78" x2="384" y2="42"/><line x1="384" y1="42" x2="506" y2="96"/>
+    <line x1="262" y1="78" x2="322" y2="146"/><line x1="150" y1="34" x2="92" y2="134"/>
+    <line x1="92" y1="134" x2="212" y2="166"/><line x1="322" y1="146" x2="452" y2="188"/>
+  </g>
+  <g fill="currentColor" stroke="none">
+    <circle cx="40" cy="48" r="2.2"/><circle cx="384" cy="42" r="2.2"/><circle cx="322" cy="146" r="2.2"/>
+    <circle class="animate-nodepulse" cx="150" cy="34" r="3"/>
+    <circle class="animate-nodepulse" cx="262" cy="78" r="3" style="animation-delay:.9s"/>
+  </g>
+</svg>
+```
+
+**[RECETA] Opacidad por fondo:** sobre *papel* → nodos en `var(--ink)` al **5%**; sobre *losa verde* → nodos en `var(--onmark)` al **7–8%**. Nunca por encima: es agua, no pared.
+
+### 04.3 · Cita con barra lateral
+**[GESTO]** `border-left: 2px solid var(--cta)` + padding izquierdo + texto en Fraunces itálica. Es el "diagnóstico" del informe.
+
+**[SÍ]** Veredicto de la IA, consejos, extractos literales del CV.
+**[NO]** Texto neutro sin carga de voz (ahí, sans normal).
+
+### 04.4 · Gauge / anillo de match
+**[GESTO]** Arco de **270°** (no un donut cerrado), trazo con el color del tono (`--hero` = color del tono del match), *glow* tenue detrás, y el número en Fraunces con **count-up** sincronizado al arco. Es el héroe del análisis IA.
+
+**[TOKEN] Geometría** (para `size` y `stroke` dados): `r = (size - stroke)/2`; `circ = 2πr`; arco visible = `circ * 0.75`; offset final = `arcoVisible * (1 - pct/100)`. Rotar el SVG `135°` para que el gap quede abajo.
+
+**[RECETA] Count-up + arco** (ease-out, 1.2 s; siempre con *fallback* para `prefers-reduced-motion`):
+
+```js
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const vis = circ * 0.75, finalOff = vis * (1 - pct / 100);
+if (reduce) { num.textContent = pct; prog.style.strokeDashoffset = finalOff; return; }
+prog.style.strokeDashoffset = finalOff;            // el arco anima por transición CSS
+let start = null; const ease = t => 1 - (1 - t) ** 3;
+(function step(ts){ if(!start) start = ts; const p = Math.min(1,(ts-start)/1200);
+  num.textContent = Math.round(ease(p) * pct);
+  p < 1 ? requestAnimationFrame(step) : num.textContent = pct; })(performance.now());
+```
+
+**[SÍ]** Héroe del análisis, anillo de avatar en el drawer.
+**[NO]** Repetirlo en cada fila de una tabla (ahí: número tabular + barra fina).
+
+---
+
+## 05 · Componentes
+
+### 05.1 · Botones
+Tres tipos. La regla de oro: **una acción naranja por vista.**
+
+| Tipo | Uso | Construcción |
+|---|---|---|
+| Primario | La acción principal | `bg-cta text-ctatext shadow-cta hover:bg-ctah hover:-translate-y-0.5` |
+| Ghost / secundario | Lo demás | `border border-line2 bg-card text-ink hover:border-ink` |
+| Oscuro / marca | Acciones "de sistema" sobre claro | `bg-greendeep text-onmark` |
+
+Radio `xl` (12 px). Icono a la derecha con micro-desplazamiento en hover (`group-hover:translate-x-0.5`). Foco visible con anillo del color del botón.
+
+### 05.2 · Chips de estado
+Píldora mono en CAPS con punto de tono. Usa el par semántico del §01:
+
+```html
+<span class="inline-flex items-center gap-1.5 rounded-full bg-goodt px-2.5 py-1
+             font-mono text-[10.5px] font-medium uppercase tracking-wide text-good">
+  <span class="h-1.5 w-1.5 rounded-full bg-good"></span> En entrevista
+</span>
+```
+
+### 05.3 · Campos
+Radio `xl`, borde `line2`, foco en `green` con anillo suave (`focus:ring-2 focus:ring-green/25`). Label en mono CAPS `11px`. Checkbox/radio con `accent-cta`. Inputs sobre fondo oscuro (p. ej. dentro de una losa) usan fondo **claro fijo** para legibilidad, no transparente.
+
+### 05.4 · La regla del recuadro (la más importante)
+
+```
+  [NO]  todo en cajas              [SÍ]  cajas solo como acento
+  ┌──────────┐                     Título que fluye sobre el papel
+  │  caja    │                     Texto separado por una línea fina…
+  ├──────────┤                     ┌──────────────────────────────┐
+  │  caja    │                     │ …y UNA caja, porque es       │
+  ├──────────┤                     │    accionable / callout.     │
+  │  caja    │                     └──────────────────────────────┘
+  └──────────┘
+```
+
+**[SÍ] Merecen superficie propia:** (1) el objeto sobre el que actúas, (2) un callout, (3) una barra de navegación. **Todo lo demás** (experiencia, formación, habilidades, resumen) vive como **documento fluido**: etiqueta mono + título sans + contenido, separados por *hairlines* y aire.
+
+---
+
+## 06 · Espacio, radios, sombras, grano
+
+**Radios** — `full` (chips) · `2xl`/16 px (losas, cards) · `xl`/12 px (inputs, botones) · `lg`/9 px (botones sm, icon-btn).
+
+**Sombras** (nombres del sistema):
+
+| Nombre | Valor | Uso |
+|---|---|---|
+| `soft` | `0 10px 26px -18px rgba(15,40,30,.45)` | Cards en hover |
+| `card` | `0 22px 48px -28px rgba(15,40,30,.5)` | Losas / contenedores |
+| `pop` | `0 18px 40px -22px rgba(15,40,30,.55)` | Menús / drawer |
+| `cta` | `0 12px 22px -12px rgba(214,69,24,.6)` | Botón primario |
+| `gold` | `0 10px 24px -12px rgba(243,233,78,.45)` | Badge / match |
+| `ring` | `0 14px 30px -16px rgba(15,40,30,.45)` | Anillo flotante |
+
+**Contenedor** — `max-width 1240px`; padding lateral `24px` (móvil) / `32px` (desktop). Entre secciones `mt-10`/`mt-12`; grids `gap-5`/`gap-6`.
+
+**Grano** — una capa fija sobre toda la app, `opacity .04–.05`, `mix-blend-mode: overlay`, con un SVG de `feTurbulence`. Evita que el fondo crema se vea "plástico". **No** lo subas de 0.06 o ensucia.
+
+---
+
+## 07 · Movimiento
+
+**[MANIFIESTO]** Animación con *feedback*, nunca por decorar. Easing estándar del sistema: `cubic-bezier(.2,.7,.2,1)`. **Todo** respeta `prefers-reduced-motion` (en reduce: sin animación y los valores finales aplicados de inmediato).
+
+| Animación | Duración / easing | Dónde |
+|---|---|---|
+| Reveal on scroll | .6 s ease (opacity + translateY 18 px) | Secciones al entrar |
+| Count-up + gauge | 1.2 s ease-out | Héroe del análisis |
+| Barra que se llena | 1 s ease | Criterios, skills |
+| Hover lift | .18–.25 s | Botones, cards (`-translate-y-0.5`) |
+| Acordeón | .32 s (`grid-template-rows 0fr→1fr`) | Razonamiento por criterio |
+| Drawer | .34 s ease (`translateX`) | Panel de candidato |
+| Pulse "en vivo" | 2.2 s infinito (box-shadow) | Punto amarillo de estado |
+| Node pulse | 3.6 s infinito (opacity) | Nodos de la filigrana |
+| Flash de vínculo | 1.5 s (fondo amarillo → transparente) | Salto criterio → evidencia |
+
+**[⚠]** Si una animación no *responde* a algo (input, scroll, estado), probablemente sobra. El pulse del punto "en vivo" se justifica porque comunica *estado*; un blob flotando de fondo, no.
+
+---
+
+## 08 · Patrones de composición
+
+Recetas de las estructuras que ya resolvimos, para que las repliques sin reinventar.
+
+**Cabecera de decisión (una vista, un héroe).** Tres zonas separadas por *aire*, sin hairlines entre ellas: (1) **héroe** = gauge + número monumental + chip de nivel; (2) **identidad** = avatar pequeño + nombre en serif + contactos como *texto con icono* (no píldoras); (3) **veredicto** = cita con barra lateral + dos filas "suma / falta" con punto de color. Una sola caja en toda la portada. Sello mono de marca arriba, acciones a la derecha.
+
+**Banda del juicio (compacta, horizontal).** "Por qué esta nota": los criterios como filas con barra + nota siempre visibles y el **razonamiento colapsado** por defecto (*progressive disclosure*: solo lo abres cuando dudas). Al lado, fortalezas/brechas en dos columnas con un divisor vertical, **sin caja**.
+
+**Expediente como documento + índice de anclas (NO tabs).** Las secciones (Resumen · Experiencia · Formación · Habilidades) están **todas en scroll continuo**; un índice *sticky* arriba solo te lleva y marca la activa con scroll-spy. **Nunca** ocultes evidencia detrás de una pestaña en una pantalla de *verificación*.
+
+**Vínculo criterio → evidencia.** Cada criterio y cada barra del gauge es clicable: al pulsar, salta a la sección del expediente y le da un *flash* amarillo de 1.5 s. Así el reclutador audita el veredicto contra el CV **sin cambiar de contexto**. Este es el gesto que convierte la vista de "informe estático" en "herramienta de auditoría".
+
+---
+
+## 09 · Conexión con el producto
+
+**[PRODUCTO]** Estos tokens viven en `currify-front` (React + Tailwind). Mapeo de gesto → pantalla, alineado con los flujos de la arquitectura:
+
+| Pantalla / ruta | Gesto dominante | Nota |
+|---|---|---|
+| `/` Landing | Serif hero + resaltado `.hl` + losa verde *una vez* | CTA → `/login?plan=free` o `?plan=pro` |
+| `/login` | Losa verde con foto + cita | Preserva `?plan=` en OAuth state |
+| `/onboarding`, `/checkout` | Losa verde / foco sin distracciones | Checkout omite navbar |
+| `/dashboard` | Cards sobre papel; *una* card verde destacada | Métricas + cola de decisiones |
+| Wizard *Nueva campaña* | Smart Fill = losa verde premium | Genera rúbrica en `currify-core` |
+| Campaña · candidatos | Tabla sobre papel + drawer | Drawer = anillo + expediente |
+| **Análisis IA** | **Gauge héroe + cita + expediente con índice** | Cruza CV (core) × rúbrica (campaña) |
+
+**Nota técnica de robustez:** cuando uses Tailwind vía Play CDN, añade un *safety-net* de reglas `:where(html[data-theme="light"]) .bg-card{…}` etc., para que el modo claro no quede "blanco con líneas negras" si el CDN no genera alguna utilidad. Las clases `t-*` (`t-ink`, `t-card`, `t-line2`…) son ese respaldo y se aplican junto a las utilidades.
+
+**Nota de datos:** los colores de tono (§01) deben derivarse del `match`/`score` que persiste `currify-back` tras el scoring de `currify-core`, no hardcodearse por candidato. Un mismo componente (anillo, barra, chip) lee el tono una vez y lo reusa.
+
+---
+
+## 10 · Reglas de oro (anti‑slop)
+
+| [NO] | [SÍ] |
+|---|---|
+| Degradados violeta / rosa / índigo genéricos | Verde profundo + amarillo de marca, con propósito |
+| Un recuadro alrededor de cada bloque | Recuadro solo como acento (3 casos) |
+| Una tipografía para todo (Inter / Roboto / Arial) | Tres familias por función |
+| Hero centrado "título + subtítulo + CTA" | Apertura característica con jerarquía |
+| Losa verde en cada cabecera | Una por vista; cabeceras sobre papel |
+| Párrafos enteros en MAYÚSCULAS | Mono en CAPS solo en etiquetas cortas |
+| Sparkles / blobs / auroras decorativos | Metáforas del producto (malla = matching) |
+| Repetir la misma info en 3 widgets | Un héroe + la evidencia anclada debajo |
+| Tabs que ocultan evidencia en pantallas de revisión | Documento continuo + índice de anclas |
+
+**[⚠] La regla madre:** el *slop* no es el color crema ni la serif; el *slop* es usar **cualquier cosa por inercia**. El crema de Evalen no es cliché porque tiene una lógica (informe editorial, verde escaso como marca, naranja como única acción). Rompe la lógica y cualquier paleta —incluso esta— se vuelve genérica.
+
+---
+
+## 11 · Checklist para una vista nueva
+
+1. **[MANIFIESTO]** ¿Cuál es el **héroe único** de esta pantalla? Dale escala y silencio alrededor.
+2. Asigna familia por rol: voz = Fraunces · dato = Sans · etiqueta = Mono.
+3. Cuenta los recuadros: si pasan de 2–3, convierte el resto en documento fluido.
+4. ¿Usas verde profundo? Que sea **una vez** y con motivo; si no, papel.
+5. Color de estado por tono (good/mid/low); **acción solo en naranja** (una por vista).
+6. Añade **un** gesto humano (resaltado o nota) y movimiento con feedback + `reduced-motion`.
+7. Si hay veredicto + evidencia: una vista, dos ritmos, y **vínculo** entre ambos.
+8. Pasa el filtro del §10: si algo está "porque sí", quítalo.
+
+---
+
+*Evalen · Sistema visual v1 · La IA lee, los humanos deciden.*
+*Documento vivo: los tokens de §01–§02 son el contrato; el resto, la forma de usarlos con criterio.*

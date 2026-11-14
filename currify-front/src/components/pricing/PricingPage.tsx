@@ -56,8 +56,15 @@ const PricingPage: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [plans, setPlans] = useState<any[]>(defaultPlans);
-    
-    // Contact Modal States
+    const [isDark, setIsDark] = useState(() => {
+        try {
+            const t = localStorage.getItem('evalen-theme');
+            if (t === 'dark') return true;
+            if (t === 'light') return false;
+            return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+        } catch { return false; }
+    });
+
     const [showContactModal, setShowContactModal] = useState(false);
     const [contactForm, setContactForm] = useState({
         name: '',
@@ -67,6 +74,10 @@ const PricingPage: React.FC = () => {
     });
     const [sendingContact, setSendingContact] = useState(false);
     const [contactSuccess, setContactSuccess] = useState(false);
+
+    useEffect(() => {
+        document.documentElement.classList.toggle('dark', isDark);
+    }, [isDark]);
 
     useEffect(() => {
         const fetchPlans = async () => {
@@ -102,43 +113,38 @@ const PricingPage: React.FC = () => {
 
     const handleUpgrade = async () => {
         if (!apiService.isAuthenticated()) {
-            // Redirect to login preserving the intent
             navigate('/login?redirect=/pricing');
             return;
         }
-
-        // Redirect to the Checkout Page for review
         navigate('/checkout');
     };
 
     const handleContactSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSendingContact(true);
-        // Simulate API call to send email/register request
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setSendingContact(false);
         setContactSuccess(true);
-        // Reset form
         setContactForm({ name: '', email: '', company: '', message: '' });
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans">
+        <div className="min-h-screen bg-ev-paper font-sans antialiased [text-rendering:optimizeLegibility] dark:bg-[#0E1813]">
+            {/* film grain overlay */}
+            <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-40 bg-grain opacity-[0.04] mix-blend-multiply dark:mix-blend-overlay dark:opacity-[0.05]" />
+
             <Navbar />
 
             <div className="relative pt-24 pb-12 overflow-hidden">
-                {/* Background Decoration */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-                    <div className="absolute top-[-10%] left-[20%] w-[40%] h-[40%] bg-purple-400/20 rounded-full blur-[100px]"></div>
-                    <div className="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] bg-blue-400/20 rounded-full blur-[100px]"></div>
-                </div>
-
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-base font-semibold text-indigo-600 tracking-wide uppercase">Precios</h2>
-                    <p className="mt-1 text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
+                    <span className="inline-flex items-center gap-1.5 font-mono text-[11px] tracking-[0.16em] uppercase text-ev-green dark:text-[#5BAE88]">
+                        <span className="h-2 w-2 rounded-full bg-ev-cta dark:bg-[#FF6A38]" />
+                        Precios
+                    </span>
+                    <h1 className="mt-3 font-serif text-[2.6rem] font-semibold leading-[1.08] tracking-tight text-ev-ink dark:text-[#F1EBDC] sm:text-5xl">
                         Planes para cada etapa
-                    </p>
-                    <p className="max-w-xl mt-5 mx-auto text-xl text-gray-500">
+                    </h1>
+                    <p className="mt-4 text-[15px] leading-relaxed text-ev-ink2 max-w-xl mx-auto dark:text-[#AAB6A8]">
                         Elige el plan que mejor se adapte a tus necesidades de reclutamiento.
                     </p>
                 </div>
@@ -150,36 +156,35 @@ const PricingPage: React.FC = () => {
                         const isPro = p.tier === 'PRO';
                         const isEnterprise = p.tier === 'ENTERPRISE';
                         return (
-                            <div 
+                            <div
                                 key={p.tier}
-                                className={`relative bg-white rounded-3xl shadow-xl p-8 flex flex-col ${
-                                    isPro ? 'border-2 border-indigo-500 transform scale-105 z-10' : 'border border-gray-100'
-                                }`}
+                                className={`relative bg-ev-card rounded-3xl shadow-card-lg-evalen p-8 flex flex-col dark:bg-[#16241C] dark:shadow-[0_22px_48px_-28px_rgba(0,0,0,.7)] ${isPro ? 'border-2 border-ev-green dark:border-[#5BAE88] z-10' : 'border border-ev-line dark:border-[rgba(241,235,220,.13)]'
+                                    }`}
                             >
                                 {isPro && (
-                                    <div className="absolute top-0 right-0 -mt-4 mr-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md uppercase tracking-wide">
+                                    <div className="absolute top-0 right-0 -mt-4 mr-4 bg-ev-cta text-ev-ctatext text-[11px] font-mono font-semibold px-3 py-1 rounded-full shadow-md uppercase tracking-wide dark:bg-[#FF6A38] dark:text-[#10231A]">
                                         Recomendado
                                     </div>
                                 )}
                                 <div className="flex-1">
-                                    <h3 className="text-2xl font-semibold text-gray-900">{p.name}</h3>
-                                    <p className="mt-4 flex items-baseline text-gray-900">
+                                    <h3 className="text-2xl font-semibold text-ev-ink dark:text-[#F1EBDC]">{p.name}</h3>
+                                    <p className="mt-4 flex items-baseline text-ev-ink dark:text-[#F1EBDC]">
                                         <span className="text-4xl font-extrabold tracking-tight">
                                             {p.price === 0 ? '$0' : p.price === -1 ? 'Personalizado' : `$${p.price.toLocaleString('es-CL')}`}
                                         </span>
-                                        {p.price !== -1 && <span className="ml-1 text-xl font-semibold text-gray-500">/mes</span>}
+                                        {p.price !== -1 && <span className="ml-1 text-xl font-semibold text-ev-ink2 dark:text-[#AAB6A8]">/mes</span>}
                                     </p>
-                                    <p className="mt-6 text-gray-500">{p.description}</p>
+                                    <p className="mt-6 text-ev-ink2 dark:text-[#AAB6A8]">{p.description}</p>
 
                                     <ul className="mt-6 space-y-4">
                                         {p.features.map((feature: string, idx: number) => (
                                             <li key={idx} className="flex items-start">
                                                 <div className="flex-shrink-0">
-                                                    <svg className={`h-6 w-6 ${isPro ? 'text-indigo-500' : isEnterprise ? 'text-purple-500' : 'text-green-500'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <svg className="h-6 w-6 text-ev-green dark:text-[#5BAE88]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                                     </svg>
                                                 </div>
-                                                <p className="ml-3 text-base text-gray-700">{feature}</p>
+                                                <p className="ml-3 text-base text-ev-ink2 dark:text-[#AAB6A8]">{feature}</p>
                                             </li>
                                         ))}
                                     </ul>
@@ -188,7 +193,7 @@ const PricingPage: React.FC = () => {
                                     {p.tier === 'FREE' ? (
                                         <button
                                             onClick={() => navigate('/dashboard')}
-                                            className="block w-full py-3 px-6 border border-gray-300 rounded-xl text-center font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+                                            className="block w-full py-3 px-6 border border-ev-line2 rounded-xl text-center font-medium text-ev-ink2 bg-ev-card hover:bg-ev-paper2 transition-colors shadow-sm dark:border-[rgba(241,235,220,.26)] dark:bg-[#16241C] dark:text-[#AAB6A8] dark:hover:bg-[#13201A]"
                                         >
                                             Ir al Dashboard
                                         </button>
@@ -196,14 +201,17 @@ const PricingPage: React.FC = () => {
                                         <button
                                             onClick={handleUpgrade}
                                             disabled={loading}
-                                            className="w-full flex items-center justify-center py-4 px-8 border border-transparent rounded-xl shadow-lg text-lg font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:scale-[1.02]"
+                                            className="w-full flex items-center justify-center gap-2 py-4 px-8 rounded-xl shadow-cta-evalen font-semibold text-[15px] text-ev-ctatext bg-ev-cta hover:bg-ev-ctah transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ev-cta focus-visible:ring-offset-2 focus-visible:ring-offset-ev-paper dark:bg-[#FF6A38] dark:text-[#10231A] dark:hover:bg-[#FF8455]"
                                         >
                                             {loading ? 'Procesando...' : 'Mejorar a Pro'}
+                                            {!loading && (
+                                                <svg className="h-[18px] w-[18px] transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                                            )}
                                         </button>
                                     ) : (
                                         <button
                                             onClick={() => setShowContactModal(true)}
-                                            className="block w-full py-3.5 px-6 border border-purple-600 rounded-xl text-center font-bold text-purple-600 bg-white hover:bg-purple-50/50 transition-colors shadow-sm"
+                                            className="block w-full py-3.5 px-6 border-2 border-ev-green rounded-xl text-center font-semibold text-ev-green bg-ev-greentint hover:bg-ev-green hover:text-ev-ctatext transition-colors shadow-sm dark:border-[#5BAE88] dark:bg-[#1C3329] dark:text-[#5BAE88] dark:hover:bg-[#5BAE88] dark:hover:text-[#10231A]"
                                         >
                                             Contactar Ventas
                                         </button>
@@ -217,31 +225,31 @@ const PricingPage: React.FC = () => {
 
             {/* Sales Contact Modal */}
             {showContactModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in font-sans">
-                    <div className="bg-white border border-gray-150 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl text-gray-900">
-                        <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(11,28,21,.55)] backdrop-blur-sm animate-fade-in font-sans dark:bg-[rgba(0,0,0,.7)]">
+                    <div className="bg-ev-card border border-ev-line rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl text-ev-ink dark:bg-[#16241C] dark:border-[rgba(241,235,220,.13)] dark:text-[#F1EBDC]">
+                        <div className="px-6 py-5 border-b border-ev-line flex justify-between items-center dark:border-[rgba(241,235,220,.13)]">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900">Contactar a Ventas</h3>
-                                <p className="text-xs text-gray-500">Plan Enterprise personalizado</p>
+                                <h3 className="text-xl font-bold text-ev-ink dark:text-[#F1EBDC]">Contactar a Ventas</h3>
+                                <p className="text-xs text-ev-ink3 dark:text-[#7E8C7E]">Plan Enterprise personalizado</p>
                             </div>
                             <button
                                 onClick={() => {
                                     setShowContactModal(false);
                                     setContactSuccess(false);
                                 }}
-                                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-950 transition-colors"
+                                className="p-1.5 rounded-lg hover:bg-ev-paper2 text-ev-ink3 hover:text-ev-ink transition-colors dark:hover:bg-[#13201A] dark:hover:text-[#F1EBDC]"
                             >
-                                ✕
+                                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
                             </button>
                         </div>
 
                         {contactSuccess ? (
                             <div className="p-8 text-center space-y-4">
-                                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl">
-                                    ✓
-                                </div>
-                                <h4 className="text-lg font-bold text-gray-900">¡Mensaje recibido con éxito!</h4>
-                                <p className="text-sm text-gray-600 max-w-sm mx-auto">
+                                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ev-green text-ev-onmark mx-auto dark:bg-[#5BAE88] dark:text-[#10231A]">
+                                    <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                                </span>
+                                <h4 className="text-lg font-bold text-ev-ink dark:text-[#F1EBDC]">¡Mensaje recibido!</h4>
+                                <p className="text-sm text-ev-ink2 max-w-sm mx-auto dark:text-[#AAB6A8]">
                                     Gracias por interesarte en Evalen Enterprise. Nuestro equipo comercial se pondrá en contacto contigo en las próximas horas.
                                 </p>
                                 <button
@@ -249,7 +257,7 @@ const PricingPage: React.FC = () => {
                                         setShowContactModal(false);
                                         setContactSuccess(false);
                                     }}
-                                    className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors"
+                                    className="px-6 py-2.5 bg-ev-cta text-ev-ctatext rounded-xl font-bold text-sm hover:bg-ev-ctah transition-colors dark:bg-[#FF6A38] dark:text-[#10231A] dark:hover:bg-[#FF8455]"
                                 >
                                     Cerrar
                                 </button>
@@ -257,53 +265,45 @@ const PricingPage: React.FC = () => {
                         ) : (
                             <form onSubmit={handleContactSubmit} className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                        Nombre completo
-                                    </label>
+                                    <label className="mb-1 block font-mono text-[11px] uppercase tracking-[0.14em] text-ev-ink2 dark:text-[#AAB6A8]">Nombre completo</label>
                                     <input
                                         type="text"
                                         value={contactForm.name}
                                         onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                                        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500"
+                                        className="w-full rounded-xl border border-ev-line2 bg-ev-card py-2.5 px-4 text-[14px] text-ev-ink placeholder:text-ev-ink3/80 transition focus:border-ev-green focus:outline-none focus:ring-2 focus:ring-ev-green/25 dark:border-[rgba(241,235,220,.26)] dark:bg-[#16241C] dark:text-[#F1EBDC] dark:placeholder:text-[#7E8C7E]/80"
                                         required
                                         placeholder="Ej: Osiel Leiva"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                        Correo Corporativo
-                                    </label>
+                                    <label className="mb-1 block font-mono text-[11px] uppercase tracking-[0.14em] text-ev-ink2 dark:text-[#AAB6A8]">Correo Corporativo</label>
                                     <input
                                         type="email"
                                         value={contactForm.email}
                                         onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                                        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500"
+                                        className="w-full rounded-xl border border-ev-line2 bg-ev-card py-2.5 px-4 text-[14px] text-ev-ink placeholder:text-ev-ink3/80 transition focus:border-ev-green focus:outline-none focus:ring-2 focus:ring-ev-green/25 dark:border-[rgba(241,235,220,.26)] dark:bg-[#16241C] dark:text-[#F1EBDC] dark:placeholder:text-[#7E8C7E]/80"
                                         required
                                         placeholder="ejemplo@empresa.com"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                        Nombre de la Empresa
-                                    </label>
+                                    <label className="mb-1 block font-mono text-[11px] uppercase tracking-[0.14em] text-ev-ink2 dark:text-[#AAB6A8]">Nombre de la Empresa</label>
                                     <input
                                         type="text"
                                         value={contactForm.company}
                                         onChange={(e) => setContactForm({ ...contactForm, company: e.target.value })}
-                                        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500"
+                                        className="w-full rounded-xl border border-ev-line2 bg-ev-card py-2.5 px-4 text-[14px] text-ev-ink placeholder:text-ev-ink3/80 transition focus:border-ev-green focus:outline-none focus:ring-2 focus:ring-ev-green/25 dark:border-[rgba(241,235,220,.26)] dark:bg-[#16241C] dark:text-[#F1EBDC] dark:placeholder:text-[#7E8C7E]/80"
                                         required
                                         placeholder="Empresa S.A."
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
-                                        Mensaje / Requerimientos
-                                    </label>
+                                    <label className="mb-1 block font-mono text-[11px] uppercase tracking-[0.14em] text-ev-ink2 dark:text-[#AAB6A8]">Mensaje / Requerimientos</label>
                                     <textarea
                                         value={contactForm.message}
                                         onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
                                         rows={4}
-                                        className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-indigo-500"
+                                        className="w-full rounded-xl border border-ev-line2 bg-ev-card py-2.5 px-4 text-[14px] text-ev-ink placeholder:text-ev-ink3/80 transition focus:border-ev-green focus:outline-none focus:ring-2 focus:ring-ev-green/25 dark:border-[rgba(241,235,220,.26)] dark:bg-[#16241C] dark:text-[#F1EBDC] dark:placeholder:text-[#7E8C7E]/80"
                                         required
                                         placeholder="Cuéntanos más sobre tus necesidades..."
                                     />
@@ -313,14 +313,14 @@ const PricingPage: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={() => setShowContactModal(false)}
-                                        className="flex-1 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                                        className="flex-1 py-2.5 rounded-xl border border-ev-line2 text-sm font-semibold text-ev-ink2 bg-ev-card hover:bg-ev-paper2 transition-colors dark:border-[rgba(241,235,220,.26)] dark:bg-[#16241C] dark:text-[#AAB6A8] dark:hover:bg-[#13201A]"
                                     >
                                         Cancelar
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={sendingContact}
-                                        className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white text-sm font-semibold shadow-md transition-colors"
+                                        className="flex-1 py-2.5 rounded-xl bg-ev-cta hover:bg-ev-ctah disabled:bg-ev-line2 text-ev-ctatext disabled:text-ev-ink3 text-sm font-semibold shadow-md transition-colors dark:bg-[#FF6A38] dark:text-[#10231A] dark:hover:bg-[#FF8455] dark:disabled:bg-[rgba(241,235,220,.13)] dark:disabled:text-[#7E8C7E]"
                                     >
                                         {sendingContact ? 'Enviando...' : 'Enviar Mensaje'}
                                     </button>
@@ -330,6 +330,13 @@ const PricingPage: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* theme fab */}
+            <button type="button" onClick={() => setIsDark(p => !p)} aria-label={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'} title="Cambiar tema"
+                className="fixed right-4 top-4 z-50 flex h-11 w-11 items-center justify-center rounded-xl border border-ev-line2 bg-ev-card text-ev-ink shadow-soft-evalen transition hover:-translate-y-0.5 dark:border-[rgba(241,235,220,.26)] dark:bg-[#16241C] dark:text-[#F1EBDC]">
+                <svg className={`h-[19px] w-[19px] ${isDark ? 'hidden' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+                <svg className={`h-[19px] w-[19px] ${isDark ? '' : 'hidden'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            </button>
         </div>
     );
 };

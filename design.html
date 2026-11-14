@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Evalen · Guía de diseño — sistema visual para replicar el estilo</title>
+<meta name="description" content="Guía de diseño de Evalen: paleta (claro/oscuro), tipografías por función, resaltados amarillos, anotaciones a mano, gestos de marca, componentes, escala, movimiento y reglas anti-slop." />
+<meta name="theme-color" content="#0F3A2C" />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2048%2048'%3E%3Crect%20width='48'%20height='48'%20rx='12'%20fill='%230F3A2C'/%3E%3Crect%20x='13'%20y='12'%20width='5'%20height='24'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='12'%20width='18'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='21.5'%20width='13'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='31'%20width='21'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Ccircle%20cx='37'%20cy='14.5'%20r='4.5'%20fill='%23F3E94E'/%3E%3C/svg%3E" />
+<script>(function(){try{var t=localStorage.getItem('evalen-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-700-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-500-italic.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-600-italic.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-700-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-mono@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-mono@latest/latin-500-normal.css" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: ['selector', '[data-theme="dark"]'],
+  theme: {
+    extend: {
+      colors: {
+        paper:'#F6F1E6', paper2:'#EFE7D6', card:'#FCFAF3',
+        ink:'#15261E', ink2:'#4C5B51', ink3:'#828E84',
+        green:'#1C5B44', greendeep:'#0F3A2C', greentint:'#E4ECE4',
+        onmark:'#F6F1E6',
+        yellow:'#F3E94E', yellow2:'#FBF6AE',
+        cta:'#D64518', ctah:'#B5370F', ctatext:'#FFF7EC',
+        line:'rgba(21,38,30,.13)', line2:'rgba(21,38,30,.24)',
+        good:'#1C5B44', goodt:'#E4ECE4',
+        mid:'#A9760F', midt:'#F6ECCF',
+        low:'#B23B2E', lowt:'#F4DDD8'
+      },
+      fontFamily: {
+        serif: ['Fraunces','Georgia','Times New Roman','serif'],
+        sans: ['Instrument Sans','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'],
+        mono: ['IBM Plex Mono','ui-monospace','SFMono-Regular','Menlo','monospace']
+      },
+      boxShadow: {
+        card: '0 22px 48px -28px rgba(15,40,30,.5)',
+        soft: '0 10px 26px -18px rgba(15,40,30,.45)',
+        cta:  '0 12px 22px -12px rgba(214,69,24,.6)',
+        pop:  '0 18px 40px -22px rgba(15,40,30,.55)',
+        gold: '0 10px 24px -12px rgba(243,233,78,.45)',
+        ring: '0 14px 30px -16px rgba(15,40,30,.45)'
+      },
+      backgroundImage: {
+        grain: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
+      },
+      keyframes: {
+        pulsering: { '0%':{boxShadow:'0 0 0 0 rgba(243,233,78,.5)'},'70%':{boxShadow:'0 0 0 7px rgba(243,233,78,0)'},'100%':{boxShadow:'0 0 0 0 rgba(243,233,78,0)'} },
+        nodepulse: { '0%,100%':{opacity:'.16'},'50%':{opacity:'.62'} }
+      },
+      animation: {
+        pulsering: 'pulsering 2.2s infinite',
+        nodepulse: 'nodepulse 3.6s ease-in-out infinite'
+      }
+    }
+  }
+}
+</script>
+
+<style>
+  :root {
+    color-scheme: light;
+    --ink:#15261E; --ink2:#4C5B51; --ink3:#828E84;
+    --green:#1C5B44; --greendeep:#0F3A2C; --greentint:#E4ECE4;
+    --onmark:#F6F1E6; --yellow:#F3E94E; --yellow2:#FBF6AE;
+    --cta:#D64518; --ctah:#B5370F; --ctatext:#FFF7EC;
+    --good:#1C5B44; --goodt:#E4ECE4; --mid:#A9760F; --midt:#F6ECCF; --low:#B23B2E; --lowt:#F4DDD8;
+    --paper:#F6F1E6; --paper2:#EFE7D6; --card:#FCFAF3;
+    --line:rgba(21,38,30,.13); --line2:rgba(21,38,30,.24);
+    --hero:#A9760F;
+  }
+  html[data-theme="dark"] {
+    --paper:#0E1813; --paper2:#13201A; --card:#16241C;
+    --ink:#F1EBDC; --ink2:#AAB6A8; --ink3:#7E8C7E;
+    --green:#5BAE88; --greendeep:#163528; --greentint:#1C3329;
+    --onmark:#F1EBDC; --yellow:#F3E94E; --yellow2:#5A5418;
+    --cta:#FF6A38; --ctah:#FF8455; --ctatext:#10231A;
+    --line:rgba(241,235,220,.13); --line2:rgba(241,235,220,.26);
+    --good:#62B78F; --goodt:#173327; --mid:#E0A93A; --midt:#3A2E12;
+    --low:#E0695A; --lowt:#3A1C18;
+    --hero:#E0A93A;
+    color-scheme: dark;
+  }
+  html[data-theme="dark"] body { background: var(--paper); color: var(--ink); }
+  html[data-theme="dark"] .t-paper{background:var(--paper)!important}
+  html[data-theme="dark"] .t-paper2{background:var(--paper2)!important}
+  html[data-theme="dark"] .t-card{background:var(--card)!important}
+  html[data-theme="dark"] .t-ink{color:var(--ink)!important}
+  html[data-theme="dark"] .t-ink2{color:var(--ink2)!important}
+  html[data-theme="dark"] .t-ink3{color:var(--ink3)!important}
+  html[data-theme="dark"] .t-line{border-color:var(--line)!important}
+  html[data-theme="dark"] .t-line2{border-color:var(--line2)!important}
+  html[data-theme="dark"] .t-goodt{background:var(--goodt)!important}
+  html[data-theme="dark"] .t-midt{background:var(--midt)!important}
+  html[data-theme="dark"] .t-lowt{background:var(--lowt)!important}
+  html[data-theme="dark"] .t-greentint{background:var(--greentint)!important}
+  html[data-theme="dark"] .t-good{color:var(--good)!important}
+  html[data-theme="dark"] .t-mid{color:var(--mid)!important}
+  html[data-theme="dark"] .t-low{color:var(--low)!important}
+  html[data-theme="dark"] .t-green{color:var(--green)!important}
+  html[data-theme="dark"] .t-cta{color:var(--cta)!important}
+  html[data-theme="dark"] .bg-cta{background:var(--cta)!important}
+  html[data-theme="dark"] .hover\:bg-ctah:hover{background:var(--ctah)!important}
+  html[data-theme="dark"] .text-ctatext{color:var(--ctatext)!important}
+  html[data-theme="dark"] .bg-greendeep{background:var(--greendeep)!important}
+  html[data-theme="dark"] .bg-good{background:var(--good)!important}
+  html[data-theme="dark"] .text-onmark{color:var(--onmark)!important}
+  html[data-theme="dark"] .bg-yellow{background:var(--yellow)!important}
+  html[data-theme="dark"] .text-greendeep{color:var(--greendeep)!important}
+  html[data-theme="dark"] .border-green{border-color:var(--green)!important}
+  html[data-theme="dark"] .border-cta{border-color:var(--cta)!important}
+  html[data-theme="dark"] .border-mid{border-color:var(--mid)!important}
+  html[data-theme="dark"] .border-low{border-color:var(--low)!important}
+
+  /* ====== RESPALDO MODO CLARO (safety-net del sistema) ====== */
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) body { background-color:#F6F1E6 !important; color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper   { background-color:#F6F1E6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper2  { background-color:#EFE7D6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-card    { background-color:#FCFAF3 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-greendeep { background-color:#0F3A2C !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-green,
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-good    { background-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-cta     { background-color:#D64518 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-yellow  { background-color:#F3E94E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-yellow2 { background-color:#FBF6AE !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-greentint,
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-goodt   { background-color:#E4ECE4 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-midt    { background-color:#F6ECCF !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-lowt    { background-color:#F4DDD8 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-line2   { background-color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper\/80  { background-color:rgba(246,241,230,.80) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper\/85  { background-color:rgba(246,241,230,.85) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper\/60  { background-color:rgba(246,241,230,.60) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-onmark\/10 { background-color:rgba(246,241,230,.10) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-onmark\/15 { background-color:rgba(246,241,230,.15) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-yellow\/10 { background-color:rgba(243,233,78,.10) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-good\/55   { background-color:rgba(28,91,68,.55) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-ink3\/40   { background-color:rgba(130,142,132,.40) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ink   { color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ink2  { color:#4C5B51 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ink3  { color:#828E84 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-green,
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-good  { color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-mid   { color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-low   { color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-cta   { color:#D64518 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark{ color:#F6F1E6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-greendeep { color:#0F3A2C !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ctatext { color:#FFF7EC !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-yellow { color:#F3E94E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-line2 { color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/60 { color:rgba(246,241,230,.60) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/70 { color:rgba(246,241,230,.70) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/75 { color:rgba(246,241,230,.75) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/80 { color:rgba(246,241,230,.80) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/85 { color:rgba(246,241,230,.85) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-line  { border-color:rgba(21,38,30,.13) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-line2 { border-color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-green { border-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-cta   { border-color:#D64518 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-mid   { border-color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-low   { border-color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-yellow\/40 { border-color:rgba(243,233,78,.40) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-onmark\/10 { border-color:rgba(246,241,230,.10) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-onmark\/20 { border-color:rgba(246,241,230,.20) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-onmark\/25 { border-color:rgba(246,241,230,.25) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .divide-line > :not([hidden]) ~ :not([hidden]) { border-color:rgba(21,38,30,.13) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .ring-paper  { --tw-ring-color:#F6F1E6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .ring-paper2 { --tw-ring-color:#EFE7D6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .ring-line2  { --tw-ring-color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-paper2:hover  { background-color:#EFE7D6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-greentint:hover { background-color:#E4ECE4 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-goodt:hover   { background-color:#E4ECE4 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-lowt:hover    { background-color:#F4DDD8 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-ctah:hover    { background-color:#B5370F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-onmark\/20:hover { background-color:rgba(246,241,230,.20) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-ink:hover   { color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-green:hover { color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-mid:hover   { color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-low:hover   { color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-ink:hover  { border-color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-ink3:hover { border-color:#828E84 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-green:hover{ border-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-mid:hover  { border-color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-low:hover  { border-color:#B23B2E !important; }
+
+  ::selection { background:#F3E94E; color:#15261E; }
+
+  /* ====== RECURSOS DE MARCA DOCUMENTADOS ====== */
+
+  /* Resaltador amarillo tipo marcador (.hl) y variante suave (.hl-soft) */
+  .hl {
+    background: linear-gradient(104deg, transparent .6%, var(--yellow) 2.2%, var(--yellow) 96%, transparent 97.4%);
+    padding:.02em .2em; margin:0 -.06em; border-radius:3px;
+    -webkit-box-decoration-break:clone; box-decoration-break:clone;
+  }
+  .hl-soft { background:var(--yellow2); padding:.02em .22em; border-radius:3px; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+  html[data-theme="dark"] .hl-soft { background:var(--yellow2); color:var(--ink); }
+
+  /* Anotación a mano: contenedor + trazo SVG naranja + texto mono rotado */
+  .hand-note { position:absolute; display:flex; align-items:center; gap:.5rem; color:var(--cta); font-family:'IBM Plex Mono',monospace; font-size:.78rem; line-height:1.3; max-width:170px; pointer-events:none; }
+  .hand-note svg { flex:none; overflow:visible; }
+
+  /* Filigrana de nodos (informes sobre papel) */
+  .report-watermark { color: var(--ink); }
+
+  /* gauge */
+  .gauge-track { stroke: var(--line2); }
+  .gauge-prog { stroke: var(--hero); transition: stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1); }
+  .hero-glow { background: radial-gradient(circle, color-mix(in srgb, var(--hero) 32%, transparent), transparent 68%); }
+  .hero-num { font-variant-numeric: tabular-nums; letter-spacing:-.03em; }
+
+  .bar-fill { width:0; transition: width 1s cubic-bezier(.2,.7,.2,1); }
+
+  .reveal { opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity:1; transform:none; }
+
+  /* índice lateral */
+  .ix-link { position:relative; color:var(--ink3); transition: color .2s ease; }
+  .ix-link:hover { color:var(--ink2); }
+  .ix-link[aria-current="true"] { color:var(--ink); }
+  .ix-link::before { content:""; position:absolute; left:-13px; top:50%; transform:translateY(-50%) scaleY(0); width:3px; height:60%; border-radius:3px; background:var(--cta); transition: transform .25s cubic-bezier(.2,.7,.2,1); }
+  .ix-link[aria-current="true"]::before { transform:translateY(-50%) scaleY(1); }
+
+  .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+  .no-scrollbar::-webkit-scrollbar { display:none; }
+
+  /* swatch activo */
+  .swatch[data-active="light"] .sw-light,
+  .swatch[data-active="dark"] .sw-dark { outline:2px solid var(--ink); outline-offset:1px; }
+
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} .reveal{opacity:1;transform:none} .bar-fill,.gauge-prog{transition:none} }
+</style>
+</head>
+
+<body class="min-h-screen bg-paper text-ink font-sans antialiased [text-rendering:optimizeLegibility]">
+
+<div aria-hidden="true" class="pointer-events-none fixed inset-0 z-[60] bg-grain opacity-[0.045] mix-blend-overlay"></div>
+
+<!-- ===================== TOPBAR ===================== -->
+<header id="nav" class="sticky top-0 z-40 border-b border-transparent bg-paper/80 backdrop-blur-md backdrop-saturate-150 transition-colors">
+  <div class="mx-auto flex h-16 max-w-[1240px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+    <a href="/" class="flex shrink-0 items-center gap-2.5" aria-label="Evalen, inicio">
+      <svg class="h-8 w-8" viewBox="0 0 48 48" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="var(--greendeep)"/>
+        <rect x="13" y="12" width="5" height="24" rx="2.5" fill="var(--onmark)"/>
+        <rect x="13" y="12" width="18" height="5" rx="2.5" fill="var(--onmark)"/>
+        <rect x="13" y="21.5" width="13" height="5" rx="2.5" fill="var(--onmark)"/>
+        <rect x="13" y="31" width="21" height="5" rx="2.5" fill="var(--onmark)"/>
+        <circle cx="37" cy="14.5" r="4.5" fill="var(--yellow)"/>
+      </svg>
+      <span class="font-serif text-[1.35rem] font-semibold leading-none tracking-tight text-ink">evalen</span>
+      <span class="ml-1 hidden rounded-full bg-greentint px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-green sm:inline t-goodt t-green">Guía de diseño</span>
+    </a>
+
+    <div class="ml-auto flex items-center gap-2">
+      <span class="hidden font-mono text-[11px] text-ink3 md:inline t-ink3">v1 · abril 2026</span>
+      <button id="themeBtn" type="button" aria-label="Cambiar tema" class="grid h-9 w-9 place-items-center rounded-xl border border-line2 bg-card text-ink transition hover:bg-paper2 t-card t-ink t-line2">
+        <svg class="ic-moon h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="ic-sun hidden h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mx-auto max-w-[1240px] px-4 pb-24 pt-8 sm:px-6 lg:px-8">
+
+  <!-- ===================== PORTADA DEL MANUAL ===================== -->
+  <header class="reveal relative overflow-hidden rounded-3xl border border-line bg-card p-7 shadow-card sm:p-10 t-card t-line">
+    <svg aria-hidden="true" class="report-watermark pointer-events-none absolute inset-0 h-full w-full opacity-[0.05]" viewBox="0 0 760 240" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1">
+      <g><line x1="40" y1="40" x2="150" y2="30"/><line x1="150" y1="30" x2="262" y2="70"/><line x1="262" y1="70" x2="384" y2="38"/><line x1="384" y1="38" x2="506" y2="88"/><line x1="506" y1="88" x2="628" y2="52"/><line x1="262" y1="70" x2="322" y2="138"/><line x1="150" y1="30" x2="92" y2="126"/><line x1="92" y1="126" x2="212" y2="158"/><line x1="322" y1="138" x2="452" y2="180"/><line x1="506" y1="88" x2="452" y2="180"/></g>
+      <g fill="currentColor" stroke="none"><circle cx="40" cy="40" r="2.2"/><circle cx="384" cy="38" r="2.2"/><circle cx="628" cy="52" r="2.2"/><circle cx="92" cy="126" r="2.2"/><circle cx="322" cy="138" r="2.2"/><circle cx="452" cy="180" r="2.2"/><circle class="animate-nodepulse" cx="150" cy="30" r="3"/><circle class="animate-nodepulse" cx="262" cy="70" r="3" style="animation-delay:.9s"/><circle class="animate-nodepulse" cx="212" cy="158" r="3" style="animation-delay:1.7s"/></g>
+    </svg>
+    <div class="relative z-10 max-w-[60ch]">
+      <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-green t-green">Sistema visual · brand book</span>
+      <h1 class="mt-3 font-serif text-[2.4rem] font-semibold leading-[1.02] tracking-tight text-ink sm:text-[3.4rem] t-ink">La guía para que <span class="hl">cada vista suene a Evalen.</span></h1>
+      <p class="mt-4 text-[15px] leading-relaxed text-ink2 t-ink2">Este documento es, a la vez, la regla y el ejemplo: está construido con el mismo sistema que describe. Copia el bloque que necesites y ya viene con su look. Los swatches de color son <span class="font-semibold text-ink t-ink">clickeables</span> (copian el hex), el tema se alterna arriba a la derecha, y el índice de la izquierda te lleva a cada sección.</p>
+      <div class="mt-5 flex flex-wrap gap-2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink3 t-ink3">
+        <span class="rounded-full border border-line2 px-2.5 py-1 t-line2">3 tipografías · 1 función cada una</span>
+        <span class="rounded-full border border-line2 px-2.5 py-1 t-line2">paleta claro + oscuro</span>
+        <span class="rounded-full border border-line2 px-2.5 py-1 t-line2">resaltado + notas a mano</span>
+        <span class="rounded-full border border-line2 px-2.5 py-1 t-line2">reglas anti-slop</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== LAYOUT: ÍNDICE + CONTENIDO ===================== -->
+  <div class="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-[210px_1fr]">
+
+    <!-- ÍNDICE -->
+    <nav id="docIndex" aria-label="Secciones de la guía" class="lg:sticky lg:top-20 lg:self-start">
+      <p class="mb-3 font-mono text-[10.5px] uppercase tracking-[0.16em] text-ink3 t-ink3">Índice</p>
+      <ol class="grid gap-1 text-[13.5px]">
+        <li><a href="#filosofia" data-ix="filosofia" class="ix-link block py-1 pl-3 font-medium">00 · Filosofía</a></li>
+        <li><a href="#color" data-ix="color" class="ix-link block py-1 pl-3 font-medium">01 · Color</a></li>
+        <li><a href="#tipo" data-ix="tipo" class="ix-link block py-1 pl-3 font-medium">02 · Tipografía</a></li>
+        <li><a href="#resaltado" data-ix="resaltado" class="ix-link block py-1 pl-3 font-medium">03 · Resaltado y notas</a></li>
+        <li><a href="#gestos" data-ix="gestos" class="ix-link block py-1 pl-3 font-medium">04 · Gestos de marca</a></li>
+        <li><a href="#componentes" data-ix="componentes" class="ix-link block py-1 pl-3 font-medium">05 · Componentes</a></li>
+        <li><a href="#escala" data-ix="escala" class="ix-link block py-1 pl-3 font-medium">06 · Escala y espacio</a></li>
+        <li><a href="#movimiento" data-ix="movimiento" class="ix-link block py-1 pl-3 font-medium">07 · Movimiento</a></li>
+        <li><a href="#antislop" data-ix="antislop" class="ix-link block py-1 pl-3 font-medium">08 · Reglas de oro</a></li>
+      </ol>
+    </nav>
+
+    <!-- CONTENIDO -->
+    <div class="min-w-0 grid gap-16">
+
+      <!-- ============ 00 · FILOSOFÍA ============ -->
+      <section data-section="filosofia" id="filosofia" class="reveal scroll-mt-24">
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3"><span class="text-cta t-cta">00</span> Filosofía <span class="h-px w-10 bg-line2 t-line2"></span></div>
+        <h2 class="mt-2 font-serif text-[1.8rem] font-semibold tracking-tight text-ink sm:text-[2.2rem] t-ink">Cinco principios antes de tocar un píxel</h2>
+        <p class="mt-3 max-w-[62ch] text-[14.5px] leading-relaxed text-ink2 t-ink2">Evalen no se ve “tecnológico genérico”: se ve como un <span class="hl-soft">informe bien hecho</span>. El producto promete “la IA lee, tú decides”, así que el diseño tiene que sentirse humano, legible y con criterio editorial — no como un dashboard pintado con degradados. Estos cinco principios mandan sobre todo lo demás.</p>
+
+        <div class="mt-8 grid gap-7">
+          <div class="grid grid-cols-[auto_1fr] gap-5">
+            <span class="font-serif text-[2.6rem] font-semibold leading-none text-green t-green">01</span>
+            <div><h3 class="font-sans text-[1.1rem] font-bold tracking-tight text-ink t-ink">Una familia tipográfica por función</h3><p class="mt-1 text-[14px] leading-relaxed text-ink2 t-ink2">Fraunces (serif) es la <em>voz</em>; Instrument Sans son los <em>datos</em>; IBM Plex Mono son las <em>etiquetas</em>. Nunca mezclar roles: la serif no va en una tabla, la sans no va en un titular emocional.</p></div>
+          </div>
+          <div class="grid grid-cols-[auto_1fr] gap-5">
+            <span class="font-serif text-[2.6rem] font-semibold leading-none text-green t-green">02</span>
+            <div><h3 class="font-sans text-[1.1rem] font-bold tracking-tight text-ink t-ink">El recuadro es un acento, no un contenedor</h3><p class="mt-1 text-[14px] leading-relaxed text-ink2 t-ink2">Por defecto, el contenido vive sobre el papel y se separa con tipografía, espacio y líneas finas. Solo tres cosas merecen superficie propia: el objeto sobre el que actúas, un callout y una barra de navegación.</p></div>
+          </div>
+          <div class="grid grid-cols-[auto_1fr] gap-5">
+            <span class="font-serif text-[2.6rem] font-semibold leading-none text-green t-green">03</span>
+            <div><h3 class="font-sans text-[1.1rem] font-bold tracking-tight text-ink t-ink">El drama viene del contraste y del vacío</h3><p class="mt-1 text-[14px] leading-relaxed text-ink2 t-ink2">Un único héroe con escala grande y silencio alrededor destaca más que cuatro widgets gritando. Si todo tiene el mismo volumen visual, nada importa.</p></div>
+          </div>
+          <div class="grid grid-cols-[auto_1fr] gap-5">
+            <span class="font-serif text-[2.6rem] font-semibold leading-none text-green t-green">04</span>
+            <div><h3 class="font-sans text-[1.1rem] font-bold tracking-tight text-ink t-ink">El verde profundo es escaso, por eso funciona</h3><p class="mt-1 text-[14px] leading-relaxed text-ink2 t-ink2">Es el color de la marca y de la “magia de IA” puntual. Una losa verde por vista, como máximo. Si lo pones en cada cabecera, deja de ser especial y la página se aplasta.</p></div>
+          </div>
+          <div class="grid grid-cols-[auto_1fr] gap-5">
+            <span class="font-serif text-[2.6rem] font-semibold leading-none text-green t-green">05</span>
+            <div><h3 class="font-sans text-[1.1rem] font-bold tracking-tight text-ink t-ink">Decorar con metáforas del producto, no con clichés</h3><p class="mt-1 text-[14px] leading-relaxed text-ink2 t-ink2">La malla de nodos conectados no es adorno: es la imagen del <em>matching semántico</em>. Un sparkle genérico es slop; una metáfora del propio producto es diseño.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 01 · COLOR ============ -->
+      <section data-section="color" id="color" class="reveal scroll-mt-24">
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3"><span class="text-cta t-cta">01</span> Color <span class="h-px w-10 bg-line2 t-line2"></span></div>
+        <h2 class="mt-2 font-serif text-[1.8rem] font-semibold tracking-tight text-ink sm:text-[2.2rem] t-ink">Paleta: crema, verde y un naranja que manda</h2>
+        <p class="mt-3 max-w-[64ch] text-[14.5px] leading-relaxed text-ink2 t-ink2">Cada color tiene un <span class="font-semibold text-ink t-ink">trabajo</span>. El naranja (<code class="font-mono text-[12px] text-cta t-cta">--cta</code>) es la única “acción”; el amarillo (<code class="font-mono text-[12px] text-cta t-cta">--yellow</code>) es “magia / destacar”; el verde profundo (<code class="font-mono text-[12px] text-cta t-cta">--greendeep</code>) es “marca”. Toca un swatch para copiar el hex del tema activo.</p>
+
+        <div id="swatches" class="mt-7 grid gap-7"></div>
+
+        <!-- tono semántico -->
+        <div class="mt-9 rounded-2xl border border-line bg-card p-5 sm:p-6 t-card t-line">
+          <h3 class="font-sans text-[1.05rem] font-bold tracking-tight text-ink t-ink">Sistema de tono semántico (good / mid / low)</h3>
+          <p class="mt-1.5 max-w-[60ch] text-[13.5px] leading-relaxed text-ink2 t-ink2">Cada puntaje de 0–100 se colorea por umbrales: <b class="text-good t-good">≥ 80 = good</b>, <b class="text-mid t-mid">≥ 60 = mid</b>, <b class="text-low t-low">&lt; 60 = low</b>. Cada tono es un <em>par</em> fondo/texto para que los chips y barras sean legibles en ambos temas. Úsalo en anillos de match, barras de criterio y chips de etapa.</p>
+          <div class="mt-4 grid gap-3 sm:grid-cols-3">
+            <div class="rounded-xl bg-goodt p-3.5 t-goodt"><span class="font-mono text-[10px] uppercase tracking-[0.12em] text-good t-good">good · ≥80</span><p class="mt-1 text-[13px] font-semibold text-good t-good">Fondo #E4ECE4 · texto #1C5B44</p></div>
+            <div class="rounded-xl bg-midt p-3.5 t-midt"><span class="font-mono text-[10px] uppercase tracking-[0.12em] text-mid t-mid">mid · ≥60</span><p class="mt-1 text-[13px] font-semibold text-mid t-mid">Fondo #F6ECCF · texto #A9760F</p></div>
+            <div class="rounded-xl bg-lowt p-3.5 t-lowt"><span class="font-mono text-[10px] uppercase tracking-[0.12em] text-low t-low">low · &lt;60</span><p class="mt-1 text-[13px] font-semibold text-low t-low">Fondo #F4DDD8 · texto #B23B2E</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 02 · TIPOGRAFÍA ============ -->
+      <section data-section="tipo" id="tipo" class="reveal scroll-mt-24">
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3"><span class="text-cta t-cta">02</span> Tipografía <span class="h-px w-10 bg-line2 t-line2"></span></div>
+        <h2 class="mt-2 font-serif text-[1.8rem] font-semibold tracking-tight text-ink sm:text-[2.2rem] t-ink">Tres familias, tres trabajos, cero ambigüedad</h2>
+
+        <!-- Fraunces -->
+        <div class="mt-7 border-t border-line pt-6 t-line">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 class="font-serif text-[1.5rem] font-semibold text-ink t-ink">Fraunces <span class="text-ink3 t-ink3">· serif</span></h3>
+            <span class="rounded-full bg-greentint px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-green t-goodt t-green">rol · la voz y la marca</span>
+          </div>
+          <p class="mt-4 font-serif text-[2.4rem] font-semibold leading-[1.05] tracking-tight text-ink sm:text-[3rem] t-ink">Tu talento ideal, <span class="hl">encontrado</span> en segundos.</p>
+          <p class="mt-3 max-w-[60ch] text-[14px] leading-relaxed text-ink2 t-ink2">Es expresiva: remates, contraste y calidez. Por eso va en lo que quieres que el usuario <em>sienta</em> — el saludo, el titular, el veredicto en cursiva, el nombre del candidato, el número héroe y el wordmark <span class="font-serif font-semibold text-ink t-ink">evalen</span>. Pesos cargados: 400 / 500 / 600 / 700 + itálica 500 / 600.</p>
+          <div class="mt-3 grid gap-2 text-[12.5px] sm:grid-cols-2">
+            <p class="flex gap-2 text-ink2 t-ink2"><span class="text-good t-good">✓</span> Titulares, citas/veredicto, nombre, número héroe, wordmark.</p>
+            <p class="flex gap-2 text-ink2 t-ink2"><span class="text-low t-low">✗</span> Tablas, campos, datos densos, etiquetas pequeñas.</p>
+          </div>
+        </div>
+
+        <!-- Instrument Sans -->
+        <div class="mt-7 border-t border-line pt-6 t-line">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 class="font-sans text-[1.5rem] font-bold tracking-tight text-ink t-ink">Instrument Sans <span class="font-mono text-[12px] font-medium text-ink3 t-ink3">· sans</span></h3>
+            <span class="rounded-full bg-greentint px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-green t-goodt t-green">rol · interfaz y datos</span>
+          </div>
+          <p class="mt-4 font-sans text-[1.4rem] font-bold leading-tight tracking-tight text-ink t-ink">Desarrollador Full Stack (React / Node)</p>
+          <p class="mt-2 max-w-[60ch] text-[14px] leading-relaxed text-ink2 t-ink2">Neutra, legible y precisa: es el caballo de batalla. Carga todo lo que se <em>escanea</em> — títulos de campaña, nombres en tabla, cuerpo de texto, botones, expediente del candidato. Pesos: 400 / 500 / 600 / 700.</p>
+          <div class="mt-3 grid gap-2 text-[12.5px] sm:grid-cols-2">
+            <p class="flex gap-2 text-ink2 t-ink2"><span class="text-good t-good">✓</span> UI funcional, datos, expediente, botones, nombres.</p>
+            <p class="flex gap-2 text-ink2 t-ink2"><span class="text-low t-low">✗</span> Voz emocional, titulares de página con carácter.</p>
+          </div>
+        </div>
+
+        <!-- IBM Plex Mono -->
+        <div class="mt-7 border-t border-line pt-6 t-line">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 class="font-mono text-[1.4rem] font-medium text-ink t-ink">IBM Plex Mono <span class="text-ink3 t-ink3">· mono</span></h3>
+            <span class="rounded-full bg-greentint px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-green t-goodt t-green">rol · etiquetas y metadatos</span>
+          </div>
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <span class="font-mono text-[11px] uppercase tracking-[0.18em] text-green t-green">Eyebrow · tracking ancho</span>
+            <span class="rounded-full bg-midt px-2.5 py-1 font-mono text-[10.5px] font-medium uppercase tracking-wide text-mid t-midt t-mid">chip de estado</span>
+            <span class="font-mono text-[11px] text-ink3 t-ink3">18 mar 2026 · 19:14</span>
+            <kbd class="rounded border border-line2 px-1.5 py-0.5 font-mono text-[10px] text-ink3 t-line2">/</kbd>
+          </div>
+          <p class="mt-3 max-w-[60ch] text-[14px] leading-relaxed text-ink2 t-ink2">Técnica y “de sistema”. Va en mayúsculas con <code class="font-mono text-[12px] text-cta t-cta">tracking</code> ancho para eyebrows, labels, fechas, contadores, chips y atajos de teclado. Pesos: 400 / 500. <span class="font-semibold text-ink t-ink">Regla:</span> el mono en mayúsculas solo en etiquetas <em>cortas</em>; un párrafo entero en caps cansa la vista.</p>
+        </div>
+
+        <!-- tabla de escala de uso -->
+        <div class="mt-7 overflow-x-auto">
+          <table class="w-full min-w-[560px] text-left text-[13px]">
+            <thead><tr class="border-b border-line2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink3 t-line2 t-ink3"><th class="py-2 pr-3">Rol</th><th class="py-2 pr-3">Familia</th><th class="py-2 pr-3">Tamaño / peso</th><th class="py-2">Ejemplo</th></tr></thead>
+            <tbody class="divide-y divide-line t-line">
+              <tr><td class="py-2.5 pr-3 text-ink2 t-ink2">Hero / display</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">Fraunces</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">2.4–4rem / 600</td><td class="py-2.5 font-serif text-[1.4rem] font-semibold text-ink t-ink">Título</td></tr>
+              <tr><td class="py-2.5 pr-3 text-ink2 t-ink2">Titular de sección</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">Fraunces</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">1.3–1.8rem / 600</td><td class="py-2.5 font-serif text-[1.1rem] font-semibold text-ink t-ink">Sección</td></tr>
+              <tr><td class="py-2.5 pr-3 text-ink2 t-ink2">Veredicto / cita</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">Fraunces</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">1–1.14rem / 500 itálica</td><td class="py-2.5 font-serif text-[1rem] italic text-ink t-ink">“Cita”</td></tr>
+              <tr><td class="py-2.5 pr-3 text-ink2 t-ink2">Título UI / dato</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">Sans</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">1.05–1.3rem / 600–700</td><td class="py-2.5 font-sans text-[1.05rem] font-bold text-ink t-ink">Dato</td></tr>
+              <tr><td class="py-2.5 pr-3 text-ink2 t-ink2">Cuerpo</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">Sans</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">13–15px / 400</td><td class="py-2.5 text-[13px] text-ink2 t-ink2">Texto corrido</td></tr>
+              <tr><td class="py-2.5 pr-3 text-ink2 t-ink2">Eyebrow / label</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">Mono</td><td class="py-2.5 pr-3 font-mono text-ink3 t-ink3">10–11px / 500 · caps · tracking</td><td class="py-2.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink3 t-ink3">Etiqueta</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ 03 · RESALTADO Y NOTAS ============ -->
+      <section data-section="resaltado" id="resaltado" class="reveal scroll-mt-24">
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3"><span class="text-cta t-cta">03</span> Resaltado y notas a mano <span class="h-px w-10 bg-line2 t-line2"></span></div>
+        <h2 class="mt-2 font-serif text-[1.8rem] font-semibold tracking-tight text-ink sm:text-[2.2rem] t-ink">El marcador amarillo y la anotación al margen</h2>
+        <p class="mt-3 max-w-[64ch] text-[14.5px] leading-relaxed text-ink2 t-ink2">Dos gestos que hacen que el texto se sienta <span class="hl">subrayado por una persona</span>, no renderizado por una máquina. Úsalos con medida: resaltan, no decoran.</p>
+
+        <!-- .hl -->
+        <div class="mt-7 rounded-2xl border border-line bg-card p-5 sm:p-6 t-card t-line">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="font-sans text-[1.05rem] font-bold tracking-tight text-ink t-ink">Resaltador <code class="font-mono text-[12px] font-medium text-cta t-cta">.hl</code></h3>
+            <span class="font-mono text-[10.5px] text-ink3 t-ink3">fondo amarillo + leve skew</span>
+          </div>
+          <p class="mt-3 font-serif text-[1.5rem] font-semibold leading-snug text-ink sm:text-[1.8rem] t-ink">Deja de leer CVs <span class="hl">uno por uno</span> y empieza a decidir.</p>
+          <p class="mt-3 max-w-[60ch] text-[13.5px] leading-relaxed text-ink2 t-ink2">Técnica: un <code class="font-mono text-[12px] text-cta t-cta">linear-gradient</code> amarillo con bordes transparentes (para que el resaltado tenga puntas irregulares), <code class="font-mono text-[12px] text-cta t-cta">box-decoration-break: clone</code> (para que funcione en varias líneas) y un padding mínimo. La variante <code class="font-mono text-[12px] text-cta t-cta">.hl-soft</code> usa el amarillo claro <span class="hl-soft">sin skew</span> para resaltar dentro de párrafos sin tanto drama.</p>
+          <pre class="mt-4 overflow-x-auto rounded-xl bg-paper2 p-4 font-mono text-[11.5px] leading-relaxed text-ink2 t-paper2 t-ink2">.hl {
+  background: linear-gradient(104deg, transparent .6%, var(--yellow) 2.2%,
+              var(--yellow) 96%, transparent 97.4%);
+  padding: .02em .2em; border-radius: 3px;
+  box-decoration-break: clone;
+}</pre>
+        </div>
+
+        <!-- notas a mano -->
+        <div class="mt-6 rounded-2xl border border-line bg-card p-5 sm:p-6 t-card t-line">
+          <h3 class="font-sans text-[1.05rem] font-bold tracking-tight text-ink t-ink">Anotaciones a mano <code class="font-mono text-[12px] font-medium text-cta t-cta">.hand-note</code></h3>
+          <p class="mt-1.5 max-w-[60ch] text-[13.5px] leading-relaxed text-ink2 t-ink2">Una flecha curva dibujada en SVG (trazo naranja, puntas redondeadas) + un texto en mono ligeramente rotado. Parece una nota que alguien garabateó señalando algo. Tres variantes:</p>
+
+          <div class="mt-6 grid gap-8 sm:grid-cols-3">
+            <!-- variante 1: entra por la derecha -->
+            <div class="relative rounded-xl border border-line2 bg-paper/60 p-5 pt-8 t-line2">
+              <span class="inline-flex items-center gap-1.5 rounded-full bg-goodt px-2.5 py-1 font-mono text-[10.5px] font-medium text-good t-goodt t-good"><span class="h-1.5 w-1.5 rounded-full bg-good"></span> En entrevista</span>
+              <div class="hand-note" style="right:-6px; top:-2px; transform:rotate(-5deg);">
+                <svg width="58" height="34" viewBox="0 0 58 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M54 4 C 38 4, 22 12, 8 26"/><path d="M8 26 l 9 -1 M8 26 l 1 -9"/></svg>
+                <span>¡este sí!</span>
+              </div>
+            </div>
+            <!-- variante 2: entra por la izquierda -->
+            <div class="relative rounded-xl border border-line2 bg-paper/60 p-5 pt-8 t-line2">
+              <span class="font-sans text-[1.05rem] font-bold text-ink t-ink">$49 / mes</span>
+              <div class="hand-note" style="left:-8px; bottom:-6px; transform:rotate(3deg); flex-direction:row-reverse;">
+                <svg width="58" height="34" viewBox="0 0 58 34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1)"><path d="M54 4 C 38 4, 22 12, 8 26"/><path d="M8 26 l 9 -1 M8 26 l 1 -9"/></svg>
+                <span class="text-right">se paga solo</span>
+              </div>
+            </div>
+            <!-- variante 3: subrayado ondulado -->
+            <div class="relative rounded-xl border border-line2 bg-paper/60 p-5 t-line2">
+              <span class="font-sans text-[1.05rem] font-bold text-ink t-ink">rúbrica objetiva</span>
+              <svg class="mt-1" width="150" height="12" viewBox="0 0 150 12" fill="none" stroke="var(--cta)" stroke-width="2.4" stroke-linecap="round"><path d="M2 7 C 20 2, 34 11, 52 6 S 86 2, 104 7 S 134 11, 148 5"/></svg>
+              <p class="mt-1 font-mono text-[11px] text-ink3 t-ink3">subrayado ondulado</p>
+            </div>
+          </div>
+
+          <pre class="mt-5 overflow-x-auto rounded-xl bg-paper2 p-4 font-mono text-[11.5px] leading-relaxed text-ink2 t-paper2 t-ink2">&lt;div class="hand-note" style="transform:rotate(-5deg)"&gt;
+  &lt;svg width="58" height="34" viewBox="0 0 58 34" fill="none"
+       stroke="currentColor" stroke-width="2" stroke-linecap="round"&gt;
+    &lt;path d="M54 4 C 38 4, 22 12, 8 26"/&gt;   &lt;!-- curva --&gt;
+    &lt;path d="M8 26 l 9 -1 M8 26 l 1 -9"/&gt;  &lt;!-- punta --&gt;
+  &lt;/svg&gt;
+  &lt;span&gt;¡este sí!&lt;/span&gt;
+&lt;/div&gt;</pre>
+        </div>
+      </section>
+
+      <!-- ============ 04 · GESTOS DE MARCA ============ -->
+      <section data-section="gestos" id="gestos" class="reveal scroll-mt-24">
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3"><span class="text-cta t-cta">04</span> Gestos de marca <span class="h-px w-10 bg-line2 t-line2"></span></div>
+        <h2 class="mt-2 font-serif text-[1.8rem] font-semibold tracking-tight text-ink sm:text-[2.2rem] t-ink">Cuatro recursos que “suenan” a Evalen</h2>
+        <p class="mt-3 max-w-[64ch] text-[14.5px] leading-relaxed text-ink2 t-ink2">Cada uno con su <span class="font-semibold text-ink t-ink">cuándo sí / cuándo no</span>. El error más común es usarlos todos a la vez: elige uno por zona.</p>
+
+        <div class="mt-7 grid gap-5 md:grid-cols-2">
+          <!-- losa verde -->
+          <div class="overflow-hidden rounded-2xl border border-line t-line">
+            <div class="relative overflow-hidden bg-greendeep p-5 text-onmark">
+              <div aria-hidden="true" class="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full" style="background:radial-gradient(circle, rgba(243,233,78,.24), transparent 70%)"></div>
+              <svg aria-hidden="true" class="pointer-events-none absolute inset-0 h-full w-full text-onmark opacity-[0.08]" viewBox="0 0 300 120" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1"><g><line x1="20" y1="30" x2="90" y2="22"/><line x1="90" y1="22" x2="160" y2="50"/><line x1="160" y1="50" x2="240" y2="30"/><line x1="160" y1="50" x2="200" y2="92"/></g><g fill="currentColor" stroke="none"><circle class="animate-nodepulse" cx="90" cy="22" r="2.6"/><circle class="animate-nodepulse" cx="160" cy="50" r="2.6" style="animation-delay:.9s"/></g></svg>
+              <div class="relative z-10">
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-yellow/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-yellow"><span class="h-1.5 w-1.5 rounded-full bg-yellow animate-pulsering"></span> Asistente IA</span>
+                <p class="mt-2 font-sans text-[1.05rem] font-semibold">Smart Fill · losa verde profunda</p>
+              </div>
+            </div>
+            <div class="bg-card p-4 t-card">
+              <p class="text-[12.5px] leading-relaxed text-ink2 t-ink2"><span class="text-good t-good">✓</span> Login, bloque “magia IA”, <em>una</em> card destacada. <span class="text-low t-low">✗</span> Cabecera de contenido (ahí, papel).</p>
+            </div>
+          </div>
+
+          <!-- filigrana -->
+          <div class="overflow-hidden rounded-2xl border border-line t-line">
+            <div class="relative overflow-hidden bg-card p-5 t-card">
+              <svg aria-hidden="true" class="report-watermark pointer-events-none absolute inset-0 h-full w-full opacity-[0.06]" viewBox="0 0 300 120" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1"><g><line x1="20" y1="30" x2="90" y2="22"/><line x1="90" y1="22" x2="160" y2="50"/><line x1="160" y1="50" x2="240" y2="30"/><line x1="90" y1="22" x2="60" y2="80"/><line x1="160" y1="50" x2="200" y2="92"/></g><g fill="currentColor" stroke="none"><circle cx="20" cy="30" r="2.2"/><circle cx="240" cy="30" r="2.2"/><circle class="animate-nodepulse" cx="160" cy="50" r="2.6"/></g></svg>
+              <div class="relative z-10">
+                <span class="font-mono text-[10px] uppercase tracking-[0.14em] text-ink3 t-ink3">Filigrana en tinta</span>
+                <p class="mt-2 font-sans text-[1.05rem] font-bold text-ink t-ink">Membrete de informe</p>
+              </div>
+            </div>
+            <div class="border-t border-line bg-card p-4 t-line t-card">
+              <p class="text-[12.5px] leading-relaxed text-ink2 t-ink2"><span class="text-good t-good">✓</span> Informes sobre papel (análisis IA). <span class="text-low t-low">✗</span> Sobre fondo verde (ahí, nodos en crema).</p>
+            </div>
+          </div>
+
+          <!-- cita lateral -->
+          <div class="overflow-hidden rounded-2xl border border-line t-line">
+            <div class="bg-card p-5 t-card">
+              <p class="border-l-2 border-cta pl-4 font-serif text-[1.05rem] italic leading-relaxed text-ink t-cta t-ink">“Carece del stack principal; evaluar capacidad de aprendizaje.”</p>
+              <p class="mt-2 pl-4 font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink3 t-ink3">cita con barra lateral</p>
+            </div>
+            <div class="border-t border-line bg-card p-4 t-line t-card">
+              <p class="text-[12.5px] leading-relaxed text-ink2 t-ink2"><span class="text-good t-good">✓</span> Veredicto de la IA, consejos. <span class="text-low t-low">✗</span> Texto neutro sin carga de “voz”.</p>
+            </div>
+          </div>
+
+          <!-- gauge -->
+          <div class="overflow-hidden rounded-2xl border border-line t-line">
+            <div class="flex items-center gap-4 bg-card p-5 t-card">
+              <div class="relative grid h-[88px] w-[88px] shrink-0 place-items-center">
+                <div aria-hidden="true" class="hero-glow pointer-events-none absolute -inset-3 rounded-full blur-md"></div>
+                <svg width="88" height="88" viewBox="0 0 88 88" class="relative" aria-hidden="true">
+                  <circle class="gauge-track" cx="44" cy="44" r="38" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="179.1 238.8" transform="rotate(135 44 44)"/>
+                  <circle class="gauge-prog" cx="44" cy="44" r="38" fill="none" stroke-width="7" stroke-linecap="round" stroke-dasharray="179.1 238.8" stroke-dashoffset="179.1" data-final="66.3" transform="rotate(135 44 44)"/>
+                </svg>
+                <span class="hero-num absolute font-serif text-[1.9rem] font-semibold text-ink t-ink">63</span>
+              </div>
+              <div>
+                <p class="font-sans text-[1.05rem] font-bold text-ink t-ink">Gauge / anillo de match</p>
+                <p class="mt-1 text-[12.5px] text-ink2 t-ink2">Arco 270° + tono por puntaje + count-up.</p>
+              </div>
+            </div>
+            <div class="border-t border-line bg-card p-4 t-line t-card">
+              <p class="text-[12.5px] leading-relaxed text-ink2 t-ink2"><span class="text-good t-good">✓</span> Héroe del análisis. <span class="text-low t-low">✗</span> Repetirlo en cada fila (ahí, número + barra).</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 05 · COMPONENTES ============ -->
+      <section data-section="componentes" id="componentes" class="reveal scroll-mt-24">
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3"><span class="text-cta t-cta">05</span> Componentes <span class="h-px w-10 bg-line2 t-line2"></span></div>
+        <h2 class="mt-2 font-serif text-[1.8rem] font-semibold tracking-tight text-ink sm:text-[2.2rem] t-ink">Botones, chips, campos y la regla del recuadro</h2>
+
+        <!-- botones -->
+        <h3 class="mt-7 font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">Botones</h3>
+        <div class="mt-3 flex flex-wrap items-center gap-3">
+          <button class="inline-flex items-center gap-2 rounded-xl bg-cta px-5 py-3 text-[14px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah">Primario · acción <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          <button class="inline-flex items-center gap-2 rounded-xl border border-line2 bg-card px-5 py-3 text-[14px] font-semibold text-ink transition hover:-translate-y-0.5 hover:border-ink t-card t-ink t-line2">Secundario · ghost</button>
+          <button class="inline-flex items-center gap-2 rounded-xl bg-greendeep px-5 py-3 text-[14px] font-semibold text-onmark transition hover:-translate-y-0.5">Oscuro · marca</button>
+        </div>
+        <p class="mt-2 max-w-[60ch] text-[12.5px] text-ink2 t-ink2">Naranja = la acción principal de la pantalla (una por vista). Ghost = lo secundario. Verde profundo = acciones “de sistema/marca” sobre fondo claro.</p>
+
+        <!-- chips -->
+        <h3 class="mt-7 font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">Chips de estado (tono semántico)</h3>
+        <div class="mt-3 flex flex-wrap items-center gap-2.5">
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-goodt px-2.5 py-1 font-mono text-[10.5px] font-medium uppercase tracking-wide text-good t-goodt t-good"><span class="h-1.5 w-1.5 rounded-full bg-good"></span> En entrevista</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-midt px-2.5 py-1 font-mono text-[10.5px] font-medium uppercase tracking-wide text-mid t-midt t-mid"><span class="h-1.5 w-1.5 rounded-full bg-mid"></span> En revisión</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-lowt px-2.5 py-1 font-mono text-[10.5px] font-medium uppercase tracking-wide text-low t-lowt t-low"><span class="h-1.5 w-1.5 rounded-full bg-low"></span> Descartado</span>
+          <span class="inline-flex items-center gap-1.5 rounded-full bg-greentint px-2.5 py-1 font-mono text-[10.5px] font-medium uppercase tracking-wide text-green t-goodt t-green">Activa</span>
+        </div>
+
+        <!-- campos -->
+        <h3 class="mt-7 font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">Campos</h3>
+        <div class="mt-3 grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Correo <span class="text-cta t-cta">*</span></label>
+            <input type="email" placeholder="tu@empresa.com" class="w-full rounded-xl border border-line2 bg-card px-4 py-3 text-[14px] text-ink placeholder:text-ink3/80 transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2" />
+          </div>
+          <div>
+            <label class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Modalidad</label>
+            <select class="w-full rounded-xl border border-line2 bg-card px-3 py-3 text-[14px] text-ink transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2"><option>Remoto</option><option>Híbrido</option><option>Presencial</option></select>
+          </div>
+        </div>
+        <p class="mt-2 max-w-[60ch] text-[12.5px] text-ink2 t-ink2">Radio <code class="font-mono text-[12px] text-cta t-cta">xl</code> (12px), borde <code class="font-mono text-[12px] text-cta t-cta">line2</code>, foco en verde con anillo suave. Checkbox y radio con <code class="font-mono text-[12px] text-cta t-cta">accent-cta</code>.</p>
+
+        <!-- regla del recuadro: do / don't -->
+        <h3 class="mt-8 font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">La regla del recuadro</h3>
+        <div class="mt-3 grid gap-4 md:grid-cols-2">
+          <div class="rounded-2xl border border-low/40 bg-lowt/40 p-4 t-lowt">
+            <span class="font-mono text-[10.5px] uppercase tracking-[0.12em] text-low t-low">✗ don't · todo en cajas</span>
+            <div class="mt-3 grid gap-2">
+              <div class="rounded-xl border border-line2 bg-card p-3 text-[12px] text-ink2 t-card t-line2">caja</div>
+              <div class="rounded-xl border border-line2 bg-card p-3 text-[12px] text-ink2 t-card t-line2">caja</div>
+              <div class="rounded-xl border border-line2 bg-card p-3 text-[12px] text-ink2 t-card t-line2">caja</div>
+            </div>
+          </div>
+          <div class="rounded-2xl border border-good/40 bg-goodt/40 p-4 t-goodt">
+            <span class="font-mono text-[10.5px] uppercase tracking-[0.12em] text-good t-good">✓ do · cajas solo como acento</span>
+            <div class="mt-3 grid gap-2 text-[12px] text-ink2 t-ink2">
+              <p class="font-semibold text-ink t-ink">Título que fluye</p>
+              <p>Texto sobre el papel, separado por una línea fina…</p>
+              <div class="rounded-xl border border-line2 bg-card p-3 t-card t-line2">…y una sola caja, porque es accionable.</div>
+            </div>
+          </div>
+        </div>
+        <p class="mt-3 max-w-[64ch] text-[13px] leading-relaxed text-ink2 t-ink2">Solo tres cosas merecen superficie propia: <b class="text-ink t-ink">(1)</b> el objeto sobre el que actúas, <b class="text-ink t-ink">(2)</b> un callout (cita/consejo), <b class="text-ink t-ink">(3)</b> una barra de navegación. Lo demás respira.</p>
+      </section>
+
+      <!-- ============ 06 · ESCALA Y ESPACIO ============ -->
+      <section data-section="escala" id="escala" class="reveal scroll-mt-24">
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3"><span class="text-cta t-cta">06</span> Escala y espacio <span class="h-px w-10 bg-line2 t-line2"></span></div>
+        <h2 class="mt-2 font-serif text-[1.8rem] font-semibold tracking-tight text-ink sm:text-[2.2rem] t-ink">Radios, sombras y el aire como jerarquía</h2>
+
+        <h3 class="mt-7 font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">Radios</h3>
+        <div class="mt-3 flex flex-wrap items-end gap-4">
+          <div class="text-center"><div class="h-16 w-16 border border-line2 bg-card t-card t-line2" style="border-radius:9999px"></div><span class="mt-1.5 block font-mono text-[10px] text-ink3 t-ink3">full · chips</span></div>
+          <div class="text-center"><div class="h-16 w-16 border border-line2 bg-card t-card t-line2" style="border-radius:16px"></div><span class="mt-1.5 block font-mono text-[10px] text-ink3 t-ink3">2xl · losas</span></div>
+          <div class="text-center"><div class="h-16 w-16 border border-line2 bg-card t-card t-line2" style="border-radius:12px"></div><span class="mt-1.5 block font-mono text-[10px] text-ink3 t-ink3">xl · inputs</span></div>
+          <div class="text-center"><div class="h-16 w-16 border border-line2 bg-card t-card t-line2" style="border-radius:9px"></div><span class="mt-1.5 block font-mono text-[10px] text-ink3 t-ink3">lg · botones sm</span></div>
+        </div>
+
+        <h3 class="mt-8 font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">Sombras</h3>
+        <div class="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div class="rounded-2xl bg-card p-4 shadow-soft t-card"><span class="font-mono text-[10px] text-ink3 t-ink3">soft</span><p class="mt-1 text-[12px] text-ink2 t-ink2">cards en hover</p></div>
+          <div class="rounded-2xl bg-card p-4 shadow-card t-card"><span class="font-mono text-[10px] text-ink3 t-ink3">card</span><p class="mt-1 text-[12px] text-ink2 t-ink2">losas / contenedores</p></div>
+          <div class="rounded-2xl bg-card p-4 shadow-pop t-card"><span class="font-mono text-[10px] text-ink3 t-ink3">pop</span><p class="mt-1 text-[12px] text-ink2 t-ink2">menús / drawer</p></div>
+          <div class="rounded-2xl bg-cta p-4 text-ctatext shadow-cta"><span class="font-mono text-[10px] opacity-80">cta</span><p class="mt-1 text-[12px]">botón primario</p></div>
+          <div class="rounded-2xl bg-yellow p-4 text-greendeep shadow-gold"><span class="font-mono text-[10px] opacity-80">gold</span><p class="mt-1 text-[12px]">badge / match</p></div>
+          <div class="rounded-2xl bg-card p-4 shadow-ring t-card"><span class="font-mono text-[10px] text-ink3 t-ink3">ring</span><p class="mt-1 text-[12px] text-ink2 t-ink2">anillo flotante</p></div>
+        </div>
+
+        <h3 class="mt-8 font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">Espacio y contenedor</h3>
+        <div class="mt-3 rounded-2xl border border-line bg-card p-5 text-[13px] leading-relaxed text-ink2 t-card t-line">
+          <p>Contenedor <code class="font-mono text-[12px] text-cta t-cta">max-w 1240px</code>, padding lateral <code class="font-mono text-[12px] text-cta t-cta">24 / 32px</code>. Entre secciones <code class="font-mono text-[12px] text-cta t-cta">mt-10 / mt-12</code>; grids con <code class="font-mono text-[12px] text-cta t-cta">gap-5 / gap-6</code>. El aire entre bloques <em>es</em> la jerarquía: separa con espacio y líneas finas antes que con cajas. El grano (<code class="font-mono text-[12px] text-cta t-cta">bg-grain</code> al 4–5%, <code class="font-mono text-[12px] text-cta t-cta">mix-blend-overlay</code>) va fijo sobre toda la app para que el fondo no se vea “plástico”.</p>
+        </div>
+      </section>
+
+      <!-- ============ 07 · MOVIMIENTO ============ -->
+      <section data-section="movimiento" id="movimiento" class="reveal scroll-mt-24">
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3"><span class="text-cta t-cta">07</span> Movimiento <span class="h-px w-10 bg-line2 t-line2"></span></div>
+        <h2 class="mt-2 font-serif text-[1.8rem] font-semibold tracking-tight text-ink sm:text-[2.2rem] t-ink">Animación con feedback, nunca por decorar</h2>
+        <p class="mt-3 max-w-[64ch] text-[14.5px] leading-relaxed text-ink2 t-ink2">Easing estándar <code class="font-mono text-[12px] text-cta t-cta">cubic-bezier(.2,.7,.2,1)</code>. Todo respeta <code class="font-mono text-[12px] text-cta t-cta">prefers-reduced-motion</code>. Pulsa “▶ ver” para re-disparar cada demo.</p>
+
+        <div class="mt-7 grid gap-4 sm:grid-cols-2">
+          <!-- reveal -->
+          <div class="rounded-2xl border border-line bg-card p-5 t-card t-line">
+            <div class="flex items-center justify-between gap-3"><span class="font-sans text-[14px] font-bold text-ink t-ink">Reveal on scroll</span><button type="button" data-demo="reveal" class="rounded-lg border border-line2 px-2.5 py-1 font-mono text-[10.5px] font-medium text-ink2 transition hover:border-green hover:text-green t-ink2 t-line2">▶ ver</button></div>
+            <div class="mt-3 h-16 overflow-hidden rounded-xl bg-paper2 t-paper2"><div id="demoReveal" class="grid h-full place-items-center font-mono text-[11px] text-ink3 t-ink3 reveal">fade + translate-y · .6s</div></div>
+          </div>
+          <!-- count + gauge -->
+          <div class="rounded-2xl border border-line bg-card p-5 t-card t-line">
+            <div class="flex items-center justify-between gap-3"><span class="font-sans text-[14px] font-bold text-ink t-ink">Count-up + gauge</span><button type="button" data-demo="gauge" class="rounded-lg border border-line2 px-2.5 py-1 font-mono text-[10.5px] font-medium text-ink2 transition hover:border-green hover:text-green t-ink2 t-line2">▶ ver</button></div>
+            <div class="mt-3 flex items-center gap-3">
+              <div class="relative grid h-16 w-16 place-items-center">
+                <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><circle class="gauge-track" cx="32" cy="32" r="27" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="127.2 169.6" transform="rotate(135 32 32)"/><circle id="demoGaugeProg" class="gauge-prog" cx="32" cy="32" r="27" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="127.2 169.6" stroke-dashoffset="127.2" transform="rotate(135 32 32)"/></svg>
+                <span id="demoGaugeNum" class="hero-num absolute font-serif text-[1.3rem] font-semibold text-ink t-ink">0</span>
+              </div>
+              <span class="font-mono text-[11px] text-ink3 t-ink3">1.2s · ease-out</span>
+            </div>
+          </div>
+          <!-- pulse -->
+          <div class="rounded-2xl border border-line bg-card p-5 t-card t-line">
+            <div class="flex items-center justify-between gap-3"><span class="font-sans text-[14px] font-bold text-ink t-ink">Pulse “en vivo”</span><span class="font-mono text-[10.5px] text-ink3 t-ink3">continuo</span></div>
+            <div class="mt-3 flex items-center gap-2 font-mono text-[11px] text-ink2 t-ink2"><span class="h-2 w-2 rounded-full bg-yellow animate-pulsering"></span> 12 reclutadores evaluando ahora</div>
+          </div>
+          <!-- bar fill -->
+          <div class="rounded-2xl border border-line bg-card p-5 t-card t-line">
+            <div class="flex items-center justify-between gap-3"><span class="font-sans text-[14px] font-bold text-ink t-ink">Barra que se llena</span><button type="button" data-demo="bar" class="rounded-lg border border-line2 px-2.5 py-1 font-mono text-[10.5px] font-medium text-ink2 transition hover:border-green hover:text-green t-ink2 t-line2">▶ ver</button></div>
+            <div class="mt-3 h-2 rounded-full bg-paper2 t-paper2"><span id="demoBar" class="bar-fill block h-full rounded-full bg-good t-good" data-w="84%"></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 08 · REGLAS DE ORO ============ -->
+      <section data-section="antislop" id="antislop" class="reveal scroll-mt-24">
+        <div class="flex items-center gap-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3"><span class="text-cta t-cta">08</span> Reglas de oro <span class="h-px w-10 bg-line2 t-line2"></span></div>
+        <h2 class="mt-2 font-serif text-[1.8rem] font-semibold tracking-tight text-ink sm:text-[2.2rem] t-ink">Lo que NO hacemos (anti‑slop)</h2>
+
+        <div class="mt-7 grid gap-3">
+          <div class="grid grid-cols-[auto_1fr] items-start gap-3 border-b border-line pb-3 t-line"><span class="text-low t-low">✗</span><p class="text-[13.5px] text-ink2 t-ink2">Degradados violeta / rosa / índigo genéricos. <span class="text-ink t-ink">→</span> verde profundo + amarillo de marca, con propósito.</p></div>
+          <div class="grid grid-cols-[auto_1fr] items-start gap-3 border-b border-line pb-3 t-line"><span class="text-low t-low">✗</span><p class="text-[13.5px] text-ink2 t-ink2">Un recuadro alrededor de cada bloque. <span class="text-ink t-ink">→</span> recuadro solo como acento (3 casos).</p></div>
+          <div class="grid grid-cols-[auto_1fr] items-start gap-3 border-b border-line pb-3 t-line"><span class="text-low t-low">✗</span><p class="text-[13.5px] text-ink2 t-ink2">Una tipografía para todo (Inter / Roboto). <span class="text-ink t-ink">→</span> tres familias por función.</p></div>
+          <div class="grid grid-cols-[auto_1fr] items-start gap-3 border-b border-line pb-3 t-line"><span class="text-low t-low">✗</span><p class="text-[13.5px] text-ink2 t-ink2">Hero centrado “título + subtítulo + CTA”. <span class="text-ink t-ink">→</span> apertura característica con jerarquía.</p></div>
+          <div class="grid grid-cols-[auto_1fr] items-start gap-3 border-b border-line pb-3 t-line"><span class="text-low t-low">✗</span><p class="text-[13.5px] text-ink2 t-ink2">Losa verde en cada cabecera. <span class="text-ink t-ink">→</span> una por vista; cabeceras sobre papel.</p></div>
+          <div class="grid grid-cols-[auto_1fr] items-start gap-3 border-b border-line pb-3 t-line"><span class="text-low t-low">✗</span><p class="text-[13.5px] text-ink2 t-ink2">Párrafos enteros en MAYÚSCULAS. <span class="text-ink t-ink">→</span> mono en caps solo en etiquetas cortas.</p></div>
+          <div class="grid grid-cols-[auto_1fr] items-start gap-3 border-b border-line pb-3 t-line"><span class="text-low t-low">✗</span><p class="text-[13.5px] text-ink2 t-ink2">Sparkles / blobs / auroras decorativos. <span class="text-ink t-ink">→</span> metáforas del producto (malla = matching).</p></div>
+          <div class="grid grid-cols-[auto_1fr] items-start gap-3"><span class="text-low t-low">✗</span><p class="text-[13.5px] text-ink2 t-ink2">Repetir la misma info en 3 widgets. <span class="text-ink t-ink">→</span> un héroe + la evidencia anclada debajo.</p></div>
+        </div>
+
+        <!-- checklist final -->
+        <div class="mt-8 rounded-2xl border border-line bg-greentint p-5 sm:p-6 t-greentint">
+          <h3 class="font-sans text-[1.1rem] font-bold tracking-tight text-ink t-ink">Checklist para una vista nueva</h3>
+          <ol class="mt-3 grid gap-2 text-[13.5px] text-ink2 t-ink2">
+            <li class="flex gap-2.5"><span class="font-mono text-[11px] font-semibold text-green t-green">1</span> ¿Cuál es el <em>héroe</em> único de esta pantalla? Dale escala y silencio.</li>
+            <li class="flex gap-2.5"><span class="font-mono text-[11px] font-semibold text-green t-green">2</span> Asigna familia por rol: voz = Fraunces, dato = Sans, etiqueta = Mono.</li>
+            <li class="flex gap-2.5"><span class="font-mono text-[11px] font-semibold text-green t-green">3</span> Cuenta los recuadros: si pasan de 2–3, convierte el resto en documento fluido.</li>
+            <li class="flex gap-2.5"><span class="font-mono text-[11px] font-semibold text-green t-green">4</span> ¿Usas verde profundo? Que sea una sola vez y con motivo.</li>
+            <li class="flex gap-2.5"><span class="font-mono text-[11px] font-semibold text-green t-green">5</span> Color de estado por tono (good/mid/low); acción solo en naranja.</li>
+            <li class="flex gap-2.5"><span class="font-mono text-[11px] font-semibold text-green t-green">6</span> Añade un gesto humano (resaltado o nota) y movimiento con feedback + reduced-motion.</li>
+          </ol>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- footer -->
+<footer class="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-8">
+  <div class="flex flex-col items-center justify-between gap-3 border-t border-line py-6 font-mono text-[11px] text-ink3 sm:flex-row t-line t-ink3">
+    <span>© 2026 Evalen · Guía de diseño v1 · La IA lee, los humanos deciden.</span>
+    <span class="flex items-center gap-2"><span class="h-1.5 w-1.5 rounded-full bg-good animate-pulsering t-good"></span> Sistema vivo · claro &amp; oscuro</span>
+  </div>
+</footer>
+
+<!-- toast -->
+<div id="toast" aria-live="polite" role="status" class="pointer-events-none fixed inset-x-4 bottom-5 z-[90] mx-auto flex max-w-sm translate-y-[140%] items-start gap-3 rounded-xl border border-line2 bg-card px-4 py-3 text-[13.5px] text-ink opacity-0 shadow-card transition-all duration-300 sm:inset-x-auto sm:right-6 sm:max-w-sm t-card t-ink t-line2">
+  <span id="toastIcon" class="mt-0.5 shrink-0"></span>
+  <span id="toastMsg" class="leading-snug"></span>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var root = document.documentElement;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function isDark() { return root.getAttribute('data-theme') === 'dark'; }
+
+  /* ---------- theme ---------- */
+  function syncThemeIcons() {
+    var d = isDark();
+    $$('.ic-moon').forEach(function (e) { e.classList.toggle('hidden', d); });
+    $$('.ic-sun').forEach(function (e) { e.classList.toggle('hidden', !d); });
+    $$('.swatch').forEach(function (s) { s.setAttribute('data-active', d ? 'dark' : 'light'); });
+    root.style.setProperty('--hero', d ? '#E0A93A' : '#A9760F');
+  }
+  syncThemeIcons();
+  $('#themeBtn').addEventListener('click', function () {
+    var next = isDark() ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('evalen-theme', next); } catch (e) {}
+    syncThemeIcons();
+  });
+
+  /* ---------- nav shadow ---------- */
+  var nav = $('#nav');
+  function onScroll() {
+    var y = window.scrollY || window.pageYOffset;
+    if (y > 8) { nav.classList.add('border-line', 'shadow-soft'); nav.classList.remove('border-transparent'); }
+    else { nav.classList.remove('border-line', 'shadow-soft'); nav.classList.add('border-transparent'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+
+  /* ---------- toast ---------- */
+  var toast = $('#toast'), toastMsg = $('#toastMsg'), toastIcon = $('#toastIcon'), toastT = null;
+  var ICONS = {
+    ok: '<svg class="h-4 w-4 text-good" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    info: '<svg class="h-4 w-4 text-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>'
+  };
+  function showToast(msg, type) {
+    type = type || 'info';
+    toastMsg.textContent = msg;
+    toastIcon.innerHTML = ICONS[type] || ICONS.info;
+    toast.classList.remove('translate-y-[140%]', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+    clearTimeout(toastT); toastT = setTimeout(hideToast, 2600);
+  }
+  function hideToast() { toast.classList.add('translate-y-[140%]', 'opacity-0'); toast.classList.remove('translate-y-0', 'opacity-100'); }
+
+  /* ---------- swatches ---------- */
+  var COLORS = [
+    { g:'Superficies', items:[
+      { n:'paper', v:'--paper', l:'#F6F1E6', d:'#0E1813', use:'Fondo de la app' },
+      { n:'paper2', v:'--paper2', l:'#EFE7D6', d:'#13201A', use:'Fondo secundario / hover' },
+      { n:'card', v:'--card', l:'#FCFAF3', d:'#16241C', use:'Superficie elevada' }
+    ]},
+    { g:'Tinta', items:[
+      { n:'ink', v:'--ink', l:'#15261E', d:'#F1EBDC', use:'Texto principal' },
+      { n:'ink2', v:'--ink2', l:'#4C5B51', d:'#AAB6A8', use:'Texto secundario' },
+      { n:'ink3', v:'--ink3', l:'#828E84', d:'#7E8C7E', use:'Terciario / meta' }
+    ]},
+    { g:'Marca · verde', items:[
+      { n:'green', v:'--green', l:'#1C5B44', d:'#5BAE88', use:'Acento / éxito' },
+      { n:'greendeep', v:'--greendeep', l:'#0F3A2C', d:'#163528', use:'Marca / losa / magia IA' },
+      { n:'greentint', v:'--greentint', l:'#E4ECE4', d:'#1C3329', use:'Fondo de chip verde' },
+      { n:'onmark', v:'--onmark', l:'#F6F1E6', d:'#F1EBDC', use:'Texto sobre oscuro' }
+    ]},
+    { g:'Acento · amarillo', items:[
+      { n:'yellow', v:'--yellow', l:'#F3E94E', d:'#F3E94E', use:'Destacar / magia / .hl' },
+      { n:'yellow2', v:'--yellow2', l:'#FBF6AE', d:'#5A5418', use:'.hl-soft suave' }
+    ]},
+    { g:'Acción · naranja', items:[
+      { n:'cta', v:'--cta', l:'#D64518', d:'#FF6A38', use:'LA acción / notas a mano' },
+      { n:'ctah', v:'--ctah', l:'#B5370F', d:'#FF8455', use:'Hover del primario' },
+      { n:'ctatext', v:'--ctatext', l:'#FFF7EC', d:'#10231A', use:'Texto sobre naranja' }
+    ]},
+    { g:'Semántico', items:[
+      { n:'good / goodt', v:'--good', l:'#1C5B44', d:'#62B78F', use:'≥ 80 · fondo #E4ECE4 / #173327' },
+      { n:'mid / midt', v:'--mid', l:'#A9760F', d:'#E0A93A', use:'≥ 60 · fondo #F6ECCF / #3A2E12' },
+      { n:'low / lowt', v:'--low', l:'#B23B2E', d:'#E0695A', use:'< 60 · fondo #F4DDD8 / #3A1C18' }
+    ]},
+    { g:'Líneas', items:[
+      { n:'line', v:'--line', l:'rgba(21,38,30,.13)', d:'rgba(241,235,220,.13)', use:'Divisores suaves' },
+      { n:'line2', v:'--line2', l:'rgba(21,38,30,.24)', d:'rgba(241,235,220,.26)', use:'Bordes / divisores' }
+    ]}
+  ];
+  function hexChip(hex) {
+    var isRgba = hex.indexOf('rgba') === 0;
+    return '<span class="sw-' + 'x' + ' inline-flex items-center gap-1.5 rounded-md border border-line2 bg-paper/60 px-2 py-0.5 font-mono text-[10.5px] text-ink2 t-ink2 t-line2">' +
+      (isRgba ? '' : '<span class="h-3 w-3 rounded-sm ring-1 ring-line2" style="background:' + hex + '"></span>') + hex + '</span>';
+  }
+  function buildSwatches() {
+    var host = $('#swatches');
+    host.innerHTML = COLORS.map(function (grp) {
+      var cards = grp.items.map(function (c) {
+        return '<button type="button" class="swatch group text-left rounded-2xl border border-line bg-card p-3 transition hover:-translate-y-0.5 hover:shadow-soft t-card t-line" data-active="' + (isDark()?'dark':'light') + '" data-light="' + c.l + '" data-dark="' + c.d + '" data-name="' + c.n + '" data-var="' + c.v + '" title="Copiar hex activo">' +
+          '<span class="flex h-14 w-full items-center justify-between gap-2 overflow-hidden rounded-xl">' +
+            '<span class="sw-light h-full flex-1 rounded-l-xl ring-1 ring-inset ring-line2" style="background:' + c.l + '"></span>' +
+            '<span class="sw-dark h-full flex-1 rounded-r-xl ring-1 ring-inset ring-line2" style="background:' + c.d + '"></span>' +
+          '</span>' +
+          '<span class="mt-2.5 flex items-baseline justify-between gap-2">' +
+            '<span class="font-sans text-[13px] font-bold text-ink t-ink">' + c.n + '</span>' +
+            '<span class="font-mono text-[10px] text-ink3 t-ink3">' + c.v + '</span>' +
+          '</span>' +
+          '<span class="mt-1 block text-[11px] text-ink2 t-ink2">' + c.use + '</span>' +
+          '<span class="mt-2 flex flex-wrap gap-1.5"><span class="sw-lv">' + hexChip(c.l) + '</span><span class="sw-dv">' + hexChip(c.d) + '</span></span>' +
+        '</button>';
+      }).join('');
+      return '<div><h3 class="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-ink3 t-ink3">' + grp.g + '</h3>' +
+        '<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">' + cards + '</div></div>';
+    }).join('');
+
+    $$('.swatch', host).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var active = isDark() ? btn.dataset.dark : btn.dataset.light;
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(active).catch(function () {});
+        showToast('Copiado ' + active + '  ·  ' + btn.dataset.name + ' (' + btn.dataset.var + ')', 'ok');
+      });
+    });
+  }
+  buildSwatches();
+
+  /* ---------- scroll-spy ---------- */
+  function setActiveIx(key) {
+    $$('#docIndex [data-ix]').forEach(function (a) { a.setAttribute('aria-current', a.getAttribute('data-ix') === key ? 'true' : 'false'); });
+  }
+  $$('#docIndex [data-ix]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var t = document.getElementById(a.getAttribute('data-ix'));
+      if (t) t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      setActiveIx(a.getAttribute('data-ix'));
+    });
+  });
+  function initSpy() {
+    var secs = $$('[data-section]');
+    if (!('IntersectionObserver' in window) || !secs.length) { setActiveIx('filosofia'); return; }
+    var spy = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) setActiveIx(en.target.getAttribute('data-section')); });
+    }, { rootMargin: '-120px 0px -60% 0px', threshold: 0 });
+    secs.forEach(function (s) { spy.observe(s); });
+    setActiveIx('filosofia');
+  }
+
+  /* ---------- reveal ---------- */
+  var reveals = $$('.reveal');
+  if (reduce || !('IntersectionObserver' in window)) {
+    reveals.forEach(function (el) { el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+    reveals.forEach(function (el) { io.observe(el); });
+  }
+
+  /* ---------- demos de movimiento ---------- */
+  function runCountGauge() {
+    var num = $('#demoGaugeNum'), prog = $('#demoGaugeProg');
+    if (!num || !prog) return;
+    var vis = 127.2, target = 88, finalOff = vis * (1 - target / 100);
+    num.textContent = '0';
+    prog.style.transition = 'none'; prog.style.strokeDashoffset = vis.toFixed(1);
+    void prog.offsetWidth;
+    if (reduce) { num.textContent = target; prog.style.strokeDashoffset = finalOff.toFixed(1); return; }
+    prog.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1)';
+    requestAnimationFrame(function () { requestAnimationFrame(function () { prog.style.strokeDashoffset = finalOff.toFixed(1); }); });
+    var dur = 1200, start = null;
+    function ease(t) { return 1 - Math.pow(1 - t, 3); }
+    function step(ts) { if (start === null) start = ts; var p = Math.min(1, (ts - start) / dur); num.textContent = Math.round(ease(p) * target); if (p < 1) requestAnimationFrame(step); else num.textContent = target; }
+    requestAnimationFrame(step);
+  }
+  function runBar() {
+    var bar = $('#demoBar'); if (!bar) return;
+    bar.style.transition = 'none'; bar.style.width = '0'; void bar.offsetWidth;
+    if (reduce) { bar.style.width = bar.dataset.w; return; }
+    bar.style.transition = 'width 1s cubic-bezier(.2,.7,.2,1)';
+    requestAnimationFrame(function () { requestAnimationFrame(function () { bar.style.width = bar.dataset.w; }); });
+  }
+  function runReveal() {
+    var el = $('#demoReveal'); if (!el) return;
+    el.classList.remove('in'); void el.offsetWidth; el.classList.add('in');
+  }
+  // auto-run gauge & bar when section enters
+  var movSec = $('#movimiento');
+  if (movSec && !reduce && 'IntersectionObserver' in window) {
+    var mio = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { runCountGauge(); runBar(); runReveal(); mio.disconnect(); } }); }, { threshold: 0.25 });
+    mio.observe(movSec);
+  } else { runCountGauge(); runBar(); runReveal(); }
+
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-demo]'); if (!b) return;
+    var k = b.getAttribute('data-demo');
+    if (k === 'gauge') runCountGauge();
+    else if (k === 'bar') runBar();
+    else if (k === 'reveal') runReveal();
+  });
+
+  /* ---------- init ---------- */
+  function init() { initSpy(); }
+  window.addEventListener('load', init);
+  if (document.readyState === 'complete') init();
+})();
+</script>
+</body>
+</html>

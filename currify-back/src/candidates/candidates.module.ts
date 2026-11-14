@@ -3,9 +3,10 @@ import { CandidatesService } from './candidates.service';
 import { CandidatesController } from './candidates.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ScoringModule } from '../scoring/scoring.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
-  imports: [PrismaModule, ScoringModule],
+  imports: [PrismaModule, ScoringModule, AuditModule],
   controllers: [CandidatesController],
   providers: [CandidatesService],
   exports: [CandidatesService],

@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Evalen · Inicia sesión — tus finalistas te esperan</title>
+<meta name="description" content="Entra a Evalen con Google o con tu correo y retoma la evaluación de CVs justo donde la dejaste: notas, puntajes y el porqué de cada candidato." />
+<meta name="theme-color" content="#0F3A2C" />
+<meta name="robots" content="noindex,follow" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2048%2048'%3E%3Crect%20width='48'%20height='48'%20rx='12'%20fill='%230F3A2C'/%3E%3Crect%20x='13'%20y='12'%20width='5'%20height='24'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='12'%20width='18'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='21.5'%20width='13'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='31'%20width='21'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Ccircle%20cx='37'%20cy='14.5'%20r='4.5'%20fill='%23F3E94E'/%3E%3C/svg%3E" />
+
+<!-- Fonts (fontsource CDN) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-600-italic.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-mono@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-mono@latest/latin-500-normal.css" />
+
+<!-- Tailwind (Play CDN) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        paper:'#F6F1E6', paper2:'#EFE7D6', card:'#FCFAF3',
+        ink:'#15261E', ink2:'#4C5B51', ink3:'#828E84',
+        green:'#1C5B44', greendeep:'#0F3A2C', greentint:'#E4ECE4',
+        onmark:'#F6F1E6',
+        yellow:'#F3E94E', yellow2:'#FBF6AE',
+        cta:'#D64518', ctah:'#B5370F', ctatext:'#FFF7EC',
+        line:'rgba(21,38,30,.13)', line2:'rgba(21,38,30,.24)',
+        good:'#1C5B44', mid:'#A9760F', low:'#B23B2E'
+      },
+      fontFamily: {
+        serif: ['Fraunces','Georgia','Times New Roman','serif'],
+        sans: ['Instrument Sans','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'],
+        mono: ['IBM Plex Mono','ui-monospace','SFMono-Regular','Menlo','monospace']
+      },
+      boxShadow: {
+        card: '0 22px 48px -28px rgba(15,40,30,.55)',
+        soft: '0 10px 26px -18px rgba(15,40,30,.45)',
+        cta:  '0 12px 22px -12px rgba(214,69,24,.6)'
+      },
+      backgroundImage: {
+        grain: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
+      },
+      keyframes: {
+        pulsering: {
+          '0%':   { boxShadow: '0 0 0 0 rgba(98,183,143,.55)' },
+          '70%':  { boxShadow: '0 0 0 7px rgba(98,183,143,0)' },
+          '100%': { boxShadow: '0 0 0 0 rgba(98,183,143,0)' }
+        },
+        shake: {
+          '0%,100%': { transform: 'translateX(0)' },
+          '20%,60%': { transform: 'translateX(-7px)' },
+          '40%,80%': { transform: 'translateX(7px)' }
+        },
+        floaty: {
+          '0%,100%': { transform: 'translateY(0) rotate(-1.6deg)' },
+          '50%':     { transform: 'translateY(-6px) rotate(-1.6deg)' }
+        },
+        popin: {
+          '0%':   { opacity: '0', transform: 'scale(.85)' },
+          '100%': { opacity: '1', transform: 'scale(1)' }
+        }
+      },
+      animation: {
+        pulsering: 'pulsering 2.2s infinite',
+        shake: 'shake .42s cubic-bezier(.36,.07,.19,.97)',
+        floaty: 'floaty 6.5s ease-in-out infinite',
+        popin: 'popin .4s cubic-bezier(.2,.8,.2,1) both'
+      }
+    }
+  }
+}
+</script>
+
+<!-- Only raw CSS the utility layer can't express: autofill tint + selection -->
+<style type="text/tailwindcss">
+  @layer base {
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-text-fill-color: #15261E;
+      -webkit-box-shadow: 0 0 0 1000px #FCFAF3 inset;
+      caret-color: #15261E;
+      font-family: 'Instrument Sans', system-ui, sans-serif;
+      transition: background-color 99999s ease-in-out 0s;
+    }
+    ::selection { background: #F3E94E; color: #15261E; }
+  }
+</style>
+</head>
+
+<body class="min-h-screen bg-paper text-ink font-sans antialiased [text-rendering:optimizeLegibility]">
+
+<!-- film grain overlay -->
+<div aria-hidden="true" class="pointer-events-none fixed inset-0 z-[60] bg-grain opacity-[0.05] mix-blend-overlay"></div>
+
+<div class="relative flex min-h-screen">
+
+  <!-- ================= LEFT PANEL (desktop) ================= -->
+  <aside class="relative hidden w-[46%] max-w-[640px] shrink-0 overflow-hidden bg-greendeep lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-14">
+    <!-- photo -->
+    <img
+      src="https://image.qwenlm.ai/public_source/88b2e882-98ee-4857-a83c-263c15dcf5c8/1f904026b-d7bd-4825-835a-df2b9015dd91.png"
+      alt="Dos reclutadores de pelo oscuro, en una oficina de Santiago de Chile junto a una ventana, marcan con un resaltador el currículum de un candidato antes de decidir a quién entrevistar."
+      class="absolute inset-0 h-full w-full object-cover"
+      fetchpriority="high" decoding="async" />
+    <!-- legibility overlay -->
+    <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-greendeep via-greendeep/80 to-greendeep/35"></div>
+    <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-r from-greendeep/70 to-transparent"></div>
+
+    <!-- top row: brand + live chip -->
+    <div class="relative z-10 flex items-start justify-between gap-4">
+      <a href="/" class="group inline-flex items-center gap-2.5" aria-label="Evalen, volver al inicio">
+        <svg class="h-9 w-9 drop-shadow" viewBox="0 0 48 48" aria-hidden="true">
+          <rect width="48" height="48" rx="12" fill="#0F3A2C"/>
+          <rect x="13" y="12" width="5" height="24" rx="2.5" fill="#F6F1E6"/>
+          <rect x="13" y="12" width="18" height="5" rx="2.5" fill="#F6F1E6"/>
+          <rect x="13" y="21.5" width="13" height="5" rx="2.5" fill="#F6F1E6"/>
+          <rect x="13" y="31" width="21" height="5" rx="2.5" fill="#F6F1E6"/>
+          <circle cx="37" cy="14.5" r="4.5" fill="#F3E94E"/>
+        </svg>
+        <span class="font-serif text-2xl font-semibold tracking-tight text-onmark">evalen</span>
+      </a>
+      <span class="mt-1 inline-flex items-center gap-2 rounded-full border border-onmark/20 bg-greendeep/40 px-3 py-1 font-mono text-[11px] tracking-wide text-onmark/90 backdrop-blur-sm">
+        <span class="h-2 w-2 rounded-full bg-good animate-pulsering"></span>
+        12 reclutadores evaluando ahora
+      </span>
+    </div>
+
+    <!-- bottom block: headline + quote -->
+    <div class="relative z-10 mt-10">
+      <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-yellow">Sesión de reclutador</p>
+      <h1 class="mt-4 max-w-[15ch] font-serif text-[2.6rem] font-semibold leading-[1.04] tracking-tight text-onmark xl:text-5xl">
+        Tus
+        <span class="inline-block -rotate-1 rounded-sm bg-yellow px-2 text-greendeep">finalistas</span>
+        te están esperando.
+      </h1>
+      <p class="mt-5 max-w-[42ch] text-[15px] leading-relaxed text-onmark/80">
+        Entra y retoma la evaluación justo donde la dejaste — con notas, puntajes y el
+        <span class="font-medium text-onmark">porqué</span> escrito de cada candidato.
+      </p>
+
+      <!-- taped quote card -->
+      <figure class="relative mt-9 max-w-sm animate-floaty rounded-2xl bg-paper p-4 pr-5 shadow-card">
+        <span aria-hidden="true" class="absolute -top-2.5 left-7 h-5 w-12 rotate-2 rounded-[3px] bg-yellow/85 shadow-soft"></span>
+        <blockquote class="font-serif text-[1.02rem] italic leading-snug text-ink">
+          “Cerré una vacante en 12 días. Evalen me devolvió las mañanas que antes perdía leyendo CVs.”
+        </blockquote>
+        <figcaption class="mt-3 flex items-center gap-3 border-t border-line pt-3">
+          <img
+            src="https://image.qwenlm.ai/public_source/88b2e882-98ee-4857-a83c-263c15dcf5c8/135114acb-fca5-492d-942f-5d60b557b4bb.png"
+            alt="Matías Herrera" class="h-10 w-10 rounded-full object-cover ring-2 ring-paper2" loading="lazy" decoding="async" />
+          <span class="leading-tight">
+            <span class="block text-sm font-semibold text-ink">Matías Herrera</span>
+            <span class="block font-mono text-[11px] text-ink3">Talent Lead · fintech · Santiago de Chile</span>
+          </span>
+        </figcaption>
+      </figure>
+    </div>
+  </aside>
+
+  <!-- ================= RIGHT PANEL (form) ================= -->
+  <main class="relative flex w-full flex-1 items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
+
+    <div class="w-full max-w-[420px]">
+
+      <!-- mobile brand -->
+      <a href="/" class="mb-6 inline-flex items-center gap-2.5 lg:hidden" aria-label="Evalen, volver al inicio">
+        <svg class="h-9 w-9" viewBox="0 0 48 48" aria-hidden="true">
+          <rect width="48" height="48" rx="12" fill="#0F3A2C"/>
+          <rect x="13" y="12" width="5" height="24" rx="2.5" fill="#F6F1E6"/>
+          <rect x="13" y="12" width="18" height="5" rx="2.5" fill="#F6F1E6"/>
+          <rect x="13" y="21.5" width="13" height="5" rx="2.5" fill="#F6F1E6"/>
+          <rect x="13" y="31" width="21" height="5" rx="2.5" fill="#F6F1E6"/>
+          <circle cx="37" cy="14.5" r="4.5" fill="#F3E94E"/>
+        </svg>
+        <span class="font-serif text-2xl font-semibold tracking-tight text-ink">evalen</span>
+      </a>
+
+      <!-- mobile photo + quote banner -->
+      <div class="relative mb-7 h-40 overflow-hidden rounded-2xl shadow-soft lg:hidden">
+        <img
+          src="https://image.qwenlm.ai/public_source/88b2e882-98ee-4857-a83c-263c15dcf5c8/1f904026b-d7bd-4825-835a-df2b9015dd91.png"
+          alt="Dos reclutadores en Santiago de Chile decidiendo juntos a quién entrevistar." class="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
+        <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-greendeep via-greendeep/55 to-greendeep/10"></div>
+        <div class="absolute inset-x-0 bottom-0 flex items-center gap-3 p-4">
+          <img src="https://image.qwenlm.ai/public_source/88b2e882-98ee-4857-a83c-263c15dcf5c8/135114acb-fca5-492d-942f-5d60b557b4bb.png" alt="Matías Herrera" class="h-9 w-9 rounded-full object-cover ring-2 ring-onmark/40" loading="lazy" />
+          <p class="font-serif text-[13px] italic leading-snug text-onmark">“Cerré una vacante en 12 días. Evalen me devolvió las mañanas.” <span class="not-italic font-mono text-[10px] text-onmark/70">— Matías H., Santiago</span></p>
+        </div>
+      </div>
+
+      <!-- plan intent banner -->
+      <div id="planBanner" class="mb-6 hidden items-start gap-3 rounded-xl border px-3.5 py-3 text-[13px] leading-snug" role="status">
+        <span id="planIcon" class="mt-0.5 shrink-0"></span>
+        <span id="planText" class="font-medium"></span>
+      </div>
+
+      <!-- heading -->
+      <header class="mb-7">
+        <h2 class="font-serif text-[2rem] font-semibold leading-[1.08] tracking-tight text-ink sm:text-[2.2rem]">Qué bueno verte de vuelta.</h2>
+        <p class="mt-2.5 text-[15px] leading-relaxed text-ink2">Entra con Google o con tu correo y sigue evaluando CVs donde los dejaste.</p>
+      </header>
+
+      <!-- Google -->
+      <button id="googleBtn" type="button"
+        class="group flex w-full items-center justify-center gap-3 rounded-xl border border-line2 bg-card px-4 py-3 text-[15px] font-medium text-ink shadow-soft transition hover:-translate-y-0.5 hover:border-ink hover:bg-paper2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:ring-offset-paper">
+        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.99.66-2.25 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/>
+        </svg>
+        <span id="googleLabel">Continuar con Google</span>
+        <svg id="googleSpin" class="hidden h-5 w-5 animate-spin text-ink3" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </button>
+
+      <!-- divider -->
+      <div class="my-6 flex items-center gap-3" aria-hidden="true">
+        <span class="h-px flex-1 bg-line2"></span>
+        <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-ink3">o con tu correo</span>
+        <span class="h-px flex-1 bg-line2"></span>
+      </div>
+
+      <!-- form -->
+      <form id="loginForm" novalidate class="space-y-5">
+        <div>
+          <label for="email" class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2">Correo electrónico</label>
+          <div class="relative">
+            <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-ink3">
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
+            </span>
+            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="tu@empresa.com"
+              class="w-full rounded-xl border border-line2 bg-card py-3 pl-11 pr-4 text-[15px] text-ink placeholder:text-ink3/80 transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25" />
+          </div>
+        </div>
+
+        <div>
+          <div class="mb-1.5 flex items-center justify-between">
+            <label for="password" class="block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2">Contraseña</label>
+            <a href="#" data-route="forgot" class="font-mono text-[11px] text-cta underline-offset-2 hover:underline">¿La olvidaste?</a>
+          </div>
+          <div class="relative">
+            <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-ink3">
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>
+            </span>
+            <input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••"
+              class="w-full rounded-xl border border-line2 bg-card py-3 pl-11 pr-12 text-[15px] text-ink placeholder:text-ink3/80 transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25" />
+            <button id="togglePw" type="button" aria-label="Mostrar contraseña" aria-pressed="false"
+              class="absolute inset-y-0 right-2 flex items-center rounded-lg px-2 text-ink3 transition hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green/40">
+              <svg class="eye-open h-[19px] w-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-closed hidden h-[19px] w-[19px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 6.2A9.7 9.7 0 0 1 12 6c6.4 0 10 6 10 6a17 17 0 0 1-3.2 3.9M6.1 6.2A17 17 0 0 0 2 12s3.6 6 10 6a9.6 9.6 0 0 0 3.4-.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- inline error -->
+        <p id="formError" role="alert" aria-live="polite" class="hidden items-center gap-2 rounded-lg border border-low/30 bg-low/10 px-3 py-2 text-[13px] text-low"></p>
+
+        <label class="flex cursor-pointer select-none items-center gap-2.5 text-[13.5px] text-ink2">
+          <input id="remember" type="checkbox" class="h-4 w-4 rounded border-line2 accent-cta" />
+          Recordarme en este equipo
+        </label>
+
+        <button id="submitBtn" type="submit"
+          class="group flex w-full items-center justify-center gap-2 rounded-xl bg-cta px-4 py-3.5 text-[15px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cta focus-visible:ring-offset-2 focus-visible:ring-offset-paper disabled:translate-y-0 disabled:opacity-80">
+          <span id="submitLabel">Entrar a Evalen</span>
+          <svg id="submitArrow" class="h-[18px] w-[18px] transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <svg id="submitSpin" class="hidden h-[18px] w-[18px] animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" opacity=".3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </button>
+
+        <p class="flex items-center justify-center gap-1.5 text-center font-mono text-[11px] leading-relaxed text-ink3">
+          <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg>
+          Conexión cifrada · nunca entrenamos IA con tus CVs
+        </p>
+      </form>
+
+      <!-- success state (demo) -->
+      <div id="successState" class="hidden flex-col items-center rounded-2xl border border-green/30 bg-greentint/60 px-6 py-10 text-center">
+        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-green text-onmark animate-popin">
+          <svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+        <h3 class="mt-4 font-serif text-xl font-semibold text-ink">Sesión iniciada</h3>
+        <p class="mt-1.5 text-[14px] text-ink2">Te llevamos a tus finalistas…</p>
+        <span class="mt-5 inline-flex items-center gap-2 font-mono text-[12px] text-ink3">
+          <svg class="h-4 w-4 animate-spin text-green" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+          redirigiendo al dashboard
+        </span>
+      </div>
+
+      <!-- register line -->
+      <p class="mt-7 text-center text-[14px] text-ink2">
+        ¿Primera vez aquí?
+        <a id="registerLink" href="#" data-route="register" class="font-semibold text-cta underline-offset-2 hover:underline">Crea tu cuenta gratis</a>
+        <span class="text-ink3"> — incluye 3 CVs.</span>
+      </p>
+
+      <!-- mini footer -->
+      <div class="mt-9 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-t border-line pt-5 font-mono text-[11px] text-ink3">
+        <a href="/" class="hover:text-ink2">← Volver al inicio</a>
+        <span class="text-line2">·</span>
+        <a href="#" data-route="terms" class="hover:text-ink2">Términos</a>
+        <span class="text-line2">·</span>
+        <a href="#" data-route="privacy" class="hover:text-ink2">Privacidad</a>
+        <span class="text-line2">·</span>
+        <span class="text-ink2">Hecho con criterio</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- toast -->
+<div id="toast" aria-live="polite" role="status"
+  class="pointer-events-none fixed inset-x-4 bottom-5 z-[70] mx-auto flex max-w-sm translate-y-[140%] items-start gap-3 rounded-xl border bg-card px-4 py-3 text-[13.5px] text-ink opacity-0 shadow-card transition-all duration-300 sm:left-auto sm:right-6 sm:inset-x-auto sm:max-w-sm">
+  <span id="toastIcon" class="mt-0.5 shrink-0"></span>
+  <span id="toastMsg" class="leading-snug"></span>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- production routes / demo switch ----------
+     En producción: pon CONFIG.demo = false y ajusta las rutas si hace falta.
+     En demo (archivo abierto solo): los flujos se simulan con estados + toast. */
+  var CONFIG = {
+    demo: true,
+    urls: {
+      google:     "/auth/google",
+      login:      "/auth/login",
+      register:   "/register",
+      forgot:     "/auth/forgot",
+      dashboard:  "/dashboard",
+      onboarding: "/onboarding",
+      checkout:   "/checkout",
+      terms:      "/terminos",
+      privacy:    "/privacidad"
+    }
+  };
+  function go(url) {
+    if (CONFIG.demo) return false;
+    window.location.assign(url);
+    return true;
+  }
+  function rand() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+  /* ---------- plan intent (?plan=free|pro) ---------- */
+  var params = new URLSearchParams(window.location.search);
+  var plan = (params.get("plan") || "").toLowerCase();
+  if (plan !== "free" && plan !== "pro") {
+    try { plan = sessionStorage.getItem("selectedPlan") || "free"; } catch (e) { plan = "free"; }
+  }
+  try { sessionStorage.setItem("selectedPlan", plan); } catch (e) {}
+
+  var banner = document.getElementById("planBanner");
+  var bIcon = document.getElementById("planIcon");
+  var bText = document.getElementById("planText");
+  if (plan === "pro") {
+    banner.className = "mb-6 flex items-start gap-3 rounded-xl border border-green/35 bg-greentint/70 px-3.5 py-3 text-[13px] leading-snug text-ink";
+    bIcon.innerHTML = '<svg class="h-4 w-4 text-green" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.8 6.1 20.2l1.2-6.6L2.5 9l6.6-.9z"/></svg>';
+    bText.innerHTML = 'Vienes por <b>EvalenPro</b>. Al entrar te llevamos directo al checkout — $49/mes, sin permanencia.';
+  } else {
+    banner.className = "mb-6 flex items-start gap-3 rounded-xl border border-line2 bg-paper2/70 px-3.5 py-3 text-[13px] leading-snug text-ink2";
+    bIcon.innerHTML = '<svg class="h-4 w-4 text-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+    bText.innerHTML = 'Estás a un paso de tu primera campaña gratis. <b class="text-ink">3 CVs</b> de cortesía, sin tarjeta.';
+  }
+
+  /* ---------- toast ---------- */
+  var toast = document.getElementById("toast");
+  var toastMsg = document.getElementById("toastMsg");
+  var toastIcon = document.getElementById("toastIcon");
+  var toastTimer = null;
+  var ICONS = {
+    success: '<svg class="h-4 w-4 text-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    info:    '<svg class="h-4 w-4 text-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+    error:   '<svg class="h-4 w-4 text-cta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>'
+  };
+  function showToast(msg, type) {
+    type = type || "info";
+    toastMsg.textContent = msg;
+    toastIcon.innerHTML = ICONS[type] || ICONS.info;
+    toast.classList.remove("translate-y-[140%]", "opacity-0");
+    toast.classList.add("translate-y-0", "opacity-100");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 4200);
+  }
+  function hideToast() {
+    toast.classList.add("translate-y-[140%]", "opacity-0");
+    toast.classList.remove("translate-y-0", "opacity-100");
+  }
+
+  /* ---------- password visibility ---------- */
+  var pw = document.getElementById("password");
+  var toggle = document.getElementById("togglePw");
+  var eyeOpen = toggle.querySelector(".eye-open");
+  var eyeClosed = toggle.querySelector(".eye-closed");
+  toggle.addEventListener("click", function () {
+    var show = pw.type === "password";
+    pw.type = show ? "text" : "password";
+    toggle.setAttribute("aria-pressed", show ? "true" : "false");
+    toggle.setAttribute("aria-label", show ? "Ocultar contraseña" : "Mostrar contraseña");
+    eyeOpen.classList.toggle("hidden", show);
+    eyeClosed.classList.toggle("hidden", !show);
+    pw.focus();
+  });
+
+  /* ---------- inline error ---------- */
+  var formError = document.getElementById("formError");
+  function showError(msg, field) {
+    formError.innerHTML = '<svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><span>' + msg + "</span>";
+    formError.classList.remove("hidden");
+    formError.classList.add("flex");
+    if (field) {
+      field.classList.add("border-low", "animate-shake");
+      field.focus();
+      setTimeout(function () { field.classList.remove("animate-shake"); }, 460);
+    }
+  }
+  function clearError() {
+    formError.classList.add("hidden");
+    formError.classList.remove("flex");
+    document.getElementById("email").classList.remove("border-low");
+    pw.classList.remove("border-low");
+  }
+  ["email", "password"].forEach(function (id) {
+    document.getElementById(id).addEventListener("input", clearError);
+  });
+
+  /* ---------- loading helpers ---------- */
+  function setGoogleLoading(on) {
+    document.getElementById("googleLabel").textContent = on ? "Conectando con Google…" : "Continuar con Google";
+    document.getElementById("googleSpin").classList.toggle("hidden", !on);
+    document.getElementById("googleBtn").disabled = on;
+  }
+  function setSubmitLoading(on) {
+    document.getElementById("submitLabel").textContent = on ? "Entrando…" : "Entrar a Evalen";
+    document.getElementById("submitArrow").classList.toggle("hidden", on);
+    document.getElementById("submitSpin").classList.toggle("hidden", !on);
+    document.getElementById("submitBtn").disabled = on;
+  }
+
+  /* ---------- Google ---------- */
+  document.getElementById("googleBtn").addEventListener("click", function () {
+    var state = btoa(JSON.stringify({ plan: plan, csrf: rand() }));
+    var target = CONFIG.urls.google + "?state=" + encodeURIComponent(state);
+    setGoogleLoading(true);
+    if (!go(target)) {
+      showToast("Demo: aquí se abriría Google y volverías con tu cuenta lista.", "info");
+      setTimeout(function () {
+        setGoogleLoading(false);
+        showSuccess();
+      }, 1500);
+    }
+  });
+
+  /* ---------- email + password ---------- */
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  var form = document.getElementById("loginForm");
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    clearError();
+    var emailEl = document.getElementById("email");
+    var email = emailEl.value.trim();
+    var pass = pw.value;
+    if (!email || !EMAIL_RE.test(email)) { showError("Escribe un correo válido para continuar.", emailEl); return; }
+    if (!pass) { showError("Falta tu contraseña. Si la perdiste, usa “¿La olvidaste?”.", pw); return; }
+
+    setSubmitLoading(true);
+    var target = CONFIG.urls.login + "?plan=" + encodeURIComponent(plan);
+    if (!go(target)) {
+      setTimeout(function () {
+        setSubmitLoading(false);
+        showSuccess();
+      }, 1300);
+    }
+  });
+
+  function showSuccess() {
+    form.classList.add("hidden");
+    banner.classList.add("hidden");
+    var s = document.getElementById("successState");
+    s.classList.remove("hidden");
+    s.classList.add("flex");
+    showToast("¡Listo! Entrando a tu cuenta…", "success");
+    if (CONFIG.demo) {
+      setTimeout(function () {
+        var dest = plan === "pro" ? CONFIG.urls.checkout : CONFIG.urls.dashboard;
+        showToast("Demo: te redirigiríamos a " + dest, "info");
+      }, 2600);
+    }
+  }
+
+  /* ---------- secondary links (demo-aware) ---------- */
+  document.querySelectorAll("[data-route]").forEach(function (a) {
+    a.addEventListener("click", function (e) {
+      var r = a.getAttribute("data-route");
+      var url = CONFIG.urls[r] || "/";
+      if (r === "register") url += "?plan=" + encodeURIComponent(plan);
+      if (!go(url)) {
+        e.preventDefault();
+        var labels = {
+          register: "Demo: te llevaríamos a crear tu cuenta gratis.",
+          forgot: "Demo: te enviaríamos un enlace para restablecerla.",
+          terms: "Demo: aquí abriríamos los Términos de uso.",
+          privacy: "Demo: aquí abriríamos la Política de privacidad."
+        };
+        showToast(labels[r] || "Demo: navegación simulada.", "info");
+      }
+    });
+  });
+
+  /* ---------- keep register link href honest for non-JS / SEO ---------- */
+  var rl = document.getElementById("registerLink");
+  if (rl) rl.setAttribute("href", CONFIG.urls.register + "?plan=" + encodeURIComponent(plan));
+})();
+</script>
+</body>
+</html>

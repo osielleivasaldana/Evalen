@@ -11,7 +11,7 @@ import OnboardingWizard from './onboarding/OnboardingWizard';
 import PricingPage from './pricing/PricingPage';
 
 // Dashboard Components
-import Dashboard from './dashboard/Dashboard';
+import DashboardNew from './dashboard/DashboardNew';
 import CreateCampaign from './campaigns/CreateCampaign';
 import EditCampaign from './campaigns/EditCampaign';
 import CandidatesManagerNew from './candidates/CandidatesManagerNew';
@@ -111,10 +111,10 @@ const AppRouter: React.FC = () => {
 
     if (checkingPlan) {
       return (
-        <div className="min-h-screen bg-gray-50 font-sans">
+        <div className="min-h-screen bg-ev-paper font-sans dark:bg-[#0E1813]">
           <Navbar />
           <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-ev-line2 border-t-ev-green dark:border-[rgba(241,235,220,.26)] dark:border-t-[#5BAE88]" />
           </div>
         </div>
       );
@@ -203,7 +203,7 @@ const AppRouter: React.FC = () => {
                   <Navigate to="/owner/dashboard" replace />
                 ) : (
                   <ProtectedRoute>
-                    <Dashboard
+                    <DashboardNew
                       onNavigateToCampaign={(campaignId) => navigate(`/campaigns/${campaignId}`)}
                       onCreateCampaign={() => navigate('/create-campaign')}
                       onEditCampaign={(campaignId) => navigate(`/edit-campaign/${campaignId}`)}

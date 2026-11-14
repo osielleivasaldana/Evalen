@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field, validator, ConfigDict, model_validator
-from typing import List, Optional, Dict, Any, Union
+from pydantic import BaseModel, Field, field_validator, ConfigDict, model_validator
+from typing import List, Optional, Dict, Any, Union, cast
 from enum import Enum
 from datetime import datetime
 import re
@@ -55,7 +55,7 @@ class ExtractionMetadata(BaseModel):
 
     model_config = ConfigDict(use_enum_values=True)
     
-    @validator('confidence_level', pre=True)
+    @field_validator('confidence_level', mode='before')
     def validate_confidence(cls, v):
         if isinstance(v, str):
             v_lower = v.lower()
@@ -64,7 +64,7 @@ class ExtractionMetadata(BaseModel):
             if v_lower in ['low', 'bajo', 'baja']: return ConfidenceLevel.LOW.value
         return v
 
-    @validator('extraction_method', pre=True)
+    @field_validator('extraction_method', mode='before')
     def validate_method(cls, v):
         if isinstance(v, str):
             v_lower = v.lower()
@@ -75,13 +75,37 @@ class ExtractionMetadata(BaseModel):
 
 BAD_DATE_VALUES = {"nan", "none", "null", "nat", "n/a", "n/a ", "na", "no especificado", "unknown", "string", "no extraído", "", " "}
 
+# Regex de años plausibles (1900-2099) para detección de fechas recuperables
+_YEAR_RE = re.compile(r'\b((?:19|20)\d{2})\b')
+
+
+def period_has_recoverable_years(periodo: Optional[dict]) -> bool:
+    """
+    Detector (capa defensiva 1c): True si fecha_inicio está ausente/N-A pero
+    texto_original contiene años recuperables. Usado para disparar el retry
+    acotado de reparación de fechas (máx 1 por entrada).
+    """
+    if not isinstance(periodo, dict):
+        return False
+    inicio = str(periodo.get('fecha_inicio') or '').strip().lower()
+    if inicio and inicio not in BAD_DATE_VALUES:
+        return False
+    texto = str(periodo.get('texto_original') or '')
+    return bool(_YEAR_RE.search(texto))
+
+
+class PeriodRepairResult(BaseModel):
+    """Schema acotado para el retry de reparación de fechas (Bug 1c)."""
+    fecha_inicio: Optional[str] = Field(None, description="Fecha de inicio normalizada (YYYY o YYYY-MM)")
+    fecha_fin: Optional[str] = Field(None, description="Fecha de fin normalizada (YYYY, YYYY-MM o 'Presente')")
+
 class Period(BaseModel):
     fecha_inicio: Optional[str] = Field(None, description="Fecha de inicio en formato YYYY-MM o YYYY")
     fecha_fin: Optional[str] = Field(None, description="Fecha de fin en formato YYYY-MM, YYYY o 'Presente'")
     texto_original: Optional[str] = Field(None, description="Texto original del período")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('fecha_inicio', pre=True, always=True)
+    @field_validator('fecha_inicio', mode='before')
     def validate_fecha_inicio(cls, v):
         if v is None:
             return None
@@ -90,7 +114,7 @@ class Period(BaseModel):
             return None
         return str(v).strip()
 
-    @validator('fecha_fin', pre=True, always=True)
+    @field_validator('fecha_fin', mode='before')
     def validate_fecha_fin(cls, v):
         if v is None:
             return None
@@ -109,12 +133,12 @@ class Skill(BaseModel):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    @validator('skill', pre=True, always=True)
+    @field_validator('skill', mode='before')
     def validate_skill(cls, v):
         if not v: return "No especificado"
         return str(v)
 
-    @validator('level', pre=True)
+    @field_validator('level', mode='before')
     def validate_level(cls, v):
         if isinstance(v, str):
             # Normalize common variations to Enum VALUES
@@ -132,7 +156,7 @@ class Language(BaseModel):
     certificacion: Optional[str] = Field(None, description="Certificación si existe")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('idioma', pre=True, always=True)
+    @field_validator('idioma', mode='before')
     def validate_idioma(cls, v):
         if not v: return "No especificado"
         return str(v)
@@ -145,7 +169,7 @@ class ContactInfo(BaseModel):
     ubicacion: Optional[str] = Field(None, description="Ciudad y País de residencia")
     metadata: Optional[Dict[str, ExtractionMetadata]] = None
 
-    @validator('email', pre=True, always=True)
+    @field_validator('email', mode='before')
     def validate_email_format(cls, v):
         # Handle empty lists returned by Gemini
         if isinstance(v, list) and len(v) == 0:
@@ -156,7 +180,7 @@ class ContactInfo(BaseModel):
             return "no-extraido@example.com"
         return v_str
 
-    @validator('telefono', pre=True, always=True)
+    @field_validator('telefono', mode='before')
     def validate_phone(cls, v):
         # Handle empty lists returned by Gemini
         if isinstance(v, list) and len(v) == 0:
@@ -165,13 +189,13 @@ class ContactInfo(BaseModel):
             return None
         return str(v)
 
-    @validator('ubicacion', pre=True, always=True)
+    @field_validator('ubicacion', mode='before')
     def validate_ubicacion(cls, v):
         if not v:
             return None
         return str(v)
 
-    @validator('nombre_completo', pre=True, always=True)
+    @field_validator('nombre_completo', mode='before')
     def validate_nombre_completo(cls, v):
         if not v or len(str(v).strip()) < 2:
             return "No extraído"
@@ -181,25 +205,25 @@ class ProfessionalTitle(BaseModel):
     titular: str = Field("No extraído", description="Frase corta que define el perfil profesional")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('titular', pre=True, always=True)
+    @field_validator('titular', mode='before')
     def validate_titular(cls, v):
         if not v:
             return "No extraído"
         return str(v).strip()
 
 class ProfessionalSummary(BaseModel):
-    resumen: Optional[str] = Field(None, description="Párrafo de 3 a 5 líneas resumiendo experiencia y competencias")
+    resumen: Optional[str] = Field(None, validate_default=True, description="Párrafo de 3 a 5 líneas resumiendo experiencia y competencias")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('resumen', pre=True, always=True)
+    @field_validator('resumen', mode='before')
     def validate_resumen_content(cls, v):
         if v is None:
             return ""
         return str(v)
 
 class WorkExperience(BaseModel):
-    cargo: Optional[str] = Field(None, description="Título del puesto ocupado")
-    empresa: Optional[str] = Field(None, description="Nombre de la compañía empleadora")
+    cargo: Optional[str] = Field(None, validate_default=True, description="Título del puesto ocupado")
+    empresa: Optional[str] = Field(None, validate_default=True, description="Nombre de la compañía empleadora")
     periodo: Optional[Period] = Field(None, description="Período de trabajo")
     responsabilidades: List[str] = Field(default=[], description="Lista de responsabilidades y logros del puesto")
     ubicacion: Optional[str] = Field(None, description="Ciudad/País donde se realizó el trabajo")
@@ -237,14 +261,14 @@ class WorkExperience(BaseModel):
             # 4. Assign cleaned period data (None if empty)
             data['periodo'] = periodo_data if periodo_data else None
         return data
-    @validator('cargo', 'empresa', pre=True, always=True)
+    @field_validator('cargo', 'empresa', mode='before')
     def validate_strings(cls, v):
         if v is None: return "No especificado"
         return str(v)
 
 class Education(BaseModel):
-    titulo: Optional[str] = Field(None, description="Nombre del grado académico o título obtenido")
-    institucion: Optional[str] = Field(None, description="Nombre de la universidad o centro de estudios")
+    titulo: Optional[str] = Field(None, validate_default=True, description="Nombre del grado académico o título obtenido")
+    institucion: Optional[str] = Field(None, validate_default=True, description="Nombre de la universidad o centro de estudios")
     periodo: Optional[Period] = Field(None, description="Período de estudios")
     gpa: Optional[str] = Field(None, description="Promedio académico si está disponible")
     ubicacion: Optional[str] = Field(None, description="Ciudad/País de la institución")
@@ -307,7 +331,7 @@ class Education(BaseModel):
             data['periodo'] = periodo_data if periodo_data else None
         return data
 
-    @validator('titulo', 'institucion', pre=True, always=True)
+    @field_validator('titulo', 'institucion', mode='before')
     def validate_strings(cls, v):
         if v is None: return "No especificado"
         return str(v)
@@ -320,7 +344,7 @@ class Skills(BaseModel):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    @validator('habilidades_tecnicas', pre=True)
+    @field_validator('habilidades_tecnicas', mode='before')
     def validate_tech_skills(cls, v):
         if not v:
             return []
@@ -334,7 +358,7 @@ class Skills(BaseModel):
                 cleaned.append(item)
         return cleaned
 
-    @validator('idiomas', pre=True)
+    @field_validator('idiomas', mode='before')
     def validate_languages(cls, v):
         if not v:
             return []
@@ -369,7 +393,7 @@ class Skills(BaseModel):
                 cleaned.append(item)
         return cleaned
 
-    @validator('habilidades_blandas', pre=True)
+    @field_validator('habilidades_blandas', mode='before')
     def validate_soft_skills(cls, v):
         if not v:
             return []
@@ -396,15 +420,15 @@ class OnlineProfiles(BaseModel):
     otros: Optional[List[str]] = Field(None, description="Otros perfiles profesionales")
     metadata: Optional[Dict[str, ExtractionMetadata]] = None
 
-    @validator('linkedin')
+    @field_validator('linkedin')
     def validate_linkedin(cls, v):
         return v
 
-    @validator('github')
+    @field_validator('github')
     def validate_github(cls, v):
         return v
 
-    @validator('otros', pre=True)
+    @field_validator('otros', mode='before')
     def validate_otros(cls, v):
         if v is None:
             return None
@@ -416,7 +440,7 @@ class OnlineProfiles(BaseModel):
             return [v] if v else None
         return None
 
-    @validator('portfolio')
+    @field_validator('portfolio')
     def validate_portfolio(cls, v):
         return v
 
@@ -424,7 +448,7 @@ class AdditionalTraining(BaseModel):
     certificaciones_cursos: List[str] = Field(default=[], description="Lista de certificaciones y cursos relevantes")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('certificaciones_cursos', pre=True)
+    @field_validator('certificaciones_cursos', mode='before')
     def validate_list_input(cls, v):
         if not v: return []
         # Si llega un string, meterlo en lista
@@ -454,7 +478,7 @@ class Recognition(BaseModel):
     logros_premios: List[str] = Field(default=[], description="Lista de premios, publicaciones o reconocimientos")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('logros_premios', pre=True)
+    @field_validator('logros_premios', mode='before')
     def validate_list_input(cls, v):
         if not v: return []
         if isinstance(v, str): return [v]
@@ -480,7 +504,7 @@ class ExtracurricularActivities(BaseModel):
     voluntariado: List[str] = Field(default=[], description="Experiencia de voluntariado")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('voluntariado', pre=True)
+    @field_validator('voluntariado', mode='before')
     def validate_list_input(cls, v):
         if not v: return []
         if isinstance(v, str): return [v]
@@ -506,7 +530,7 @@ class Interests(BaseModel):
     hobbies_intereses: List[str] = Field(default=[], description="Lista de intereses personales")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('hobbies_intereses', pre=True)
+    @field_validator('hobbies_intereses', mode='before')
     def validate_list_input(cls, v):
         if not v: return []
         if isinstance(v, str): return [v]
@@ -536,12 +560,12 @@ class Project(BaseModel):
     periodo: Optional[Period] = Field(None, description="Período del proyecto")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('nombre', pre=True, always=True)
+    @field_validator('nombre', mode='before')
     def validate_nombre(cls, v):
         if not v: return "No especificado"
         return str(v).strip()
 
-    @validator('tecnologias', pre=True)
+    @field_validator('tecnologias', mode='before')
     def validate_tecnologias(cls, v):
         if not v: return []
         if isinstance(v, str): return [v]
@@ -552,7 +576,7 @@ class Projects(BaseModel):
     proyectos: List[Project] = Field(default=[], description="Lista de proyectos destacados")
     metadata: Optional[ExtractionMetadata] = None
 
-    @validator('proyectos', pre=True)
+    @field_validator('proyectos', mode='before')
     def validate_list_input(cls, v):
         if not v: return []
         if isinstance(v, list):
@@ -582,9 +606,11 @@ class Projects(BaseModel):
 class ResumeData(BaseModel):
     datos_contacto: ContactInfo = Field(
         default_factory=lambda: ContactInfo(
-            nombre_completo="No extraído", 
-            email="no-extraido@example.com"
-        ), 
+            nombre_completo="No extraído",
+            email="no-extraido@example.com",
+            telefono=None,
+            ubicacion=None,
+        ),
         description="Información de contacto del candidato"
     )
     titular_profesional: ProfessionalTitle = Field(
@@ -614,7 +640,7 @@ class ResumeData(BaseModel):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    @validator('habilidades', pre=True)
+    @field_validator('habilidades', mode='before')
     def parse_habilidades(cls, v):
         if isinstance(v, str):
             try:
@@ -625,17 +651,17 @@ class ResumeData(BaseModel):
             except Exception:
                 if isinstance(v, str) and len(v) > 0:
                     items = [x.strip() for x in v.replace('\n', ',').split(',') if x.strip()]
-                    return Skills(habilidades_tecnicas=[
+                    return Skills(habilidades_tecnicas=cast(List[Skill], [
                         {"skill": item, "level": "Intermedio"} for item in items
-                    ])
+                    ]))
                 return Skills()
 
         if isinstance(v, list):
             if len(v) > 0:
-                return Skills(habilidades_tecnicas=[
+                return Skills(habilidades_tecnicas=cast(List[Skill], [
                     {"skill": str(item), "level": "Intermedio"} if isinstance(item, str) else item
                     for item in v if item
-                ])
+                ]))
             return Skills()
 
         if isinstance(v, dict):
@@ -646,11 +672,11 @@ class ResumeData(BaseModel):
 
         return Skills()
 
-    @validator('experiencia_laboral', pre=True)
+    @field_validator('experiencia_laboral', mode='before')
     def validate_experiencia_laboral(cls, v):
         return v if v else []
 
-    @validator('formacion_academica', pre=True)
+    @field_validator('formacion_academica', mode='before')
     def validate_formacion_academica(cls, v):
         return v if v else []
 
@@ -664,13 +690,19 @@ class ResumeData(BaseModel):
         """Calcula los años totales de experiencia laboral"""
         total_años = 0
         for exp in self.experiencia_laboral:
-            if exp.periodo.fecha_inicio and exp.periodo.fecha_fin:
+            # NOTA (Fase C 4a): `periodo` es Optional[Period] y el acceso directo
+            # crashea con AttributeError cuando es None (bug latente PRE-EXISTENTE,
+            # reproducido y documentado en docs/debug/2026-08-26-fase-c-higiene.md;
+            # escalado al Tech Lead). El cast es SOLO de tipos: preserva el
+            # comportamiento actual byte-a-byte (incluido el path de crash).
+            periodo = cast(Period, exp.periodo)
+            if periodo.fecha_inicio and periodo.fecha_fin:
                 try:
-                    año_inicio = int(exp.periodo.fecha_inicio[:4])
-                    if exp.periodo.fecha_fin.lower() == 'presente':
+                    año_inicio = int(periodo.fecha_inicio[:4])
+                    if periodo.fecha_fin.lower() == 'presente':
                         año_fin = datetime.now().year
                     else:
-                        año_fin = int(exp.periodo.fecha_fin[:4])
+                        año_fin = int(periodo.fecha_fin[:4])
                     total_años += max(0, año_fin - año_inicio)
                 except (ValueError, IndexError):
                     continue
@@ -708,24 +740,24 @@ class PartialContactInfo(BaseModel):
     ubicacion: Optional[str] = Field(None, description="Ubicación (o None)")
     metadata: Optional[Dict[str, ExtractionMetadata]] = None
 
-    @validator('nombre_completo', pre=True)
+    @field_validator('nombre_completo', mode='before')
     def validate_nc(cls, v): return v
 
-    @validator('email', pre=True)
+    @field_validator('email', mode='before')
     def validate_email(cls, v): return v
 
 class PartialProfessionalTitle(BaseModel):
     titular: Optional[str] = Field(None, description="Titular (o None)")
     metadata: Optional[ExtractionMetadata] = None
     
-    @validator('titular', pre=True)
+    @field_validator('titular', mode='before')
     def validate_titular(cls, v): return v
 
 class PartialProfessionalSummary(BaseModel):
     resumen: Optional[str] = Field(None, description="Resumen (o None)")
     metadata: Optional[ExtractionMetadata] = None
     
-    @validator('resumen', pre=True)
+    @field_validator('resumen', mode='before')
     def validate_resumen(cls, v): return v
 
 class PartialResumeData(BaseModel):
@@ -747,7 +779,7 @@ class PartialResumeData(BaseModel):
 
     model_config = ConfigDict(use_enum_values=True)
 
-    @validator('habilidades', pre=True)
+    @field_validator('habilidades', mode='before')
     def parse_habilidades(cls, v):
         if isinstance(v, str):
             try:
@@ -758,17 +790,17 @@ class PartialResumeData(BaseModel):
             except Exception:
                 if isinstance(v, str) and len(v) > 0:
                     items = [x.strip() for x in v.replace('\n', ',').split(',') if x.strip()]
-                    return Skills(habilidades_tecnicas=[
+                    return Skills(habilidades_tecnicas=cast(List[Skill], [
                         {"skill": item, "level": "Intermedio"} for item in items
-                    ])
+                    ]))
                 return Skills()
 
         if isinstance(v, list):
             if len(v) > 0:
-                return Skills(habilidades_tecnicas=[
+                return Skills(habilidades_tecnicas=cast(List[Skill], [
                     {"skill": str(item), "level": "Intermedio"} if isinstance(item, str) else item
                     for item in v if item
-                ])
+                ]))
             return Skills()
 
         if isinstance(v, dict):
@@ -778,34 +810,34 @@ class PartialResumeData(BaseModel):
              return Skills(**v)
 
         return Skills()
-    
-    @validator('experiencia_laboral', pre=True)
+
+    @field_validator('experiencia_laboral', mode='before')
     def validate_experiencia_laboral(cls, v):
         return v if v else []
 
-    @validator('formacion_academica', pre=True)
+    @field_validator('formacion_academica', mode='before')
     def validate_formacion_academica(cls, v):
         return v if v else []
 
-    @validator('reconocimientos', pre=True)
+    @field_validator('reconocimientos', mode='before')
     def validate_reconocimientos(cls, v):
         if isinstance(v, list):
             return {'logros_premios': v}
         return v
 
-    @validator('formacion_complementaria', pre=True)
+    @field_validator('formacion_complementaria', mode='before')
     def validate_formacion_complementaria(cls, v):
         if isinstance(v, list):
             return {'certificaciones_cursos': v}
         return v
 
-    @validator('actividades_extracurriculares', pre=True)
+    @field_validator('actividades_extracurriculares', mode='before')
     def validate_actividades_extracurriculares(cls, v):
         if isinstance(v, list):
             return {'voluntariado': v}
         return v
 
-    @validator('intereses', pre=True)
+    @field_validator('intereses', mode='before')
     def validate_intereses(cls, v):
         if isinstance(v, list):
             return {'hobbies_intereses': v}

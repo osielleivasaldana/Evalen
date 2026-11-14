@@ -522,6 +522,33 @@ const CandidateProcessPanel: React.FC = () => {
             </div>
           </div>
         )}
+        {mesaStage.stageTemplate.name.toLowerCase().includes('contact') && !readOnly && (
+          <div className="mt-5 rounded-xl border border-line2 bg-paper/60 p-4 t-line2">
+            <p className="font-mono text-[11px] uppercase tracking-[0.13em] text-ink3 t-ink3">Contactar a {candidate?.name?.split(' ')[0] || 'candidato'} · quedará registrado en el acta</p>
+            <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <button type="button" onClick={() => {
+                if (!candidate?.phone) { showToast('Sin teléfono para WhatsApp.', 'warn'); return; }
+                const name = candidate.name?.split(' ')[0] || '';
+                const msg = encodeURIComponent(`Hola ${name}, te escribo de Evalen sobre tu postulación a ${campaign?.title || 'la campaña'}. ¿Tienes un momento?`);
+                window.open(`https://wa.me/${candidate.phone.replace(/\D/g, '')}?text=${msg}`, '_blank');
+              }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-line2 bg-card py-3 text-[13px] font-semibold text-ink transition hover:border-green hover:text-green t-card t-ink t-line2">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.1-5.7A8.4 8.4 0 1 1 21 11.5z"/></svg> WhatsApp
+              </button>
+              <button type="button" onClick={() => {
+                if (!candidate?.email) { showToast('Sin email para contactar.', 'warn'); return; }
+                window.location.href = `mailto:${candidate.email}?subject=Postulación a ${campaign?.title || 'campaña'}`;
+              }}
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-line2 bg-card py-3 text-[13px] font-semibold text-ink transition hover:border-green hover:text-green t-card t-ink t-line2">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg> Email
+              </button>
+            </div>
+            <div className="mt-2.5 flex items-center gap-2 text-[12px] text-ink3 t-ink3">
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>
+              Tras contactar, deja tu nota abajo y aprueba/rechaza la etapa.
+            </div>
+          </div>
+        )}
         <div className="mt-5 border-t border-line pt-4 t-line">
           <div className="flex items-center justify-between gap-3">
             <p className="inline-flex items-center gap-1.5 font-mono text-[12.5px] uppercase tracking-[0.1em] text-ink2 t-ink2">

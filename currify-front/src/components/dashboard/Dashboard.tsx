@@ -399,7 +399,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       <Layout showNavBar={true} showFooter={true}>
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-center items-center min-h-[60vh]">
-            <p className="text-lg text-gray-600">Cargando dashboard...</p>
+            <p className="text-lg text-ev-ink2 dark:text-ev-ink2/70">Cargando dashboard...</p>
           </div>
         </div>
       </Layout>
@@ -413,10 +413,10 @@ const Dashboard: React.FC<DashboardProps> = ({
         <div className="mb-8">
           <div className="flex justify-between items-start mb-2">
             <div>
-              <h1 className="text-4xl font-extrabold mb-1 tracking-tight text-gray-900">
+              <h1 className="text-4xl font-extrabold mb-1 tracking-tight text-ev-ink dark:text-ev-onmark">
                 ¡Hola, {user?.name}! 👋
               </h1>
-              <p className="text-lg text-gray-600">
+              <p className="text-lg text-ev-ink2 dark:text-ev-ink2/70">
                 Aquí está el resumen de tu actividad de reclutamiento
               </p>
             </div>
@@ -424,9 +424,9 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6 flex items-center justify-between">
+          <div className="bg-ev-red/10 dark:bg-ev-red/20 border border-ev-red/30 text-ev-red dark:text-ev-red/90 px-4 py-3 rounded-xl mb-6 flex items-center justify-between">
             <span>{error}</span>
-            <button onClick={() => setError(null)} className="text-red-600 hover:text-red-800">
+            <button onClick={() => setError(null)} className="text-ev-red hover:text-ev-red/80">
               <XCircleIcon className="w-5 h-5" />
             </button>
           </div>
@@ -461,7 +461,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
 
         {/* Campaigns Section */}
-        <div id="campaigns-section" className="bg-white rounded-2xl border border-gray-200 mb-8">
+        <div id="campaigns-section" className="bg-ev-card dark:bg-[#16241C] rounded-2xl border border-ev-line/50 dark:border-white/[0.06] mb-8">
           <GradientHeader>
             <div>
               <h2 className="text-2xl font-bold mb-1">Mis Campañas</h2>
@@ -473,7 +473,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             {user && (user.role === 'ADMIN' || user.role === 'RECRUITER') && (
               <button
                 onClick={onCreateCampaign}
-                className="hidden sm:flex items-center gap-2 bg-white text-indigo-600 px-6 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition-all hover:-translate-y-0.5 shadow-lg"
+                className="hidden sm:flex items-center gap-2 bg-ev-card dark:bg-[#16241C] text-ev-cta px-6 py-2.5 rounded-lg font-semibold hover:bg-ev-paper dark:hover:bg-[#1B2E24] transition-all hover:-translate-y-0.5 shadow-card-lg-evalen"
               >
                 <PlusIcon className="w-5 h-5" />
                 Nueva Campaña
@@ -489,7 +489,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               />
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-ev-line/50 dark:divide-white/[0.06]">
               {campaigns.map((campaign) => (
                 <CampaignCard
                   key={campaign.id}
@@ -514,36 +514,36 @@ const Dashboard: React.FC<DashboardProps> = ({
         <div className="grid gap-6 grid-cols-1">
           {campaigns.length > 0 && (
             <AuroraBackground variant="talent">
-              <div className="p-8 border-b border-indigo-50 relative z-10 flex justify-between items-center">
+              <div className="p-8 border-b border-ev-line/30 dark:border-white/[0.06] relative z-10 flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-extrabold text-slate-800 flex items-center gap-3">
-                    <SparklesIcon className="w-8 h-8 text-indigo-600 animate-pulse-slow" />
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600">
+                  <h2 className="text-2xl font-extrabold text-ev-ink dark:text-ev-onmark flex items-center gap-3">
+                    <SparklesIcon className="w-8 h-8 text-ev-cta animate-pulse-slow" />
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-ev-cta to-ev-green-dark">
                       TALENTOS DESTACADOS
                     </span>
                   </h2>
-                  <p className="text-slate-500 mt-1 font-medium">
+                  <p className="text-ev-ink2/60 dark:text-ev-ink2/50 mt-1 font-medium">
                     El escenario donde brillan tus mejores candidatos.
                   </p>
                 </div>
                 <div className="hidden sm:flex gap-2">
-                  <span className="px-3 py-1 bg-white/60 text-indigo-700 rounded-full text-xs font-bold border border-indigo-100 shadow-sm backdrop-blur-sm">
+                  <span className="px-3 py-1 bg-ev-card/60 dark:bg-[#16241C]/60 text-ev-cta rounded-full text-xs font-bold border border-ev-line/50 dark:border-white/[0.08] shadow-sm backdrop-blur-sm">
                     Match &gt; 60%
                   </span>
-                  <span className="px-3 py-1 bg-white/60 text-indigo-700 rounded-full text-xs font-bold border border-indigo-100 shadow-sm backdrop-blur-sm">
+                  <span className="px-3 py-1 bg-ev-card/60 dark:bg-[#16241C]/60 text-ev-cta rounded-full text-xs font-bold border border-ev-line/50 dark:border-white/[0.08] shadow-sm backdrop-blur-sm">
                     No descartados
                   </span>
                 </div>
                 <div className="hidden sm:flex items-center gap-3">
                   <button
                     onClick={() => scroll('left')}
-                    className="p-2 rounded-full border border-indigo-100 bg-white/50 hover:bg-white text-indigo-600 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 rounded-full border border-ev-line/50 dark:border-white/[0.08] bg-ev-card/50 dark:bg-[#16241C]/50 hover:bg-ev-card dark:hover:bg-[#16241C] text-ev-cta hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeftIcon className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => scroll('right')}
-                    className="p-2 rounded-full border border-indigo-100 bg-white/50 hover:bg-white text-indigo-600 hover:shadow-md transition-all"
+                    className="p-2 rounded-full border border-ev-line/50 dark:border-white/[0.08] bg-ev-card/50 dark:bg-[#16241C]/50 hover:bg-ev-card dark:hover:bg-[#16241C] text-ev-cta hover:shadow-md transition-all"
                   >
                     <ChevronRightIcon className="w-5 h-5" />
                   </button>
@@ -552,15 +552,15 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               {candidates.length === 0 ? (
                 <div className="py-20 px-8 text-center relative z-10 flex flex-col items-center justify-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full flex items-center justify-center mb-6 shadow-xl shadow-indigo-200 animate-float">
-                    <StarIconSolid className="w-12 h-12 text-white drop-shadow-md" />
+                  <div className="w-24 h-24 bg-gradient-to-br from-ev-cta to-ev-green-dark rounded-full flex items-center justify-center mb-6 shadow-xl shadow-ev-cta/30 animate-float">
+                    <StarIconSolid className="w-12 h-12 text-ev-onmark drop-shadow-md" />
                   </div>
 
-                  <h3 className="text-slate-900 text-2xl font-bold mb-3">
+                  <h3 className="text-ev-ink dark:text-ev-onmark text-2xl font-bold mb-3">
                     Aquí brillarán tus próximas estrellas ✨
                   </h3>
 
-                  <p className="text-slate-600 max-w-lg mx-auto mb-8 text-lg leading-relaxed">
+                  <p className="text-ev-ink2/70 dark:text-ev-ink2/60 max-w-lg mx-auto mb-8 text-lg leading-relaxed">
                     La IA está rastreando tus campañas en busca de talento excepcional.
                     <br />
                     Sube más CVs y, cuando encontremos un <strong>Match &gt; 60%</strong>, lo destacaremos inmediatamente en este podio.
@@ -568,7 +568,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                   <button
                     onClick={() => setIsUploadModalOpen(true)}
-                    className="group flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 border border-indigo-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 font-bold transition-all shadow-sm hover:shadow-md"
+                    className="group flex items-center gap-2 px-6 py-3 bg-ev-card dark:bg-[#16241C] text-ev-cta border border-ev-line/50 dark:border-white/[0.08] rounded-xl hover:bg-ev-paper dark:hover:bg-[#1B2E24] hover:border-ev-cta/30 font-bold transition-all shadow-sm hover:shadow-md"
                   >
                     <ArrowDownTrayIcon className="w-5 h-5 group-hover:animate-bounce" />
                     Subir CV a Campaña Activa
@@ -586,17 +586,17 @@ const Dashboard: React.FC<DashboardProps> = ({
                       variant="candidate"
                       className={cn(
                         "group relative w-[280px] flex-shrink-0 p-5 cursor-pointer snap-center",
-                        "hover:bg-white hover:border-indigo-300 hover:shadow-xl hover:-translate-y-1",
+                        "hover:bg-ev-card dark:hover:bg-[#16241C] hover:border-ev-cta/30 hover:shadow-xl hover:-translate-y-1",
                         "transition-all duration-300",
-                        selectedCandidate?.id === candidate.id && 'ring-2 ring-indigo-500 bg-white scale-105 shadow-xl'
+                        selectedCandidate?.id === candidate.id && 'ring-2 ring-ev-cta bg-ev-card dark:bg-[#16241C] scale-105 shadow-xl'
                       )}
                       onClick={() => handleCandidateClick(candidate)}
                     >
-                      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-ev-cta to-ev-green-dark rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
                       {/* Context Badge (Top) */}
-                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-indigo-100/90 backdrop-blur-sm border border-indigo-200 rounded-full px-3 py-0.5 z-20 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300">
-                        <p className="text-[10px] font-bold text-indigo-800 truncate max-w-[180px]">
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-ev-cta/10 dark:bg-ev-cta/20 backdrop-blur-sm border border-ev-cta/20 dark:border-ev-cta/30 rounded-full px-3 py-0.5 z-20 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        <p className="text-[10px] font-bold text-ev-cta dark:text-ev-green truncate max-w-[180px]">
                           Postula a: {candidate.campaignTitle}
                         </p>
                       </div>
@@ -608,16 +608,16 @@ const Dashboard: React.FC<DashboardProps> = ({
 
                       {/* Avatar & Info */}
                       <div className="flex flex-col items-center text-center mt-6 mb-4">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-violet-100 p-1 mb-3 shadow-md group-hover:shadow-indigo-200 transition-shadow">
-                          <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-xl font-bold text-indigo-600">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-ev-cta/20 to-ev-green-dark/20 p-1 mb-3 shadow-md group-hover:shadow-ev-cta/20 transition-shadow">
+                          <div className="w-full h-full rounded-full bg-ev-card dark:bg-[#16241C] flex items-center justify-center text-xl font-bold text-ev-cta">
                             {getInitials(candidate.name)}
                           </div>
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800 truncate w-full px-2" title={candidate.name}>
+                        <h3 className="text-lg font-bold text-ev-ink dark:text-ev-onmark truncate w-full px-2" title={candidate.name}>
                           {candidate.name}
                         </h3>
                         {/* Clean Role Display */}
-                        <div className="flex items-center justify-center gap-1.5 mt-1 text-slate-500 text-xs font-medium w-full px-4">
+                        <div className="flex items-center justify-center gap-1.5 mt-1 text-ev-ink2/60 dark:text-ev-ink2/50 text-xs font-medium w-full px-4">
                           {candidate.role ? (
                             <span className="truncate" title={candidate.role}>{candidate.role}</span>
                           ) : (
@@ -627,14 +627,14 @@ const Dashboard: React.FC<DashboardProps> = ({
                       </div>
 
                       {/* Quick Insight (AI) instead of Quote Box */}
-                      <div className="bg-slate-50 rounded-xl p-3 mb-4 text-xs text-slate-600 text-center border border-slate-100 min-h-[64px] flex items-center justify-center group-hover:bg-white group-hover:border-indigo-100 transition-colors">
+                      <div className="bg-ev-paper dark:bg-[#0E1813]/60 rounded-xl p-3 mb-4 text-xs text-ev-ink2 dark:text-ev-ink2/70 text-center border border-ev-line/30 dark:border-white/[0.06] min-h-[64px] flex items-center justify-center group-hover:bg-ev-card dark:group-hover:bg-[#16241C] group-hover:border-ev-cta/20 transition-colors">
                         <p className="line-clamp-3 leading-relaxed">
                           {getAIInsight(candidate)}
                         </p>
                       </div>
 
                       {/* Action */}
-                      <button className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+                      <button className="w-full py-2.5 bg-ev-cta hover:bg-ev-green-dark text-ev-onmark text-sm font-bold rounded-xl transition-colors shadow-card-lg-evalen flex items-center justify-center gap-2">
                         <EyeIcon className="w-4 h-4" />
                         Ver Perfil Completo
                       </button>
@@ -711,8 +711,8 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Snackbar */}
         {snackbarMessage && (
-          <div className="fixed bottom-4 right-4 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in-up flex items-center gap-2">
-            <CheckCircleSolid className="w-5 h-5 text-green-400" />
+          <div className="fixed bottom-4 right-4 bg-ev-ink dark:bg-ev-onmark text-ev-onmark dark:text-ev-ink px-6 py-3 rounded-xl shadow-card-lg-evalen z-50 animate-fade-in-up flex items-center gap-2">
+            <CheckCircleSolid className="w-5 h-5 text-ev-cta" />
             {snackbarMessage}
           </div>
         )}
@@ -739,41 +739,41 @@ const Dashboard: React.FC<DashboardProps> = ({
             />
 
             {/* Modal */}
-            <div className="relative bg-white rounded-2xl shadow-modal max-w-md w-full mx-4 animate-fade-in-up">
+            <div className="relative bg-ev-card dark:bg-[#16241C] rounded-2xl shadow-card-lg-evalen max-w-md w-full mx-4 animate-fade-in-up">
               {/* Header */}
-              <GradientHeader variant="warning" className="rounded-t-2xl">
+              <div className="bg-ev-ink dark:bg-ev-ink/90 rounded-t-2xl p-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                    <PauseIcon className="w-6 h-6" />
+                  <div className="w-12 h-12 bg-ev-card/20 dark:bg-white/10 rounded-full flex items-center justify-center">
+                    <PauseIcon className="w-6 h-6 text-ev-onmark" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">Pausar Campaña</h3>
-                    <p className="text-sm text-yellow-100">Confirma esta acción</p>
+                    <h3 className="text-xl font-bold text-ev-onmark">Pausar Campaña</h3>
+                    <p className="text-sm text-ev-onmark/70">Confirma esta acción</p>
                   </div>
                 </div>
-              </GradientHeader>
+              </div>
 
               {/* Body */}
               <div className="p-6">
                 <div className="mb-4">
-                  <p className="text-gray-700 font-semibold mb-2">
+                  <p className="text-ev-ink2 dark:text-ev-ink2/80 font-semibold mb-2">
                     ¿Estás seguro de que deseas pausar la campaña:
                   </p>
-                  <p className="text-indigo-600 font-bold text-lg">
+                  <p className="text-ev-cta font-bold text-lg">
                     "{pauseConfirmModal.campaignTitle}"?
                   </p>
                 </div>
 
-                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-6">
+                <div className="bg-ev-red/10 dark:bg-ev-red/20 border-2 border-ev-red/30 rounded-xl p-4 mb-6">
                   <div className="flex gap-3">
                     <div className="flex-shrink-0">
-                      <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-6 h-6 text-ev-red" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-yellow-900 mb-1">⚠️ Advertencia Importante</p>
-                      <p className="text-sm text-yellow-800">
+                      <p className="text-sm font-bold text-ev-red mb-1">⚠️ Advertencia Importante</p>
+                      <p className="text-sm text-ev-red/80">
                         Si pausas esta campaña, <strong>ningún candidato podrá postular</strong> hasta que la reactives nuevamente.
                         El enlace público dejará de aceptar aplicaciones.
                       </p>
@@ -785,13 +785,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div className="flex gap-3">
                   <button
                     onClick={() => setPauseConfirmModal({ isOpen: false, campaignId: '', campaignTitle: '' })}
-                    className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                    className="flex-1 px-4 py-3 bg-ev-paper dark:bg-[#0E1813] text-ev-ink2 dark:text-ev-ink2/70 rounded-xl font-semibold hover:bg-ev-line/30 dark:hover:bg-white/5 transition-colors"
                   >
                     Cancelar
                   </button>
                   <button
                     onClick={confirmPauseCampaign}
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg font-semibold hover:from-yellow-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
+                    className="flex-1 px-4 py-3 bg-ev-red text-ev-onmark rounded-xl font-semibold hover:bg-ev-red/90 transition-all shadow-md hover:shadow-lg"
                   >
                     Pausar Campaña
                   </button>
@@ -803,27 +803,27 @@ const Dashboard: React.FC<DashboardProps> = ({
 
         {/* Start Process Confirmation Modal */}
         {showStartProcessModal && selectedCandidate && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-fade-in-up">
-              <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-60 flex items-center justify-center p-4">
+            <div className="bg-ev-card dark:bg-[#16241C] rounded-2xl p-8 max-w-sm w-full shadow-card-lg-evalen animate-fade-in-up">
+              <div className="w-16 h-16 bg-ev-cta/10 dark:bg-ev-cta/20 rounded-full flex items-center justify-center mx-auto mb-4 text-ev-cta">
                 <PlayIcon className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-center text-slate-900 mb-2">Iniciar Reclutamiento</h3>
-              <p className="text-center text-slate-500 text-sm mb-6">
+              <h3 className="text-xl font-bold text-center text-ev-ink dark:text-ev-onmark mb-2">Iniciar Reclutamiento</h3>
+              <p className="text-center text-ev-ink2/70 dark:text-ev-ink2/60 text-sm mb-6">
                 Esto moverá a <strong>{selectedCandidate.name}</strong> a la etapa de "Screening" y notificará al equipo.
               </p>
 
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowStartProcessModal(false)}
-                  className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl transition-colors"
+                  className="flex-1 py-3 text-sm font-bold text-ev-ink2/70 dark:text-ev-ink2/60 hover:bg-ev-paper dark:hover:bg-[#0E1813] rounded-xl transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={executeStartProcess}
                   disabled={startingProcess}
-                  className="flex-1 py-3 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all flex justify-center items-center"
+                  className="flex-1 py-3 bg-ev-cta text-ev-onmark text-sm font-bold rounded-xl hover:bg-ev-green-dark shadow-card-lg-evalen transition-all flex justify-center items-center"
                 >
                   {startingProcess ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Confirmar'}
                 </button>
@@ -835,7 +835,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         {/* Mobile FAB */}
         <button
           onClick={onCreateCampaign}
-          className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-700 transition-colors z-40"
+          className="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-ev-cta text-ev-onmark rounded-full shadow-card-lg-evalen flex items-center justify-center hover:bg-ev-green-dark transition-colors z-40"
         >
           <PlusIcon className="w-6 h-6" />
         </button>

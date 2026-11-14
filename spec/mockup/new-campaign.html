@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Evalen · Nueva campaña — crea tu oferta en 5 pasos</title>
+<meta name="description" content="Crea una campaña en Evalen: título, descripción, salario y etapas. La IA genera la rúbrica de evaluación desde tu oferta para puntuar cada CV que subas." />
+<meta name="theme-color" content="#0F3A2C" />
+<meta name="robots" content="noindex,nofollow" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2048%2048'%3E%3Crect%20width='48'%20height='48'%20rx='12'%20fill='%230F3A2C'/%3E%3Crect%20x='13'%20y='12'%20width='5'%20height='24'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='12'%20width='18'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='21.5'%20width='13'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Crect%20x='13'%20y='31'%20width='21'%20height='5'%20rx='2.5'%20fill='%23F6F1E6'/%3E%3Ccircle%20cx='37'%20cy='14.5'%20r='4.5'%20fill='%23F3E94E'/%3E%3C/svg%3E" />
+<script>(function(){try{var t=localStorage.getItem('evalen-theme');if(!t){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-700-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/fraunces@latest/latin-500-italic.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-500-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-600-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/instrument-sans@latest/latin-700-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-mono@latest/latin-400-normal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/css/ibm-plex-mono@latest/latin-500-normal.css" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: ['selector', '[data-theme="dark"]'],
+  theme: {
+    extend: {
+      colors: {
+        paper:'#F6F1E6', paper2:'#EFE7D6', card:'#FCFAF3',
+        ink:'#15261E', ink2:'#4C5B51', ink3:'#828E84',
+        green:'#1C5B44', greendeep:'#0F3A2C', greentint:'#E4ECE4',
+        onmark:'#F6F1E6',
+        yellow:'#F3E94E', yellow2:'#FBF6AE',
+        cta:'#D64518', ctah:'#B5370F', ctatext:'#FFF7EC',
+        line:'rgba(21,38,30,.13)', line2:'rgba(21,38,30,.24)',
+        good:'#1C5B44', goodt:'#E4ECE4',
+        mid:'#A9760F', midt:'#F6ECCF',
+        low:'#B23B2E', lowt:'#F4DDD8'
+      },
+      fontFamily: {
+        serif: ['Fraunces','Georgia','Times New Roman','serif'],
+        sans: ['Instrument Sans','system-ui','-apple-system','Segoe UI','Roboto','sans-serif'],
+        mono: ['IBM Plex Mono','ui-monospace','SFMono-Regular','Menlo','monospace']
+      },
+      boxShadow: {
+        card: '0 22px 48px -28px rgba(15,40,30,.5)',
+        soft: '0 10px 26px -18px rgba(15,40,30,.45)',
+        cta:  '0 12px 22px -12px rgba(214,69,24,.6)',
+        pop:  '0 18px 40px -22px rgba(15,40,30,.55)',
+        gold: '0 10px 24px -12px rgba(243,233,78,.45)'
+      },
+      backgroundImage: {
+        grain: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")"
+      },
+      keyframes: {
+        pulsering: { '0%':{boxShadow:'0 0 0 0 rgba(243,233,78,.5)'},'70%':{boxShadow:'0 0 0 6px rgba(243,233,78,0)'},'100%':{boxShadow:'0 0 0 0 rgba(243,233,78,0)'} },
+        popin: { '0%':{opacity:'0',transform:'scale(.97) translateY(6px)'},'100%':{opacity:'1',transform:none} },
+        shake: { '0%,100%':{transform:'translateX(0)'},'25%':{transform:'translateX(-5px)'},'75%':{transform:'translateX(5px)'} },
+        fadein: { '0%':{opacity:'0',transform:'translateY(8px)'},'100%':{opacity:'1',transform:none} }
+      },
+      animation: {
+        pulsering: 'pulsering 2.2s infinite',
+        popin: 'popin .3s cubic-bezier(.2,.8,.2,1) both',
+        shake: 'shake .35s ease',
+        fadein: 'fadein .35s ease both'
+      }
+    }
+  }
+}
+</script>
+
+<style>
+  :root {
+    color-scheme: light;
+    --ink:#15261E; --ink2:#4C5B51; --ink3:#828E84;
+    --green:#1C5B44; --greendeep:#0F3A2C; --greentint:#E4ECE4;
+    --onmark:#F6F1E6; --yellow:#F3E94E; --yellow2:#FBF6AE;
+    --cta:#D64518; --ctah:#B5370F; --ctatext:#FFF7EC;
+    --good:#1C5B44; --goodt:#E4ECE4; --mid:#A9760F; --midt:#F6ECCF; --low:#B23B2E; --lowt:#F4DDD8;
+    --paper:#F6F1E6; --paper2:#EFE7D6; --card:#FCFAF3;
+    --line:rgba(21,38,30,.13); --line2:rgba(21,38,30,.24);
+  }
+  html[data-theme="dark"] {
+    --paper:#0E1813; --paper2:#13201A; --card:#16241C;
+    --ink:#F1EBDC; --ink2:#AAB6A8; --ink3:#7E8C7E;
+    --green:#5BAE88; --greendeep:#163528; --greentint:#1C3329;
+    --onmark:#F1EBDC; --yellow:#F3E94E; --yellow2:#5A5418;
+    --cta:#FF6A38; --ctah:#FF8455; --ctatext:#10231A;
+    --line:rgba(241,235,220,.13); --line2:rgba(241,235,220,.26);
+    --good:#62B78F; --goodt:#173327; --mid:#E0A93A; --midt:#3A2E12;
+    --low:#E0695A; --lowt:#3A1C18;
+    color-scheme: dark;
+  }
+  html[data-theme="dark"] body { background: var(--paper); color: var(--ink); }
+  html[data-theme="dark"] .t-paper{background:var(--paper)!important}
+  html[data-theme="dark"] .t-paper2{background:var(--paper2)!important}
+  html[data-theme="dark"] .t-card{background:var(--card)!important}
+  html[data-theme="dark"] .t-ink{color:var(--ink)!important}
+  html[data-theme="dark"] .t-ink2{color:var(--ink2)!important}
+  html[data-theme="dark"] .t-ink3{color:var(--ink3)!important}
+  html[data-theme="dark"] .t-line{border-color:var(--line)!important}
+  html[data-theme="dark"] .t-line2{border-color:var(--line2)!important}
+  html[data-theme="dark"] .t-goodt{background:var(--goodt)!important}
+  html[data-theme="dark"] .t-midt{background:var(--midt)!important}
+  html[data-theme="dark"] .t-lowt{background:var(--lowt)!important}
+  html[data-theme="dark"] .t-greentint{background:var(--greentint)!important}
+  html[data-theme="dark"] .t-good{color:var(--good)!important}
+  html[data-theme="dark"] .t-mid{color:var(--mid)!important}
+  html[data-theme="dark"] .t-low{color:var(--low)!important}
+  html[data-theme="dark"] .t-green{color:var(--green)!important}
+  html[data-theme="dark"] .t-cta{color:var(--cta)!important}
+  html[data-theme="dark"] .bg-cta{background:var(--cta)!important}
+  html[data-theme="dark"] .hover\:bg-ctah:hover{background:var(--ctah)!important}
+  html[data-theme="dark"] .text-ctatext{color:var(--ctatext)!important}
+  html[data-theme="dark"] .bg-greendeep{background:var(--greendeep)!important}
+  html[data-theme="dark"] .bg-good{background:var(--good)!important}
+  html[data-theme="dark"] .text-onmark{color:var(--onmark)!important}
+  html[data-theme="dark"] .bg-yellow{background:var(--yellow)!important}
+  html[data-theme="dark"] .text-greendeep{color:var(--greendeep)!important}
+  html[data-theme="dark"] .border-green{border-color:var(--green)!important}
+  html[data-theme="dark"] .border-cta{border-color:var(--cta)!important}
+  html[data-theme="dark"] .border-mid{border-color:var(--mid)!important}
+  html[data-theme="dark"] .border-low{border-color:var(--low)!important}
+
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) body { background-color:#F6F1E6 !important; color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper   { background-color:#F6F1E6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper2  { background-color:#EFE7D6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-card    { background-color:#FCFAF3 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-greendeep { background-color:#0F3A2C !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-green,
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-good    { background-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-cta     { background-color:#D64518 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-yellow  { background-color:#F3E94E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-greentint,
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-goodt   { background-color:#E4ECE4 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-midt    { background-color:#F6ECCF !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-lowt    { background-color:#F4DDD8 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-line2   { background-color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper\/80  { background-color:rgba(246,241,230,.80) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-paper\/60  { background-color:rgba(246,241,230,.60) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-card\/60   { background-color:rgba(252,250,243,.60) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-greendeep\/85 { background-color:rgba(15,58,44,.85) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-onmark\/15 { background-color:rgba(246,241,230,.15) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-good\/55   { background-color:rgba(28,91,68,.55) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .bg-ink3\/40   { background-color:rgba(130,142,132,.40) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ink   { color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ink2  { color:#4C5B51 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ink3  { color:#828E84 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-green,
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-good  { color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-mid   { color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-low   { color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-cta   { color:#D64518 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark{ color:#F6F1E6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-greendeep { color:#0F3A2C !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-ctatext { color:#FFF7EC !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-line2 { color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/70 { color:rgba(246,241,230,.70) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/75 { color:rgba(246,241,230,.75) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .text-onmark\/80 { color:rgba(246,241,230,.80) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .placeholder\:text-ink3\/80::placeholder { color:rgba(130,142,132,.80) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-line  { border-color:rgba(21,38,30,.13) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-line2 { border-color:rgba(21,38,30,.24) !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-green { border-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-cta   { border-color:#D64518 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-mid   { border-color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .border-low   { border-color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .ring-paper  { --tw-ring-color:#F6F1E6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .ring-paper2 { --tw-ring-color:#EFE7D6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-paper2:hover  { background-color:#EFE7D6 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-greentint:hover { background-color:#E4ECE4 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-green:hover   { background-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-goodt:hover   { background-color:#E4ECE4 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-lowt:hover    { background-color:#F4DDD8 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:bg-ctah:hover    { background-color:#B5370F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-ink:hover   { color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-green:hover { color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-mid:hover   { color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:text-low:hover   { color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-ink:hover  { border-color:#15261E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-green:hover{ border-color:#1C5B44 !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-mid:hover  { border-color:#A9760F !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-low:hover  { border-color:#B23B2E !important; }
+  :where(html[data-theme="light"], html:not([data-theme="dark"])) .hover\:border-cta:hover  { border-color:#D64518 !important; }
+
+  ::selection { background:#F3E94E; color:#15261E; }
+  input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus,
+  [contenteditable]:-webkit-autofill {
+    -webkit-text-fill-color: var(--ink);
+    -webkit-box-shadow: 0 0 0 1000px var(--card) inset;
+    caret-color: var(--ink);
+    transition: background-color 99999s ease-in-out 0s;
+  }
+
+  .step-current { box-shadow: 0 0 0 5px var(--greentint); }
+
+  .rte { min-height: 150px; outline: none; }
+  .rte[data-placeholder]:empty:before { content: attr(data-placeholder); color: var(--ink3); pointer-events: none; }
+  .rte h2, .rte-view h2 { font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 1.18rem; font-weight: 700; letter-spacing: -.01em; margin: .5em 0 .3em; color: var(--ink); }
+  .rte h3, .rte-view h3 { font-family: 'Instrument Sans', system-ui, sans-serif; font-size: 1.02rem; font-weight: 600; margin: .5em 0 .25em; color: var(--ink); }
+  .rte ul, .rte-view ul { list-style: disc; padding-left: 1.3em; margin: .35em 0; }
+  .rte ol, .rte-view ol { list-style: decimal; padding-left: 1.3em; margin: .35em 0; }
+  .rte li, .rte-view li { margin: .12em 0; }
+  .rte a, .rte-view a { color: var(--cta); text-decoration: underline; text-underline-offset: 2px; }
+  .rte blockquote, .rte-view blockquote { border-left: 3px solid var(--cta); padding-left: .8em; margin: .4em 0; color: var(--ink2); }
+  .rte p, .rte-view p { margin: .3em 0; }
+  .rte.is-full { position: fixed; inset: 16px; z-index: 80; background: var(--card); border-radius: 16px; padding: 16px; min-height: auto; overflow: auto; box-shadow: var(--pop); }
+  .tb-btn[aria-pressed="true"] { background: var(--greentint); color: var(--green); }
+
+  /* ===== Smart Fill · bloque premium =====
+     Decisión de marca: el "premium/IA" aquí NO es un degradado violeta genérico
+     (eso es AI-slop). Es una losa en VERDE PROFUNDO —el color del logo y del
+     panel de login— porque en Evalen el verde oscuro ES el gesto editorial.
+     El brillo lo aporta el AMARILLO de marca (glow + chip + medidor), y la
+     acción sigue siendo NARANJA para no romper la jerarquía "naranja = hacer".
+     El patrón de nodos conectados de fondo es la metáfora visual del matching
+     semántico: diseñado, no decorativo. */
+  .smart-block { transition: opacity .3s ease, box-shadow .3s ease; }
+  .smart-glow { opacity: .85; transition: opacity .45s ease, transform .55s ease; }
+  .smart-block:hover .smart-glow { opacity: 1; transform: scale(1.1); }
+  .smart-nodes { transition: opacity .45s ease; }
+  .smart-block:hover .smart-nodes { opacity: .15 !important; }
+  .smart-node-pulse { animation: nodepulse 3.4s ease-in-out infinite; }
+  @keyframes nodepulse { 0%,100% { opacity: .2 } 50% { opacity: 1 } }
+  .smart-block.is-depleted .smart-glow { opacity: .2 !important; }
+  .smart-block.is-depleted .smart-nodes { opacity: .035 !important; }
+  .smart-block.is-depleted .smart-dot { animation: none !important; opacity: .45; }
+  .smart-block.is-depleted .smart-medal { filter: grayscale(.4) brightness(.85); }
+
+  /* input del asistente: campo claro FIJO sobre la losa oscura, en ambos temas */
+  .smart-input { color: #15261E; background: #FCFAF3; border-color: rgba(246,241,230,.2); }
+  .smart-input::placeholder { color: #828E84; }
+  .smart-input:focus { border-color: var(--yellow); }
+  .smart-input:-webkit-autofill, .smart-input:-webkit-autofill:hover, .smart-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #15261E; -webkit-box-shadow: 0 0 0 1000px #FCFAF3 inset; caret-color: #15261E;
+  }
+  .smart-input:disabled { opacity: .55; cursor: not-allowed; }
+
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
+</style>
+</head>
+
+<body class="min-h-screen bg-paper text-ink font-sans antialiased [text-rendering:optimizeLegibility]">
+<!-- SISTEMA TIPOGRÁFICO · Fraunces (serif) = voz y títulos de sección · Instrument Sans = campos y datos · IBM Plex Mono = etiquetas y metadatos -->
+
+<div aria-hidden="true" class="pointer-events-none fixed inset-0 z-[60] bg-grain opacity-[0.045] mix-blend-overlay"></div>
+
+<!-- ===================== TOPBAR ===================== -->
+<header id="nav" class="sticky top-0 z-50 border-b border-transparent bg-paper/80 backdrop-blur-md backdrop-saturate-150 transition-colors">
+  <div class="mx-auto flex h-16 max-w-[1240px] items-center gap-3 px-4 sm:px-6 lg:px-8">
+    <a href="/" class="flex shrink-0 items-center gap-2.5" aria-label="Evalen, inicio">
+      <svg class="h-8 w-8" viewBox="0 0 48 48" aria-hidden="true">
+        <rect width="48" height="48" rx="12" fill="var(--greendeep)"/>
+        <rect x="13" y="12" width="5" height="24" rx="2.5" fill="var(--onmark)"/>
+        <rect x="13" y="12" width="18" height="5" rx="2.5" fill="var(--onmark)"/>
+        <rect x="13" y="21.5" width="13" height="5" rx="2.5" fill="var(--onmark)"/>
+        <rect x="13" y="31" width="21" height="5" rx="2.5" fill="var(--onmark)"/>
+        <circle cx="37" cy="14.5" r="4.5" fill="var(--yellow)"/>
+      </svg>
+      <span class="font-serif text-[1.35rem] font-semibold leading-none tracking-tight text-ink">evalen</span>
+    </a>
+
+    <nav class="ml-4 hidden items-center gap-1 lg:flex" aria-label="Principal">
+      <a href="#" class="rounded-lg px-3 py-2 text-sm font-medium text-ink2 transition hover:bg-paper2 hover:text-ink t-ink2">Panel</a>
+      <a href="#" class="rounded-lg px-3 py-2 text-sm font-medium text-ink2 transition hover:bg-paper2 hover:text-ink t-ink2">Campañas</a>
+      <a href="#" aria-current="page" class="rounded-lg bg-greentint px-3 py-2 text-sm font-semibold text-green t-goodt t-green">Nueva campaña</a>
+      <a href="#" class="rounded-lg px-3 py-2 text-sm font-medium text-ink2 transition hover:bg-paper2 hover:text-ink t-ink2">Usuarios</a>
+    </nav>
+
+    <div class="relative ml-auto hidden md:block">
+      <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-ink3">
+        <svg class="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+      </span>
+      <input type="search" placeholder="Buscar campañas o candidatos…" aria-label="Buscar"
+        class="w-56 rounded-xl border border-line2 bg-card py-2 pl-9 pr-3 text-sm text-ink placeholder:text-ink3/80 transition focus:w-72 focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2" />
+      <kbd class="pointer-events-none absolute inset-y-0 right-2.5 my-auto hidden h-5 items-center rounded border border-line2 px-1.5 font-mono text-[10px] text-ink3 lg:flex t-line2">/</kbd>
+    </div>
+
+    <div class="ml-auto flex items-center gap-2 md:ml-3">
+      <span class="hidden items-center gap-2 rounded-full border border-line2 bg-card py-1.5 pl-2.5 pr-3 sm:flex t-card t-line2" title="Tu plan">
+        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-greendeep text-onmark">
+          <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12z"/></svg>
+        </span>
+        <span class="leading-tight">
+          <span class="block font-mono text-[10px] uppercase tracking-[0.14em] text-ink3 t-ink3">Free</span>
+          <span class="block text-[12px] font-semibold text-ink t-ink">5 CVs este mes</span>
+        </span>
+      </span>
+
+      <button id="themeBtn" type="button" aria-label="Cambiar tema" class="grid h-9 w-9 place-items-center rounded-xl border border-line2 bg-card text-ink transition hover:bg-paper2 t-card t-ink t-line2">
+        <svg class="ic-moon h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="ic-sun hidden h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+
+      <button type="button" aria-label="Cuenta" class="grid h-9 w-9 place-items-center rounded-full bg-green font-mono text-[13px] font-semibold text-onmark ring-2 ring-paper transition hover:ring-paper2 t-good">OL</button>
+
+      <button id="burger" type="button" aria-label="Abrir menú" aria-expanded="false" class="grid h-9 w-9 place-items-center rounded-xl border border-line2 bg-card text-ink lg:hidden t-card t-ink t-line2">
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobileMenu" class="hidden border-t border-line bg-paper px-4 pb-5 pt-2 lg:hidden t-line t-paper">
+    <nav class="mt-3 grid" aria-label="Principal móvil">
+      <a href="#" class="rounded-lg px-3 py-2.5 text-sm font-medium text-ink2 t-ink2">Panel</a>
+      <a href="#" class="rounded-lg px-3 py-2.5 text-sm font-medium text-ink2 t-ink2">Campañas</a>
+      <a href="#" class="rounded-lg bg-greentint px-3 py-2.5 text-sm font-semibold text-green t-goodt t-green">Nueva campaña</a>
+      <a href="#" class="rounded-lg px-3 py-2.5 text-sm font-medium text-ink2 t-ink2">Usuarios</a>
+    </nav>
+  </div>
+</header>
+
+<main class="mx-auto max-w-[1240px] px-4 pb-24 pt-7 sm:px-6 lg:px-8">
+
+  <div class="mb-5 flex flex-wrap items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">
+    <a href="#" class="transition hover:text-ink2">Campañas</a>
+    <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="text-ink2 t-ink2">Nueva campaña</span>
+  </div>
+
+  <!-- ===================== WIZARD SHELL ===================== -->
+  <div id="wizard" class="overflow-hidden rounded-3xl border border-line bg-card shadow-card t-card t-line">
+
+    <div id="wizardGrid" class="grid grid-cols-1 lg:grid-cols-[300px_1fr]">
+
+      <!-- ============ SIDEBAR ============ -->
+      <aside class="border-b border-line bg-paper/60 p-6 lg:border-b-0 lg:border-r lg:bg-paper/40 t-line t-paper">
+        <ol id="stepperV" class="hidden lg:block" aria-label="Progreso del formulario"></ol>
+        <div class="lg:hidden">
+          <ol id="stepperH" class="flex items-center" aria-label="Progreso del formulario"></ol>
+          <p class="mt-3 text-[13px] text-ink2 t-ink2"><span id="stepLabelM" class="font-semibold text-ink t-ink">Paso 1 de 5</span> · <span id="stepNameM">Información básica</span></p>
+        </div>
+
+        <div class="mt-7 hidden rounded-2xl border border-line2 bg-card p-4 lg:block t-card t-line2">
+          <div class="flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink3 t-ink3">
+            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+            Resumen en vivo
+          </div>
+          <dl class="mt-3 grid gap-2.5 text-[13px]">
+            <div>
+              <dt class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink3 t-ink3">Cargo</dt>
+              <dd id="sumTitle" class="font-semibold text-ink t-ink">—</dd>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div><dt class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink3 t-ink3">Ubicación</dt><dd id="sumLoc" class="text-ink2 t-ink2">—</dd></div>
+              <div><dt class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink3 t-ink3">Modalidad</dt><dd id="sumMod" class="text-ink2 t-ink2">—</dd></div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div><dt class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink3 t-ink3">Salario</dt><dd id="sumSalary" class="text-ink2 t-ink2">—</dd></div>
+              <div><dt class="font-mono text-[10px] uppercase tracking-[0.12em] text-ink3 t-ink3">Etapas</dt><dd id="sumStages" class="text-ink2 t-ink2">0</dd></div>
+            </div>
+          </dl>
+          <p class="mt-3 border-t border-line pt-3 text-[11.5px] leading-relaxed text-ink3 t-ink3 t-line">Al crear, Evalen genera la <span class="text-ink2 t-ink2">rúbrica</span> desde esta oferta.</p>
+        </div>
+      </aside>
+
+      <!-- ============ CONTENIDO ============ -->
+      <div class="p-6 sm:p-8 lg:p-10">
+
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-green t-green">Nueva campaña</p>
+            <h1 class="mt-1.5 font-serif text-[1.7rem] font-semibold leading-[1.08] tracking-tight text-ink sm:text-[2rem] t-ink">Crea tu oferta en 5 pasos</h1>
+          </div>
+          <button type="button" data-toast="Borrador descartado (demo)" class="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-line2 px-3 py-2 text-[13px] font-medium text-ink2 transition hover:border-low hover:text-low t-ink2 t-line2">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            Cancelar
+          </button>
+        </div>
+
+        <form id="wizForm" class="mt-7" novalidate>
+
+          <!-- ============ PASO 1 ============ -->
+          <section data-panel="1" class="wiz-panel">
+            <div class="flex items-center gap-3">
+              <span class="grid h-9 w-9 place-items-center rounded-xl bg-greentint text-green t-goodt t-green"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+              <h2 class="font-serif text-[1.4rem] font-semibold tracking-tight text-ink t-ink">Lo esencial del cargo</h2>
+            </div>
+            <p class="mt-2 max-w-[58ch] text-[14px] text-ink2 t-ink2">Lo mínimo para publicar y para que la IA entienda qué buscar. El título y la modalidad son lo primero que filtra un candidato — y lo primero que lee Evalen.</p>
+
+            <div class="mt-6 grid gap-5">
+              <div>
+                <label for="f-title" class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Título del puesto <span class="text-cta t-cta">*</span></label>
+                <input id="f-title" data-field="title" type="text" placeholder="Ej. Desarrollador Full Stack Senior"
+                  class="w-full rounded-xl border border-line2 bg-card px-4 py-3 text-[15px] text-ink placeholder:text-ink3/80 transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2" />
+              </div>
+
+              <!-- ============ SMART FILL · BLOQUE PREMIUM ============ -->
+              <div id="smartBlock" class="smart-block relative overflow-hidden rounded-2xl border border-onmark/10 bg-greendeep p-5 text-onmark shadow-card sm:p-6">
+                <!-- glow radial amarillo (halo de marca, no degradado genérico) -->
+                <div aria-hidden="true" class="smart-glow pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full" style="background:radial-gradient(circle, rgba(243,233,78,.26), rgba(243,233,78,0) 70%)"></div>
+                <div aria-hidden="true" class="smart-glow pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full" style="background:radial-gradient(circle, rgba(91,174,136,.22), rgba(91,174,136,0) 70%)"></div>
+                <!-- gradiente diagonal sutil dentro de paleta -->
+                <div aria-hidden="true" class="pointer-events-none absolute inset-0" style="background:linear-gradient(135deg, rgba(28,91,68,0) 30%, rgba(28,91,68,.5) 100%)"></div>
+                <!-- malla semántica de nodos (metáfora del matching) -->
+                <svg aria-hidden="true" class="smart-nodes pointer-events-none absolute inset-0 h-full w-full text-onmark opacity-[0.08]" viewBox="0 0 420 240" preserveAspectRatio="xMidYMid slice" fill="none" stroke="currentColor" stroke-width="1">
+                  <g>
+                    <line x1="36" y1="46" x2="120" y2="34"/><line x1="120" y1="34" x2="205" y2="72"/><line x1="205" y1="72" x2="300" y2="40"/><line x1="300" y1="40" x2="384" y2="96"/>
+                    <line x1="205" y1="72" x2="256" y2="128"/><line x1="120" y1="34" x2="64" y2="128"/><line x1="64" y1="128" x2="168" y2="150"/><line x1="168" y1="150" x2="256" y2="128"/>
+                    <line x1="256" y1="128" x2="350" y2="176"/><line x1="168" y1="150" x2="110" y2="200"/><line x1="110" y1="200" x2="300" y2="206"/><line x1="300" y1="206" x2="350" y2="176"/>
+                    <line x1="384" y1="96" x2="350" y2="176"/><line x1="36" y1="46" x2="64" y2="128"/><line x1="205" y1="72" x2="168" y2="150"/>
+                  </g>
+                  <g fill="currentColor" stroke="none">
+                    <circle cx="36" cy="46" r="2.6"/><circle cx="300" cy="40" r="2.6"/><circle cx="384" cy="96" r="2.6"/><circle cx="64" cy="128" r="2.6"/>
+                    <circle cx="256" cy="128" r="2.6"/><circle cx="110" cy="200" r="2.6"/><circle cx="300" cy="206" r="2.6"/><circle cx="350" cy="176" r="2.6"/>
+                    <circle class="smart-node-pulse" cx="120" cy="34" r="3.4"/><circle class="smart-node-pulse" cx="205" cy="72" r="3.4" style="animation-delay:.8s"/>
+                    <circle class="smart-node-pulse" cx="168" cy="150" r="3.4" style="animation-delay:1.6s"/>
+                  </g>
+                </svg>
+
+                <div class="relative z-10">
+                  <!-- fila superior: medalla + chip -->
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-center gap-3.5">
+                      <span class="smart-medal grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-yellow text-greendeep shadow-gold">
+                        <svg class="h-[22px] w-[22px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 1.7 4.6L18 8l-4.3 1.4L12 14l-1.7-4.6L6 8l4.3-1.4z"/><path d="M18.5 13.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z"/><path d="M5 14l.7 1.9 1.9.7-1.9.7L5 19l-.7-1.7-1.9-.7 1.9-.7z"/></svg>
+                      </span>
+                      <div class="min-w-0">
+                        <h3 class="font-sans text-[16px] font-semibold leading-tight tracking-tight text-onmark">Smart Fill · <span class="rounded-sm bg-yellow px-1.5 text-greendeep">borrador con IA</span></h3>
+                        <p id="smartCopy" class="mt-1 max-w-[46ch] text-[13px] leading-relaxed text-onmark/75">Escribe el título y un poco de contexto: la IA redacta descripción, requisitos y beneficios por ti.</p>
+                      </div>
+                    </div>
+                    <span id="smartChip" class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-yellow/40 bg-yellow/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-yellow backdrop-blur-sm">
+                      <span class="smart-dot h-1.5 w-1.5 rounded-full bg-yellow animate-pulsering"></span> Asistente IA
+                    </span>
+                  </div>
+
+                  <!-- medidor de créditos (píldoras) -->
+                  <div class="mt-4 flex flex-wrap items-center gap-3">
+                    <span class="font-mono text-[10.5px] uppercase tracking-[0.14em] text-onmark/60">Usos disponibles</span>
+                    <span id="creditPills" class="flex items-center gap-1.5" aria-hidden="true"></span>
+                    <span id="creditText" class="font-mono text-[11px] text-onmark/70">2 de 2</span>
+                  </div>
+
+                  <!-- input claro + botón naranja -->
+                  <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                    <input id="f-smartctx" type="text" placeholder="Contexto opcional · Ej. 100% remoto, stack Next.js + Node, equipo de 6"
+                      class="smart-input flex-1 rounded-xl border px-4 py-3 text-[14px] transition focus:outline-none focus:ring-2 focus:ring-yellow/40" />
+                    <button type="button" id="smartFillBtn" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-cta px-5 py-3 text-[14px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:translate-y-0">
+                      <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 1.7 4.6L18 8l-4.3 1.4L12 14l-1.7-4.6L6 8l4.3-1.4z"/><path d="M18.5 13.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z"/></svg>
+                      <span id="smartFillLabel">Smart Fill</span>
+                    </button>
+                  </div>
+
+                  <!-- upgrade (solo cuando se agotan los usos) -->
+                  <p id="smartUpgrade" class="hidden mt-3.5 flex flex-wrap items-center gap-1.5 text-[12.5px] text-onmark/70">
+                    <svg class="h-4 w-4 text-yellow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12z"/></svg>
+                    ¿Necesitas más borradores?
+                    <button type="button" data-toast="Te llevaríamos al checkout de EvalenPro (demo)" class="font-semibold text-yellow underline-offset-2 hover:underline">Desbloquéalos con EvalenPro →</button>
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <label for="f-loc" class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Ubicación geográfica <span class="text-cta t-cta">*</span></label>
+                <div class="relative">
+                  <span class="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-ink3"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-7-4.4-7-10a7 7 0 0 1 14 0c0 5.6-7 10-7 10z"/><circle cx="12" cy="11" r="2.4"/></svg></span>
+                  <input id="f-loc" data-field="location" type="text" placeholder="Ej. Santiago, Región Metropolitana, Chile"
+                    class="w-full rounded-xl border border-line2 bg-card py-3 pl-11 pr-4 text-[15px] text-ink placeholder:text-ink3/80 transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2" />
+                </div>
+              </div>
+
+              <div class="grid gap-5 sm:grid-cols-3">
+                <div>
+                  <label for="f-type" class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Tipo de trabajo <span class="text-cta t-cta">*</span></label>
+                  <select id="f-type" data-field="jobType" class="w-full rounded-xl border border-line2 bg-card px-3 py-3 text-[15px] text-ink transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2">
+                    <option value="">Seleccionar…</option>
+                    <option>Jornada completa</option><option>Medio tiempo</option><option>Por horas</option><option>Práctica / pasantía</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="f-mod" class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Modalidad <span class="text-cta t-cta">*</span></label>
+                  <select id="f-mod" data-field="modality" class="w-full rounded-xl border border-line2 bg-card px-3 py-3 text-[15px] text-ink transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2">
+                    <option value="">Seleccionar…</option>
+                    <option>Remoto</option><option>Híbrido</option><option>Presencial</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="f-dur" class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Duración <span class="text-cta t-cta">*</span></label>
+                  <select id="f-dur" data-field="duration" class="w-full rounded-xl border border-line2 bg-card px-3 py-3 text-[15px] text-ink transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2">
+                    <option value="">Seleccionar…</option>
+                    <option>Indefinido</option><option>Plazo fijo</option><option>Por proyecto</option><option>Temporada</option>
+                  </select>
+                </div>
+              </div>
+
+              <label class="flex cursor-pointer select-none items-center gap-3 rounded-xl border border-line2 bg-paper/60 px-4 py-3 text-[14px] text-ink t-ink t-line2">
+                <input id="f-incl" data-field="inclusion" type="checkbox" class="h-4 w-4 rounded border-line2 accent-cta" />
+                Puesto acogido a Ley de Inclusión (21.015)
+              </label>
+            </div>
+
+            <div class="mt-6 rounded-r-xl border-l-2 border-cta bg-card py-3 pl-4 pr-4 t-card t-cta">
+              <p class="text-[13px] leading-relaxed text-ink2 t-ink2"><span class="font-semibold text-ink t-ink">Consejo.</span> Un título específico (“Backend Node · 4+ años”) atrae mejor postulación que uno genérico (“Desarrollador”). La IA usa esas palabras para afinar el match.</p>
+            </div>
+          </section>
+
+          <!-- ============ PASO 2 ============ -->
+          <section data-panel="2" class="wiz-panel hidden">
+            <div class="flex items-center gap-3">
+              <span class="grid h-9 w-9 place-items-center rounded-xl bg-greentint text-green t-goodt t-green"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h6M10 16h6"/></svg></span>
+              <h2 class="font-serif text-[1.4rem] font-semibold tracking-tight text-ink t-ink">Describe el puesto como a un colega</h2>
+            </div>
+            <p class="mt-2 max-w-[60ch] text-[14px] text-ink2 t-ink2">Menciona los <span class="font-medium text-ink t-ink">excluyentes</span> (años, stack, idiomas). Evalen los usa para descartar antes de que tú pierdas tiempo leyendo.</p>
+
+            <div class="mt-6 grid gap-6">
+              <div>
+                <label class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Descripción del puesto <span class="text-cta t-cta">*</span></label>
+                <div data-editor="description" class="rte-wrap overflow-hidden rounded-xl border border-line2 bg-card transition focus-within:border-green focus-within:ring-2 focus-within:ring-green/25 t-card t-line2"></div>
+              </div>
+              <div>
+                <label class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Requisitos y habilidades <span class="text-cta t-cta">*</span></label>
+                <div data-editor="requirements" class="rte-wrap overflow-hidden rounded-xl border border-line2 bg-card transition focus-within:border-green focus-within:ring-2 focus-within:ring-green/25 t-card t-line2"></div>
+              </div>
+            </div>
+
+            <div class="mt-6 rounded-r-xl border-l-2 border-cta bg-card py-3 pl-4 pr-4 t-card t-cta">
+              <p class="text-[13px] leading-relaxed text-ink2 t-ink2"><span class="font-semibold text-ink t-ink">Consejo.</span> Separa “excluyentes” de “deseables”. La rúbrica pondera los excluyentes más alto y marca rojo al que no los cumple.</p>
+            </div>
+          </section>
+
+          <!-- ============ PASO 3 ============ -->
+          <section data-panel="3" class="wiz-panel hidden">
+            <div class="flex items-center gap-3">
+              <span class="grid h-9 w-9 place-items-center rounded-xl bg-greentint text-green t-goodt t-green"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.2c0-1 1.1-1.7 2.5-1.7s2.5.7 2.5 1.7-1.1 1.5-2.5 1.8-2.5.8-2.5 1.8 1.1 1.7 2.5 1.7 2.5-.7 2.5-1.7"/></svg></span>
+              <h2 class="font-serif text-[1.4rem] font-semibold tracking-tight text-ink t-ink">Qué ofreces a cambio</h2>
+            </div>
+            <p class="mt-2 max-w-[60ch] text-[14px] text-ink2 t-ink2">El rango salarial, aunque no lo publiques, mejora el match: la IA detecta desajustes de seniority y te lo avisa.</p>
+
+            <div class="mt-6 grid gap-6">
+              <div>
+                <label class="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.14em] text-ink2 t-ink2">Condiciones y beneficios <span class="text-cta t-cta">*</span></label>
+                <div data-editor="benefits" class="rte-wrap overflow-hidden rounded-xl border border-line2 bg-card transition focus-within:border-green focus-within:ring-2 focus-within:ring-green/25 t-card t-line2"></div>
+              </div>
+
+              <div class="rounded-2xl border border-line2 bg-greentint p-4 sm:p-5 t-line2 t-greentint">
+                <div class="flex items-center gap-2">
+                  <span class="grid h-7 w-7 place-items-center rounded-lg bg-greendeep text-onmark"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.2c0-1 1.1-1.7 2.5-1.7s2.5.7 2.5 1.7-1.1 1.5-2.5 1.8-2.5.8-2.5 1.8 1.1 1.7 2.5 1.7 2.5-.7 2.5-1.7"/></svg></span>
+                  <h3 class="font-sans text-[15px] font-semibold tracking-tight text-ink t-ink">Información salarial</h3>
+                </div>
+                <div class="mt-3 grid gap-3 sm:grid-cols-[200px_1fr]">
+                  <select id="f-cur" data-field="salaryCurrency" class="w-full rounded-xl border border-line2 bg-card px-3 py-3 text-[15px] text-ink transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2">
+                    <option>$ CLP — Peso Chileno</option><option>US$ USD — Dólar</option><option>€ EUR — Euro</option><option>UF — Unidad de Fomento</option>
+                  </select>
+                  <input id="f-sal" data-field="salaryAmount" type="text" inputmode="numeric" placeholder="Ej. 2.000.000"
+                    class="w-full rounded-xl border border-line2 bg-card px-4 py-3 text-[15px] text-ink placeholder:text-ink3/80 transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2" />
+                </div>
+                <label class="mt-3 flex cursor-pointer select-none items-center gap-2.5 text-[13.5px] text-ink2 t-ink2">
+                  <input id="f-salpub" data-field="salaryPublic" type="checkbox" class="h-4 w-4 rounded border-line2 accent-cta" />
+                  Mostrar el salario en la publicación pública
+                </label>
+              </div>
+            </div>
+
+            <div class="mt-6 rounded-r-xl border-l-2 border-cta bg-card py-3 pl-4 pr-4 t-card t-cta">
+              <p class="text-[13px] leading-relaxed text-ink2 t-ink2"><span class="font-semibold text-ink t-ink">Consejo.</span> Los beneficios concretos (“día libre de cumpleaños”, “presupuesto de aprendizaje”) pesan más que “buen ambiente”. Escríbelos como lista.</p>
+            </div>
+          </section>
+
+          <!-- ============ PASO 4 ============ -->
+          <section data-panel="4" class="wiz-panel hidden">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <span class="grid h-9 w-9 place-items-center rounded-xl bg-greentint text-green t-goodt t-green"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 6.5a3 3 0 0 1 0 5.5M17.5 19a5 5 0 0 0-3-4.6"/></svg></span>
+                <h2 class="font-serif text-[1.4rem] font-semibold tracking-tight text-ink t-ink">Cómo vas a decidir</h2>
+              </div>
+              <button type="button" id="addStageBtn" class="inline-flex items-center gap-1.5 rounded-lg bg-greendeep px-3.5 py-2 text-[13px] font-semibold text-onmark transition hover:-translate-y-0.5">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                Agregar etapa
+              </button>
+            </div>
+            <p class="mt-2 max-w-[62ch] text-[14px] text-ink2 t-ink2">Estas etapas se vuelven el tablero de cada candidato. Empieza con una plantilla probada o arma la tuya.</p>
+
+            <div class="mt-4 rounded-xl border border-line2 bg-greentint px-4 py-3 text-[13px] leading-relaxed text-ink2 t-line2 t-greentint">
+              <span class="font-semibold text-green t-green">Nota.</span> Si no incluyes una etapa llamada “Contactar”, Evalen la agrega como primera por defecto.
+            </div>
+
+            <div id="tplBlock" class="mt-6">
+              <p class="text-center font-serif text-[1.1rem] font-semibold text-ink t-ink">Empieza con una plantilla probada</p>
+              <p class="mt-1 text-center text-[13px] text-ink2 t-ink2">Elige un flujo predefinido o parte desde cero.</p>
+              <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                <button type="button" data-tpl="general" class="tpl-card group rounded-2xl border border-line2 bg-card p-4 text-left transition hover:border-green t-card t-line2">
+                  <span class="grid h-10 w-10 place-items-center rounded-xl bg-greentint text-green t-goodt t-green"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span>
+                  <h3 class="mt-3 font-sans text-[15px] font-semibold text-ink t-ink">General / Admin</h3>
+                  <p class="mt-1 text-[12.5px] leading-snug text-ink2 t-ink2">Roles administrativos, operativos o de soporte.</p>
+                  <span class="mt-3 inline-block rounded-full bg-paper2 px-2.5 py-1 font-mono text-[10.5px] text-ink2 t-paper2 t-ink2">4 etapas</span>
+                </button>
+                <button type="button" data-tpl="tech" class="tpl-card group rounded-2xl border border-line2 bg-card p-4 text-left transition hover:border-green t-card t-line2">
+                  <span class="grid h-10 w-10 place-items-center rounded-xl bg-greentint text-green t-goodt t-green"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-3 3 3 3M16 9l3 3-3 3M13 6l-2 12"/></svg></span>
+                  <h3 class="mt-3 font-sans text-[15px] font-semibold text-ink t-ink">Tecnología (IT)</h3>
+                  <p class="mt-1 text-[12.5px] leading-snug text-ink2 t-ink2">Desarrollo, QA y roles técnicos con prueba.</p>
+                  <span class="mt-3 inline-block rounded-full bg-paper2 px-2.5 py-1 font-mono text-[10.5px] text-ink2 t-paper2 t-ink2">5 etapas</span>
+                </button>
+                <button type="button" data-tpl="sales" class="tpl-card group rounded-2xl border border-line2 bg-card p-4 text-left transition hover:border-green t-card t-line2">
+                  <span class="grid h-10 w-10 place-items-center rounded-xl bg-greentint text-green t-goodt t-green"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 6-7"/><path d="M14 8h5v5"/></svg></span>
+                  <h3 class="mt-3 font-sans text-[15px] font-semibold text-ink t-ink">Ventas / Comercial</h3>
+                  <p class="mt-1 text-[12.5px] leading-snug text-ink2 t-ink2">Enfocado en comunicación y negociación.</p>
+                  <span class="mt-3 inline-block rounded-full bg-paper2 px-2.5 py-1 font-mono text-[10.5px] text-ink2 t-paper2 t-ink2">5 etapas</span>
+                </button>
+              </div>
+              <div class="my-5 flex items-center gap-3 text-[12px] text-ink3 t-ink3"><span class="h-px flex-1 bg-line2 t-line2"></span> o personalízalo <span class="h-px flex-1 bg-line2 t-line2"></span></div>
+              <button type="button" id="emptyStagesBtn" class="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-line2 py-3.5 text-[14px] font-medium text-ink2 transition hover:border-green hover:text-green t-ink2 t-line2">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                Crear desde cero (vacío)
+              </button>
+            </div>
+
+            <div id="stageList" class="mt-6 grid gap-3.5"></div>
+            <p id="stageEmpty" class="hidden rounded-2xl border border-dashed border-line2 py-8 text-center text-[13px] text-ink3 t-line2 t-ink3">Aún no hay etapas. Elige una plantilla o agrega una.</p>
+          </section>
+
+          <!-- ============ PASO 5 ============ -->
+          <section data-panel="5" class="wiz-panel hidden">
+            <div class="flex items-center gap-3">
+              <span class="grid h-9 w-9 place-items-center rounded-xl bg-greentint text-green t-goodt t-green"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg></span>
+              <h2 class="font-serif text-[1.4rem] font-semibold tracking-tight text-ink t-ink">Revisa antes de publicar</h2>
+            </div>
+            <p class="mt-2 max-w-[62ch] text-[14px] text-ink2 t-ink2">Al crear, Evalen genera la <span class="font-medium text-ink t-ink">rúbrica de evaluación</span> desde esta oferta. Después solo subes CVs y la IA los puntúa contra ella.</p>
+
+            <div id="review" class="mt-6 grid gap-3.5"></div>
+
+            <div class="mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-line2 bg-greentint px-4 py-3.5 t-line2 t-greentint">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-greendeep text-yellow"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></span>
+              <p class="text-[13px] leading-relaxed text-ink2 t-ink2">Tu oferta se guarda y queda <span class="font-medium text-ink t-ink">activa</span>. Puedes pausarla o editarla cuando quieras desde el panel.</p>
+            </div>
+          </section>
+
+        </form>
+
+        <!-- ============ FOOTER DEL WIZARD ============ -->
+        <div id="wizFooter" class="mt-8 flex items-center justify-between gap-3 border-t border-line pt-6 t-line">
+          <button type="button" id="prevBtn" class="inline-flex items-center gap-2 rounded-xl border border-line2 bg-card px-4 py-3 text-[14px] font-semibold text-ink transition hover:-translate-y-0.5 hover:border-ink disabled:cursor-not-allowed disabled:opacity-45 t-card t-ink t-line2">
+            <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+            Anterior
+          </button>
+          <span id="stepCounter" class="font-mono text-[12px] text-ink3 t-ink3">Paso 1 de 5</span>
+          <button type="button" id="nextBtn" class="inline-flex items-center gap-2 rounded-xl bg-cta px-5 py-3 text-[14px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah">
+            <span id="nextLabel">Siguiente</span>
+            <svg id="nextIcon" class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+
+        <!-- ============ ESTADO DE ÉXITO ============ -->
+        <div id="createSuccess" class="hidden flex-col items-center py-10 text-center">
+          <span class="flex h-16 w-16 items-center justify-center rounded-full bg-green text-onmark animate-popin t-good">
+            <svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </span>
+          <h2 class="mt-5 font-serif text-[1.8rem] font-semibold tracking-tight text-ink t-ink">Campaña creada</h2>
+          <p id="successTitle" class="mt-2 max-w-[44ch] text-[15px] text-ink2 t-ink2">Evalen ya generó la rúbrica. Sube los CVs y la IA los puntúa contra ella.</p>
+          <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <button type="button" data-toast="Yendo al dashboard… (demo)" class="inline-flex items-center gap-2 rounded-xl bg-cta px-5 py-3 text-[14px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah">
+              Ir al dashboard
+              <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+            <button type="button" data-toast="Abriendo la campaña… (demo)" class="inline-flex items-center gap-2 rounded-xl border border-line2 bg-card px-5 py-3 text-[14px] font-semibold text-ink transition hover:-translate-y-0.5 hover:border-ink t-card t-ink t-line2">Subir los primeros CVs</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- toast -->
+<div id="toast" aria-live="polite" role="status" class="pointer-events-none fixed inset-x-4 bottom-5 z-[70] mx-auto flex max-w-sm translate-y-[140%] items-start gap-3 rounded-xl border border-line2 bg-card px-4 py-3 text-[13.5px] text-ink opacity-0 shadow-card transition-all duration-300 sm:inset-x-auto sm:right-6 sm:max-w-sm t-card t-ink t-line2">
+  <span id="toastIcon" class="mt-0.5 shrink-0"></span>
+  <span id="toastMsg" class="leading-snug"></span>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (s, c) { return (c || document).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  var root = document.documentElement;
+
+  /* ---------- theme ---------- */
+  function syncThemeIcons() {
+    var dark = root.getAttribute('data-theme') === 'dark';
+    $$('.ic-moon').forEach(function (e) { e.classList.toggle('hidden', dark); });
+    $$('.ic-sun').forEach(function (e) { e.classList.toggle('hidden', !dark); });
+  }
+  syncThemeIcons();
+  $('#themeBtn').addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('evalen-theme', next); } catch (e) {}
+    syncThemeIcons();
+  });
+
+  /* ---------- nav / burger ---------- */
+  var nav = $('#nav');
+  function onScroll() {
+    var y = window.scrollY || window.pageYOffset;
+    if (y > 8) { nav.classList.add('border-line', 'shadow-soft'); nav.classList.remove('border-transparent'); }
+    else { nav.classList.remove('border-line', 'shadow-soft'); nav.classList.add('border-transparent'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  var burger = $('#burger'), mmenu = $('#mobileMenu');
+  burger.addEventListener('click', function () {
+    var open = mmenu.classList.toggle('hidden') === false;
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  /* ---------- toast ---------- */
+  var toast = $('#toast'), toastMsg = $('#toastMsg'), toastIcon = $('#toastIcon'), toastT = null;
+  var ICONS = {
+    ok: '<svg class="h-4 w-4 text-good" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    info: '<svg class="h-4 w-4 text-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+    warn: '<svg class="h-4 w-4 text-mid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>'
+  };
+  function showToast(msg, type) {
+    type = type || 'info';
+    toastMsg.textContent = msg;
+    toastIcon.innerHTML = ICONS[type] || ICONS.info;
+    toast.classList.remove('translate-y-[140%]', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+    clearTimeout(toastT); toastT = setTimeout(hideToast, 3800);
+  }
+  function hideToast() { toast.classList.add('translate-y-[140%]', 'opacity-0'); toast.classList.remove('translate-y-0', 'opacity-100'); }
+  $$('[data-toast]').forEach(function (el) { el.addEventListener('click', function () { showToast(el.getAttribute('data-toast'), 'info'); }); });
+
+  /* ---------- util ---------- */
+  function textOf(html) { var d = document.createElement('div'); d.innerHTML = html || ''; return (d.textContent || '').trim(); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  /* ---------- state ---------- */
+  var STEPS = [
+    { n: 'Información básica', icon: '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>' },
+    { n: 'Descripción y requisitos', icon: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h6M10 16h6"/>' },
+    { n: 'Condiciones y salario', icon: '<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.2c0-1 1.1-1.7 2.5-1.7s2.5.7 2.5 1.7-1.1 1.5-2.5 1.8-2.5.8-2.5 1.8 1.1 1.7 2.5 1.7 2.5-.7 2.5-1.7"/>' },
+    { n: 'Etapas del proceso', icon: '<circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 6.5a3 3 0 0 1 0 5.5M17.5 19a5 5 0 0 0-3-4.6"/>' },
+    { n: 'Revisar y crear', icon: '<circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 4.5-5"/>' }
+  ];
+  var OWNERS = ['Tú (Osiel)', 'RRHH / Talent', 'Hiring Manager', 'Equipo técnico', 'Sin asignar'];
+  var TEMPLATES = {
+    general: [
+      { name: 'Contactar', desc: 'Primer contacto y confirmación de interés.', owner: '' },
+      { name: 'Filtro curricular', desc: 'Revisión de antecedentes y requisitos excluyentes.', owner: '' },
+      { name: 'Entrevista RRHH', desc: 'Ajuste cultural, motivaciones y expectativas.', owner: '' },
+      { name: 'Entrevista final', desc: 'Conversación con el hiring manager y cierre.', owner: '' }
+    ],
+    tech: [
+      { name: 'Contactar', desc: 'Primer contacto y confirmación de interés.', owner: '' },
+      { name: 'Filtro curricular', desc: 'Revisión de stack y experiencia contra la rúbrica.', owner: '' },
+      { name: 'Prueba técnica', desc: 'Ejercicio o take-home acotado en el tiempo.', owner: '' },
+      { name: 'Entrevista técnica', desc: 'Profundización técnica y diseño de solución.', owner: '' },
+      { name: 'Entrevista final', desc: 'Fit de equipo, condiciones y cierre.', owner: '' }
+    ],
+    sales: [
+      { name: 'Contactar', desc: 'Primer contacto y confirmación de interés.', owner: '' },
+      { name: 'Screening', desc: 'Revisión de trayectoria comercial y metas.', owner: '' },
+      { name: 'Role play', desc: 'Simulación de venta y manejo de objeciones.', owner: '' },
+      { name: 'Entrevista comercial', desc: 'Conversación con liderazgo de ventas.', owner: '' },
+      { name: 'Referencias', desc: 'Chequeo de referencias y cierre.', owner: '' }
+    ]
+  };
+  var SMART = {
+    description: '<p>Buscamos a alguien que se sume al equipo para construir y mantener productos en producción, trabajando de la mano con diseño y producto en ciclos cortos.</p><p>Participarás en decisiones de arquitectura, revisarás código de pares y dejarás las cosas mejores de como las encontraste.</p>',
+    requirements: '<h3>Excluyentes</h3><ul><li>Experiencia comprobable en el stack principal del cargo.</li><li>Autonomía para tomar un ticket de punta a punta.</li><li>Español fluido e inglés técnico de lectura.</li></ul><h3>Deseables</h3><ul><li>Experiencia en entornos ágiles con métricas de entrega.</li><li>Prácticas de testing y CI/CD.</li></ul>',
+    benefits: '<ul><li>Modalidad flexible y equipo distribuido.</li><li>Presupuesto anual de aprendizaje.</li><li>Equipamiento a cargo de la empresa.</li><li>Día libre de cumpleaños.</li></ul>'
+  };
+  var SMART_MAX = 2;
+
+  var state = {
+    step: 1, maxReached: 1, smartCredits: 2, smartFilled: false,
+    data: {
+      title: '', location: '', jobType: '', modality: '', duration: '', inclusion: false,
+      description: '', requirements: '', benefits: '',
+      salaryCurrency: '$ CLP — Peso Chileno', salaryAmount: '', salaryPublic: false,
+      stages: []
+    }
+  };
+
+  /* ---------- rich text editor builder ---------- */
+  var TB = [
+    { cmd: 'bold', label: 'B', cls: 'font-bold', title: 'Negrita' },
+    { cmd: 'italic', label: 'I', cls: 'italic font-serif', title: 'Cursiva' },
+    { sep: 1 },
+    { cmd: 'h2', label: 'H2', cls: 'font-bold', title: 'Título' },
+    { cmd: 'h3', label: 'H3', cls: 'font-bold text-[12px]', title: 'Subtítulo' },
+    { sep: 1 },
+    { cmd: 'insertUnorderedList', icon: '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1.2"/><circle cx="3.5" cy="12" r="1.2"/><circle cx="3.5" cy="18" r="1.2"/>', title: 'Lista' },
+    { cmd: 'insertOrderedList', icon: '<path d="M10 6h11M10 12h11M10 18h11M3 5h1.5v4M3 9h3"/><path d="M3 14h3l-3 4h3"/>', title: 'Lista numerada' },
+    { sep: 1 },
+    { cmd: 'outdent', icon: '<path d="M9 6h12M9 12h12M9 18h12M3 9l3 3-3 3"/>', title: 'Quitar sangría' },
+    { cmd: 'quote', icon: '<path d="M7 7H4v4h3l-1 4M16 7h-3v4h3l-1 4"/>', title: 'Cita' },
+    { cmd: 'indent', icon: '<path d="M9 6h12M9 12h12M9 18h12M3 9l3-3M3 9l3 3"/>', title: 'Sangría' },
+    { sep: 1 },
+    { cmd: 'createLink', icon: '<path d="M10 13a4 4 0 0 0 6 .5l2-2a4 4 0 0 0-6-6l-1 1"/><path d="M14 11a4 4 0 0 0-6-.5l-2 2a4 4 0 0 0 6 6l1-1"/>', title: 'Enlace' },
+    { cmd: 'undo', icon: '<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>', title: 'Deshacer' },
+    { cmd: 'redo', icon: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/>', title: 'Rehacer' },
+    { sep: 1 },
+    { cmd: 'fullscreen', icon: '<path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/>', title: 'Pantalla completa', right: 1 }
+  ];
+  function buildEditor(field, placeholder) {
+    var wrap = $('[data-editor="' + field + '"]');
+    if (!wrap || wrap.dataset.built) return;
+    wrap.dataset.built = '1';
+    var bar = document.createElement('div');
+    bar.className = 'flex flex-wrap items-center gap-0.5 border-b border-line bg-paper2/60 px-1.5 py-1.5 t-line t-paper2';
+    TB.forEach(function (b) {
+      if (b.sep) { var s = document.createElement('span'); s.className = 'mx-1 h-5 w-px bg-line2 t-line2'; bar.appendChild(s); return; }
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'tb-btn grid h-8 min-w-8 place-items-center rounded-md px-1.5 text-[13px] text-ink2 transition hover:bg-greentint hover:text-green t-ink2' + (b.right ? ' ml-auto' : '');
+      btn.title = b.title; btn.setAttribute('aria-label', b.title);
+      btn.innerHTML = b.icon ? '<svg class="h-[17px] w-[17px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + b.icon + '</svg>' : '<span class="' + (b.cls || '') + '">' + b.label + '</span>';
+      btn.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      btn.addEventListener('click', function () { runCmd(field, b.cmd, wrap); });
+      bar.appendChild(btn);
+    });
+    var ed = document.createElement('div');
+    ed.className = 'rte px-4 py-3 text-[14.5px] leading-relaxed text-ink t-ink';
+    ed.setAttribute('contenteditable', 'true');
+    ed.setAttribute('data-placeholder', placeholder);
+    ed.setAttribute('role', 'textbox');
+    ed.setAttribute('aria-multiline', 'true');
+    ed.setAttribute('aria-label', field);
+    ed.addEventListener('input', function () { state.data[field] = ed.innerHTML; });
+    ed.addEventListener('paste', function (e) {
+      e.preventDefault();
+      var t = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, t);
+    });
+    wrap.appendChild(bar); wrap.appendChild(ed);
+    wrap._ed = ed;
+  }
+  function runCmd(field, cmd, wrap) {
+    var ed = wrap._ed; ed.focus();
+    try {
+      if (cmd === 'h2') document.execCommand('formatBlock', false, 'H2');
+      else if (cmd === 'h3') document.execCommand('formatBlock', false, 'H3');
+      else if (cmd === 'quote') document.execCommand('formatBlock', false, 'BLOCKQUOTE');
+      else if (cmd === 'createLink') { var u = prompt('URL del enlace', 'https://'); if (u) document.execCommand('createLink', false, u); }
+      else if (cmd === 'fullscreen') { ed.classList.toggle('is-full'); return; }
+      else document.execCommand(cmd, false, null);
+    } catch (e) {}
+    state.data[field] = ed.innerHTML;
+  }
+  function setEditor(field, html) {
+    var wrap = $('[data-editor="' + field + '"]');
+    if (wrap && wrap._ed) { wrap._ed.innerHTML = html || ''; }
+  }
+
+  /* ---------- stages ---------- */
+  function ownerOptions(sel) {
+    return '<option value="">Selecciona un responsable…</option>' + OWNERS.map(function (o) { return '<option' + (o === sel ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('');
+  }
+  function renderStages() {
+    var list = $('#stageList'), empty = $('#stageEmpty'), tpl = $('#tplBlock');
+    var st = state.data.stages;
+    if (!st.length) { list.innerHTML = ''; empty.classList.remove('hidden'); if (tpl) tpl.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+    list.innerHTML = st.map(function (s, i) {
+      return '<div class="stage-card rounded-2xl border border-line2 bg-card p-4 sm:p-5 t-card t-line2" data-i="' + i + '">' +
+        '<div class="flex items-center justify-between gap-3">' +
+          '<span class="flex items-center gap-2.5"><span class="grid h-7 w-7 place-items-center rounded-full bg-greentint font-mono text-[12px] font-semibold text-green t-goodt t-green">' + (i + 1) + '</span>' +
+          '<span class="font-sans text-[14px] font-semibold text-ink t-ink">Etapa ' + (i + 1) + '</span></span>' +
+          '<span class="flex items-center gap-1">' +
+            '<button type="button" data-act="up" ' + (i === 0 ? 'disabled' : '') + ' aria-label="Subir etapa" class="grid h-8 w-8 place-items-center rounded-lg border border-line2 text-ink2 transition hover:border-green hover:text-green disabled:opacity-35 t-ink2 t-line2"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button>' +
+            '<button type="button" data-act="down" ' + (i === st.length - 1 ? 'disabled' : '') + ' aria-label="Bajar etapa" class="grid h-8 w-8 place-items-center rounded-lg border border-line2 text-ink2 transition hover:border-green hover:text-green disabled:opacity-35 t-ink2 t-line2"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>' +
+            '<button type="button" data-act="del" aria-label="Eliminar etapa" class="grid h-8 w-8 place-items-center rounded-lg border border-line2 text-ink3 transition hover:border-low hover:text-low t-ink3 t-line2"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></svg></button>' +
+          '</span>' +
+        '</div>' +
+        '<div class="mt-3 grid gap-3">' +
+          '<div><label class="mb-1 block font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink2 t-ink2">Nombre de la etapa <span class="text-cta t-cta">*</span></label>' +
+          '<input type="text" data-k="name" value="' + esc(s.name) + '" placeholder="Ej. Entrevista técnica" class="w-full rounded-xl border border-line2 bg-card px-3.5 py-2.5 text-[14px] text-ink placeholder:text-ink3/80 transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2" /></div>' +
+          '<div><label class="mb-1 block font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink2 t-ink2">Descripción</label>' +
+          '<textarea data-k="desc" rows="2" placeholder="Qué se evalúa en esta etapa" class="w-full resize-y rounded-xl border border-line2 bg-card px-3.5 py-2.5 text-[14px] text-ink placeholder:text-ink3/80 transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2">' + esc(s.desc) + '</textarea></div>' +
+          '<div><label class="mb-1 block font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink2 t-ink2">Responsable <span class="text-cta t-cta">*</span></label>' +
+          '<select data-k="owner" class="w-full rounded-xl border border-line2 bg-card px-3 py-2.5 text-[14px] text-ink transition focus:border-green focus:outline-none focus:ring-2 focus:ring-green/25 t-card t-ink t-line2">' + ownerOptions(s.owner) + '</select></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    $$('.stage-card [data-k]', list).forEach(function (el) {
+      el.addEventListener('input', function () {
+        var card = el.closest('.stage-card'); var i = +card.dataset.i; var k = el.dataset.k;
+        state.data.stages[i][k] = el.value; updateSummary();
+      });
+    });
+    $$('.stage-card [data-act]', list).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var card = btn.closest('.stage-card'); var i = +card.dataset.i; var act = btn.dataset.act;
+        var arr = state.data.stages;
+        if (act === 'del') { arr.splice(i, 1); }
+        else if (act === 'up' && i > 0) { var t = arr[i - 1]; arr[i - 1] = arr[i]; arr[i] = t; }
+        else if (act === 'down' && i < arr.length - 1) { var t2 = arr[i + 1]; arr[i + 1] = arr[i]; arr[i] = t2; }
+        renderStages(); updateSummary();
+      });
+    });
+    updateSummary();
+  }
+  function applyTemplate(key) {
+    state.data.stages = TEMPLATES[key].map(function (s) { return { name: s.name, desc: s.desc, owner: s.owner }; });
+    $$('.tpl-card').forEach(function (c) {
+      var on = c.dataset.tpl === key;
+      c.classList.toggle('border-green', on); c.classList.toggle('bg-greentint', on); c.classList.toggle('t-goodt', on);
+      c.classList.toggle('border-line2', !on); c.classList.toggle('bg-card', !on); c.classList.toggle('t-card', !on); c.classList.toggle('t-line2', !on);
+    });
+    renderStages();
+    showToast('Plantilla aplicada. Ajusta nombres y responsables.', 'ok');
+  }
+
+  /* ---------- validation ---------- */
+  function markError(el, msg) {
+    if (!el) return;
+    el.classList.add('border-low', 'animate-shake');
+    setTimeout(function () { el.classList.remove('animate-shake'); }, 380);
+    el.focus({ preventScroll: false });
+    if (msg) showToast(msg, 'warn');
+  }
+  function clearError(el) { if (el) el.classList.remove('border-low'); }
+  function validateStep(n) {
+    var d = state.data;
+    if (n === 1) {
+      if (!d.title.trim()) { markError($('#f-title'), 'Falta el título del puesto.'); return false; }
+      if (!d.location.trim()) { markError($('#f-loc'), 'Falta la ubicación.'); return false; }
+      if (!d.jobType) { markError($('#f-type'), 'Elige el tipo de trabajo.'); return false; }
+      if (!d.modality) { markError($('#f-mod'), 'Elige la modalidad.'); return false; }
+      if (!d.duration) { markError($('#f-dur'), 'Elige la duración.'); return false; }
+      return true;
+    }
+    if (n === 2) {
+      if (!textOf(d.description)) { setEditor('description', d.description); markError($('[data-editor="description"]'), 'Escribe la descripción del puesto.'); return false; }
+      if (!textOf(d.requirements)) { setEditor('requirements', d.requirements); markError($('[data-editor="requirements"]'), 'Agrega requisitos y habilidades.'); return false; }
+      return true;
+    }
+    if (n === 3) {
+      if (!textOf(d.benefits)) { setEditor('benefits', d.benefits); markError($('[data-editor="benefits"]'), 'Describe condiciones y beneficios.'); return false; }
+      return true;
+    }
+    if (n === 4) {
+      if (!d.stages.length) { showToast('Agrega al menos una etapa del proceso.', 'warn'); return false; }
+      for (var i = 0; i < d.stages.length; i++) {
+        if (!d.stages[i].name.trim()) { showToast('La etapa ' + (i + 1) + ' no tiene nombre.', 'warn'); renderStages(); return false; }
+        if (!d.stages[i].owner) { showToast('La etapa “' + d.stages[i].name + '” no tiene responsable.', 'warn'); renderStages(); return false; }
+      }
+      return true;
+    }
+    return true;
+  }
+
+  /* ---------- stepper render ---------- */
+  function renderStepper() {
+    var v = $('#stepperV'), h = $('#stepperH');
+    v.innerHTML = STEPS.map(function (s, idx) {
+      var i = idx + 1, st = i < state.step ? 'done' : (i === state.step ? 'cur' : 'todo');
+      var clickable = i <= state.maxReached;
+      var circle = st === 'done'
+        ? '<span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-good text-onmark t-good"><svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>'
+        : st === 'cur'
+        ? '<span class="step-current grid h-9 w-9 shrink-0 place-items-center rounded-full bg-greendeep font-mono text-[13px] font-semibold text-onmark">' + i + '</span>'
+        : '<span class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-line2 bg-paper2 font-mono text-[13px] font-semibold text-ink3 t-line2 t-paper2 t-ink3">' + i + '</span>';
+      var labelCls = st === 'done' ? 'text-good t-good' : st === 'cur' ? 'text-ink t-ink' : 'text-ink3 t-ink3';
+      var line = idx < STEPS.length - 1 ? '<span class="ml-[18px] h-6 w-px ' + (i < state.step ? 'bg-good t-good' : 'bg-line2 t-line2') + '"></span>' : '';
+      return '<li class="flex flex-col">' +
+        '<button type="button" data-go="' + i + '" ' + (clickable ? '' : 'disabled') + ' class="flex items-center gap-3 text-left ' + (clickable ? 'cursor-pointer' : 'cursor-default') + ' group">' +
+          circle +
+          '<span class="leading-tight"><span class="block text-[13.5px] font-semibold ' + labelCls + '">' + esc(s.n) + '</span>' +
+          '<span class="block font-mono text-[10px] uppercase tracking-[0.1em] text-ink3 t-ink3">Paso ' + i + '</span></span>' +
+        '</button>' + line + '</li>';
+    }).join('');
+
+    h.innerHTML = STEPS.map(function (s, idx) {
+      var i = idx + 1, st = i < state.step ? 'done' : (i === state.step ? 'cur' : 'todo');
+      var circle = st === 'done'
+        ? '<span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-good text-onmark t-good"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>'
+        : st === 'cur'
+        ? '<span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-greendeep font-mono text-[12px] font-semibold text-onmark">' + i + '</span>'
+        : '<span class="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-line2 bg-paper2 font-mono text-[12px] font-semibold text-ink3 t-line2 t-paper2 t-ink3">' + i + '</span>';
+      var line = idx < STEPS.length - 1 ? '<span class="h-px flex-1 mx-1 ' + (i < state.step ? 'bg-good t-good' : 'bg-line2 t-line2') + '"></span>' : '';
+      return '<li class="flex flex-1 items-center">' + circle + line + '</li>';
+    }).join('');
+
+    $$('#stepperV [data-go]').forEach(function (b) {
+      b.addEventListener('click', function () { var t = +b.dataset.go; if (t <= state.maxReached) gotoStep(t); });
+    });
+    var nm = $('#stepNameM'), lm = $('#stepLabelM');
+    if (nm) nm.textContent = STEPS[state.step - 1].n;
+    if (lm) lm.textContent = 'Paso ' + state.step + ' de 5';
+  }
+
+  /* ---------- summary ---------- */
+  function fmtSalary() {
+    var d = state.data; if (!d.salaryAmount.trim()) return '—';
+    var cur = (d.salaryCurrency || '').split(' ')[0] || '';
+    return cur + ' ' + d.salaryAmount.trim();
+  }
+  function updateSummary() {
+    var d = state.data;
+    var set = function (id, val, ph) { var el = $(id); if (!el) return; el.textContent = val && val !== '—' ? val : (ph || '—'); el.classList.toggle('text-ink3', !val || val === '—'); el.classList.toggle('italic', !val || val === '—'); el.classList.toggle('t-ink3', !val || val === '—'); };
+    set('#sumTitle', d.title.trim(), 'Sin título aún');
+    set('#sumLoc', d.location.trim());
+    set('#sumMod', d.modality);
+    set('#sumSalary', d.salaryAmount.trim() ? fmtSalary() : '—');
+    var se = $('#sumStages'); if (se) { se.textContent = d.stages.length; se.classList.toggle('text-ink3', !d.stages.length); se.classList.toggle('t-ink3', !d.stages.length); }
+  }
+
+  /* ---------- review (step 5) ---------- */
+  function reviewRow(label, html, editStep) {
+    var body = textOf(html) ? '<div class="rte-view mt-2 text-[13.5px] leading-relaxed text-ink2 t-ink2">' + html + '</div>' : '<p class="mt-2 text-[13px] italic text-ink3 t-ink3">Sin contenido.</p>';
+    return '<article class="rounded-2xl border border-line2 bg-card p-4 sm:p-5 t-card t-line2">' +
+      '<div class="flex items-center justify-between gap-3">' +
+        '<h3 class="font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">' + esc(label) + '</h3>' +
+        '<button type="button" data-edit="' + editStep + '" class="inline-flex items-center gap-1 font-mono text-[11px] font-medium text-cta underline-offset-2 hover:underline t-cta">Editar<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>' +
+      '</div>' + body + '</article>';
+  }
+  function renderReview() {
+    var d = state.data;
+    var meta = '<article class="rounded-2xl border border-line2 bg-card p-4 sm:p-5 t-card t-line2">' +
+      '<div class="flex items-center justify-between gap-3"><h3 class="font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">Información básica</h3>' +
+      '<button type="button" data-edit="1" class="inline-flex items-center gap-1 font-mono text-[11px] font-medium text-cta underline-offset-2 hover:underline t-cta">Editar<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button></div>' +
+      '<div class="mt-2 grid gap-x-6 gap-y-2 sm:grid-cols-2 text-[13.5px]">' +
+        kv('Cargo', d.title) + kv('Ubicación', d.location) + kv('Tipo', d.jobType) + kv('Modalidad', d.modality) + kv('Duración', d.duration) + kv('Ley de Inclusión', d.inclusion ? 'Sí' : 'No') +
+      '</div></article>';
+    var stages = '<article class="rounded-2xl border border-line2 bg-card p-4 sm:p-5 t-card t-line2">' +
+      '<div class="flex items-center justify-between gap-3"><h3 class="font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">Etapas del proceso (' + d.stages.length + ')</h3>' +
+      '<button type="button" data-edit="4" class="inline-flex items-center gap-1 font-mono text-[11px] font-medium text-cta underline-offset-2 hover:underline t-cta">Editar<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button></div>' +
+      '<ol class="mt-3 flex flex-wrap items-center gap-1.5">' + d.stages.map(function (s, i) {
+        return '<li class="flex items-center gap-1.5"><span class="inline-flex items-center gap-1.5 rounded-full bg-greentint px-2.5 py-1 text-[12px] font-medium text-green t-goodt t-green"><span class="font-mono text-[10px] opacity-70">' + (i + 1) + '</span>' + esc(s.name) + '</span>' + (i < d.stages.length - 1 ? '<svg class="h-3 w-3 text-ink3 t-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>' : '') + '</li>';
+      }).join('') + '</ol></article>';
+    var sal = '<article class="rounded-2xl border border-line2 bg-card p-4 sm:p-5 t-card t-line2">' +
+      '<div class="flex items-center justify-between gap-3"><h3 class="font-mono text-[11px] uppercase tracking-[0.14em] text-ink3 t-ink3">Salario</h3>' +
+      '<button type="button" data-edit="3" class="inline-flex items-center gap-1 font-mono text-[11px] font-medium text-cta underline-offset-2 hover:underline t-cta">Editar<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button></div>' +
+      '<div class="mt-2 grid gap-x-6 gap-y-2 sm:grid-cols-2 text-[13.5px]">' + kv('Monto', d.salaryAmount.trim() ? fmtSalary() : 'No informado') + kv('Público', d.salaryPublic ? 'Sí se muestra' : 'Oculto en la publicación') + '</div></article>';
+
+    $('#review').innerHTML = meta + reviewRow('Descripción del puesto', d.description, 2) + reviewRow('Requisitos y habilidades', d.requirements, 2) + reviewRow('Condiciones y beneficios', d.benefits, 3) + sal + stages;
+    $$('#review [data-edit]').forEach(function (b) { b.addEventListener('click', function () { gotoStep(+b.dataset.edit); }); });
+  }
+  function kv(k, v) { return '<div><span class="block font-mono text-[10px] uppercase tracking-[0.12em] text-ink3 t-ink3">' + esc(k) + '</span><span class="text-ink t-ink">' + (esc(v) || '—') + '</span></div>'; }
+
+  /* ---------- Smart Fill credits ---------- */
+  function renderCredits() {
+    var pills = $('#creditPills'), txt = $('#creditText'), chip = $('#smartChip'),
+        block = $('#smartBlock'), copy = $('#smartCopy'), upg = $('#smartUpgrade'),
+        btn = $('#smartFillBtn'), inp = $('#f-smartctx');
+    var n = state.smartCredits;
+    if (pills) {
+      var html = '';
+      for (var i = 0; i < SMART_MAX; i++) {
+        html += '<span class="h-2.5 w-7 rounded-full transition-colors duration-300 ' + (i < n ? 'bg-yellow shadow-gold' : 'bg-onmark/20') + '"></span>';
+      }
+      pills.innerHTML = html;
+    }
+    if (txt) txt.textContent = n + ' de ' + SMART_MAX;
+    var depleted = n <= 0;
+    if (block) block.classList.toggle('is-depleted', depleted);
+    if (btn) btn.disabled = depleted;
+    if (inp) inp.disabled = depleted;
+    if (chip) {
+      if (depleted) {
+        chip.className = 'inline-flex shrink-0 items-center gap-1.5 rounded-full border border-onmark/25 bg-onmark/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-onmark/60 backdrop-blur-sm';
+        chip.innerHTML = 'Sin usos';
+      } else {
+        chip.className = 'inline-flex shrink-0 items-center gap-1.5 rounded-full border border-yellow/40 bg-yellow/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-yellow backdrop-blur-sm';
+        chip.innerHTML = '<span class="smart-dot h-1.5 w-1.5 rounded-full bg-yellow animate-pulsering"></span> Asistente IA';
+      }
+    }
+    if (copy) {
+      copy.textContent = depleted
+        ? 'Agotaste tus usos de Smart Fill este mes.'
+        : 'Escribe el título y un poco de contexto: la IA redacta descripción, requisitos y beneficios por ti.';
+    }
+    if (upg) upg.classList.toggle('hidden', !depleted);
+  }
+
+  /* ---------- navigation ---------- */
+  function syncFieldsFromDOM() {
+    $$('[data-field]').forEach(function (el) {
+      var k = el.dataset.field;
+      if (el.type === 'checkbox') state.data[k] = el.checked;
+      else state.data[k] = el.value;
+    });
+  }
+  function showPanel(n) {
+    $$('.wiz-panel').forEach(function (p) { p.classList.toggle('hidden', +p.dataset.panel !== n); });
+    var active = $('[data-panel="' + n + '"]');
+    if (active) { active.classList.remove('animate-fadein'); void active.offsetWidth; active.classList.add('animate-fadein'); }
+    if (n === 2 || n === 3) { ['description', 'requirements', 'benefits'].forEach(function (f) { buildEditor(f, f === 'description' ? 'Describe el rol, el equipo y el impacto esperado…' : f === 'requirements' ? 'Lista excluyentes y deseables…' : 'Beneficios, horarios, equipamiento…'); setEditor(f, state.data[f]); }); }
+    if (n === 4) renderStages();
+    if (n === 5) { $('#wizForm').dataset.reviewing = '1'; renderReview(); }
+  }
+  function updateFooter() {
+    $('#prevBtn').disabled = state.step === 1;
+    $('#stepCounter').textContent = 'Paso ' + state.step + ' de 5';
+    var last = state.step === 5;
+    $('#nextLabel').textContent = last ? 'Crear campaña' : 'Siguiente';
+  }
+  function gotoStep(n) {
+    syncFieldsFromDOM();
+    state.step = n;
+    renderStepper(); showPanel(n); updateFooter(); updateSummary();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function next() {
+    syncFieldsFromDOM();
+    if (!validateStep(state.step)) return;
+    if (state.step === 5) { createCampaign(); return; }
+    state.step += 1; state.maxReached = Math.max(state.maxReached, state.step);
+    renderStepper(); showPanel(state.step); updateFooter(); updateSummary();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function prev() { if (state.step > 1) gotoStep(state.step - 1); }
+
+  function createCampaign() {
+    for (var i = 1; i <= 4; i++) { if (!validateStep(i)) { gotoStep(i); showToast('Revisa el paso ' + i + ' antes de crear.', 'warn'); return; } }
+    $('#wizardGrid').classList.add('hidden');
+    $('#wizFooter').classList.add('hidden');
+    var s = $('#createSuccess'); s.classList.remove('hidden'); s.classList.add('flex');
+    $('#successTitle').innerHTML = '<b class="text-ink t-ink">' + esc(state.data.title) + '</b> · ' + esc(state.data.stages.length) + ' etapas. Evalen ya generó la rúbrica; sube los CVs y la IA los puntúa contra ella.';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast('¡Campaña creada! Redirigiendo al dashboard…', 'ok');
+  }
+
+  /* ---------- smart fill ---------- */
+  function smartFill() {
+    if (state.smartCredits <= 0) { renderCredits(); showToast('Sin usos de Smart Fill. Desbloquéalos con EvalenPro.', 'warn'); return; }
+    var titleEl = $('#f-title');
+    var title = (titleEl.value || '').trim();
+    if (!title) { titleEl.value = 'Desarrollador Full Stack Senior'; state.data.title = titleEl.value; title = state.data.title; updateSummary(); }
+    var btn = $('#smartFillBtn'); btn.disabled = true; $('#smartFillLabel').textContent = 'Redactando…';
+    showToast('La IA está redactando tu borrador…', 'info');
+    setTimeout(function () {
+      state.data.description = SMART.description;
+      state.data.requirements = SMART.requirements;
+      state.data.benefits = SMART.benefits;
+      if (!$('#f-loc').value) { $('#f-loc').value = 'Santiago, Región Metropolitana, Chile'; state.data.location = $('#f-loc').value; }
+      ['description', 'requirements', 'benefits'].forEach(function (f) { setEditor(f, state.data[f]); });
+      state.smartCredits -= 1; state.smartFilled = true;
+      $('#smartFillLabel').textContent = 'Smart Fill';
+      renderCredits();
+      updateSummary();
+      showToast('Borrador listo. Revísalo en los pasos 2 y 3 y ajústalo a tu medida.', 'ok');
+    }, 1400);
+  }
+
+  /* ---------- wire up ---------- */
+  $$('[data-field]').forEach(function (el) {
+    var ev = (el.tagName === 'SELECT' || el.type === 'checkbox') ? 'change' : 'input';
+    el.addEventListener(ev, function () {
+      state.data[el.dataset.field] = el.type === 'checkbox' ? el.checked : el.value;
+      clearError(el); updateSummary();
+    });
+  });
+  $('#nextBtn').addEventListener('click', next);
+  $('#prevBtn').addEventListener('click', prev);
+  $('#smartFillBtn').addEventListener('click', smartFill);
+  $('#addStageBtn').addEventListener('click', function () {
+    state.data.stages.push({ name: '', desc: '', owner: '' });
+    $$('.tpl-card').forEach(function (c) { c.classList.remove('border-green', 'bg-greentint', 't-goodt'); c.classList.add('border-line2', 'bg-card', 't-card', 't-line2'); });
+    renderStages();
+    var cards = $$('.stage-card'); if (cards.length) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  $('#emptyStagesBtn').addEventListener('click', function () {
+    state.data.stages = [{ name: '', desc: '', owner: '' }];
+    $$('.tpl-card').forEach(function (c) { c.classList.remove('border-green', 'bg-greentint', 't-goodt'); c.classList.add('border-line2', 'bg-card', 't-card', 't-line2'); });
+    renderStages();
+  });
+  $$('.tpl-card').forEach(function (c) { c.addEventListener('click', function () { applyTemplate(c.dataset.tpl); }); });
+
+  $('#wizForm').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      var t = e.target;
+      if (t && (t.tagName === 'TEXTAREA' || t.isContentEditable || t.tagName === 'SELECT')) return;
+      if (t && t.tagName === 'INPUT') { e.preventDefault(); next(); }
+    }
+  });
+
+  /* ---------- init ---------- */
+  renderStepper(); showPanel(1); updateFooter(); updateSummary(); renderCredits();
+})();
+</script>
+</body>
+</html>

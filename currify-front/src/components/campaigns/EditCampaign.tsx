@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { apiService, Campaign, CreateCampaignRequest, StageTemplateInput, UserProfile } from '../../services/api';
 import Layout from '../layout/Layout';
 import RichTextEditor from '../common/RichTextEditor';
-import FullScreenEditorModal from '../common/FullScreenEditorModal';
 import LocationAutocomplete from '../common/LocationAutocomplete';
 import { STAGE_TEMPLATES } from '../../constants/stageTemplates';
 import { CURRENCIES } from '../../constants/currencies';
@@ -81,11 +80,6 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
     stageTemplates: []
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Modal states for fullscreen editing
-  const [descriptionModalOpen, setDescriptionModalOpen] = useState(false);
-  const [requirementsModalOpen, setRequirementsModalOpen] = useState(false);
-  const [conditionsModalOpen, setConditionsModalOpen] = useState(false);
 
   // Load user profile and available users
   useEffect(() => {
@@ -581,7 +575,6 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                     }}
                     placeholder="Describe las responsabilidades principales, el ambiente de trabajo, y qué hace especial esta oportunidad..."
                     error={!!errors.description}
-                    onMaximize={() => setDescriptionModalOpen(true)}
                   />
                   {errors.description && (
                     <p className="mt-1 text-sm text-red-600">{errors.description}</p>
@@ -607,7 +600,6 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                     }}
                     placeholder="Detalla la experiencia requerida, tecnologías, habilidades blandas, formación académica, etc..."
                     error={!!errors.requirements}
-                    onMaximize={() => setRequirementsModalOpen(true)}
                   />
                   {errors.requirements && (
                     <p className="mt-1 text-sm text-red-600">{errors.requirements}</p>
@@ -643,7 +635,6 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
                     }}
                     placeholder="Incluye información sobre beneficios, modalidad de trabajo, horarios, vacaciones, etc..."
                     error={!!errors.conditions}
-                    onMaximize={() => setConditionsModalOpen(true)}
                   />
                   {errors.conditions && (
                     <p className="mt-1 text-sm text-red-600">{errors.conditions}</p>
@@ -1130,60 +1121,6 @@ const EditCampaign: React.FC<EditCampaignProps> = ({
         }
       `}</style>
 
-      {/* Fullscreen Editor Modals */}
-      <FullScreenEditorModal
-        isOpen={descriptionModalOpen}
-        onClose={() => setDescriptionModalOpen(false)}
-        value={formData.description || ''}
-        onChange={(html) => {
-          setFormData(prev => ({ ...prev, description: html }));
-          if (errors.description) {
-            setErrors(prev => {
-              const newErrors = { ...prev };
-              delete newErrors.description;
-              return newErrors;
-            });
-          }
-        }}
-        title="Descripción del Puesto"
-        placeholder="Describe las responsabilidades principales, el ambiente de trabajo, y qué hace especial esta oportunidad..."
-      />
-
-      <FullScreenEditorModal
-        isOpen={requirementsModalOpen}
-        onClose={() => setRequirementsModalOpen(false)}
-        value={formData.requirements || ''}
-        onChange={(html) => {
-          setFormData(prev => ({ ...prev, requirements: html }));
-          if (errors.requirements) {
-            setErrors(prev => {
-              const newErrors = { ...prev };
-              delete newErrors.requirements;
-              return newErrors;
-            });
-          }
-        }}
-        title="Requisitos y Habilidades"
-        placeholder="Detalla la experiencia requerida, tecnologías, habilidades blandas, formación académica, etc..."
-      />
-
-      <FullScreenEditorModal
-        isOpen={conditionsModalOpen}
-        onClose={() => setConditionsModalOpen(false)}
-        value={formData.conditions || ''}
-        onChange={(html) => {
-          setFormData(prev => ({ ...prev, conditions: html }));
-          if (errors.conditions) {
-            setErrors(prev => {
-              const newErrors = { ...prev };
-              delete newErrors.conditions;
-              return newErrors;
-            });
-          }
-        }}
-        title="Condiciones y Beneficios"
-        placeholder="Incluye información sobre beneficios, modalidad de trabajo, horarios, vacaciones, etc..."
-      />
       {/* Modal de advertencia por edición con candidatos */}
       {showRescoreWarning && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">

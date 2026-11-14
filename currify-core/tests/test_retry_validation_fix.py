@@ -4,6 +4,21 @@ from app.services.section_extractor import SectionExtractor, SectionDetection, S
 from app.services.llm_service import LLMService
 from app.services.robust_extraction_service import RobustExtractionService
 from app.models.resume import ResumeData
+from app.core.config import settings
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 4d (SDD Fase C — higiene): los 4 tests de este módulo instancian
+# `RobustExtractionService(llm_service=LLMService())`, y `LLMService.__init__`
+# exige una API key real del proveedor configurado (`settings.current_api_key`).
+# Sin key el entorno NO puede construir el servicio -> skip honesto con motivo,
+# nunca un failed ambiental. Los tests no hacen llamadas de red: solo ejercitan
+# `_create_validated_response` localmente.
+# ──────────────────────────────────────────────────────────────────────────────
+pytestmark = pytest.mark.skipif(
+    not settings.current_api_key,
+    reason="Requiere API key real del proveedor LLM: LLMService() la exige en __init__ "
+           "(configura GOOGLE_API_KEY/OPENAI_API_KEY/ANTHROPIC_API_KEY para ejecutarlos)",
+)
 
 
 @pytest.mark.asyncio

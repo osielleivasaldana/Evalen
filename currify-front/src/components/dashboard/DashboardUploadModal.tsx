@@ -142,7 +142,7 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" />
+                    <div className="fixed inset-0 bg-ev-ink/60 backdrop-blur-sm transition-opacity" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 z-10 overflow-y-auto">
@@ -156,16 +156,16 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-indigo-50">
-                                <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                            <Dialog.Panel className="relative transform overflow-hidden rounded-2xl bg-ev-card dark:bg-[#16241C] text-left shadow-card-lg-evalen transition-all sm:my-8 sm:w-full sm:max-w-lg border border-ev-line/30 dark:border-white/[0.06]">
+                                <div className="bg-ev-card dark:bg-[#16241C] px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                                     <div className="flex justify-between items-start mb-5">
-                                        <Dialog.Title as="h3" className="text-xl font-bold leading-6 text-gray-900 flex items-center gap-2">
-                                            <DocumentIcon className="w-6 h-6 text-indigo-600" />
+                                        <Dialog.Title as="h3" className="text-xl font-bold leading-6 text-ev-ink dark:text-ev-onmark flex items-center gap-2">
+                                            <DocumentIcon className="w-6 h-6 text-ev-cta" />
                                             Subir Candidatos Rápidamente
                                         </Dialog.Title>
                                         <button
                                             type="button"
-                                            className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                                            className="rounded-md bg-ev-card dark:bg-[#16241C] text-ev-ink3 dark:text-ev-ink3/70 hover:text-ev-ink2 transition-colors focus:outline-none"
                                             onClick={onClose}
                                         >
                                             <span className="sr-only">Cerrar</span>
@@ -175,7 +175,7 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
 
                                     {step === 1 && (
                                         <div className="mt-4 animate-fade-in">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label className="block text-sm font-medium text-ev-ink2 dark:text-ev-ink2/80 mb-2">
                                                 1. ¿A qué campaña pertenecen?
                                             </label>
                                             <select
@@ -184,7 +184,7 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                                                     setSelectedCampaignId(e.target.value);
                                                     if (e.target.value) setStep(2);
                                                 }}
-                                                className="mt-1 block w-full rounded-xl border-gray-300 py-3 pl-3 pr-10 text-base focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm shadow-sm cursor-pointer hover:bg-gray-50 transition-colors"
+                                                className="mt-1 block w-full rounded-xl border-ev-line/50 dark:border-white/[0.08] bg-ev-paper dark:bg-[#0E1813] py-3 pl-3 pr-10 text-base text-ev-ink dark:text-ev-onmark focus:border-ev-cta focus:outline-none focus:ring-ev-cta sm:text-sm shadow-sm cursor-pointer hover:bg-ev-paper/80 dark:hover:bg-[#0E1813]/80 transition-colors"
                                                 size={Math.min(campaigns.length + 1, 5)} // Show minimal list style if preferred, standard select for now
                                             >
                                                 <option value="" disabled>Selecciona una campaña...</option>
@@ -194,7 +194,7 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                                                     </option>
                                                 ))}
                                             </select>
-                                            <p className="mt-2 text-xs text-gray-500">
+                                            <p className="mt-2 text-xs text-ev-ink2/60 dark:text-ev-ink2/50">
                                                 Solo se muestran tus campañas activas.
                                             </p>
                                         </div>
@@ -204,15 +204,15 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                                         <div className="mt-4 animate-fade-in-right">
                                             <div className="flex items-center justify-between mb-4">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700 text-xs font-bold">✓</span>
-                                                    <span className="text-sm font-medium text-gray-900 truncate max-w-[200px]" title={selectedCampaign?.title}>
+                                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-ev-cta/10 text-ev-cta text-xs font-bold">✓</span>
+                                                    <span className="text-sm font-medium text-ev-ink dark:text-ev-onmark truncate max-w-[200px]" title={selectedCampaign?.title}>
                                                         {selectedCampaign?.title}
                                                     </span>
                                                 </div>
                                                 {campaigns.length > 1 && (
                                                     <button
                                                         onClick={() => { setStep(1); setFiles([]); }}
-                                                        className="text-xs text-indigo-600 hover:text-indigo-800 underline"
+                                                        className="text-xs text-ev-cta hover:text-ev-green-dark underline"
                                                     >
                                                         Cambiar
                                                     </button>
@@ -224,42 +224,42 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                                                 className={`
                           mt-2 flex justify-center rounded-2xl border-2 border-dashed px-6 py-10 transition-all duration-300 cursor-pointer
                           ${isDragActive
-                                                        ? 'border-indigo-500 bg-indigo-50 scale-[1.02]'
-                                                        : 'border-gray-300 hover:border-indigo-400 hover:bg-gray-50'
+                                                        ? 'border-ev-cta bg-ev-cta/5 dark:bg-ev-cta/10 scale-[1.02]'
+                                                        : 'border-ev-line/50 dark:border-white/[0.08] hover:border-ev-cta/50 hover:bg-ev-paper dark:hover:bg-[#0E1813]'
                                                     }
                         `}
                                             >
                                                 <div className="text-center">
-                                                    <CloudArrowUpIcon className={`mx-auto h-12 w-12 ${isDragActive ? 'text-indigo-600 animate-bounce' : 'text-gray-400'}`} />
-                                                    <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
+                                                    <CloudArrowUpIcon className={`mx-auto h-12 w-12 ${isDragActive ? 'text-ev-cta animate-bounce' : 'text-ev-ink3 dark:text-ev-ink3/70'}`} />
+                                                    <div className="mt-4 flex text-sm leading-6 text-ev-ink2 dark:text-ev-ink2/70 justify-center">
                                                         <input {...getInputProps()} />
-                                                        <span className="relative font-semibold text-indigo-600 focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-500">
+                                                        <span className="relative font-semibold text-ev-cta focus-within:outline-none focus-within:ring-2 focus-within:ring-ev-cta focus-within:ring-offset-2 hover:text-ev-green-dark">
                                                             Sube archivos
                                                         </span>
                                                         <p className="pl-1">o arrástralos aquí</p>
                                                     </div>
-                                                    <p className="text-xs leading-5 text-gray-500">PDF, DOC, DOCX hasta 10MB</p>
+                                                    <p className="text-xs leading-5 text-ev-ink2/60 dark:text-ev-ink2/50">PDF, DOC, DOCX hasta 10MB</p>
                                                 </div>
                                             </div>
 
                                             {/* File List */}
                                             {files.length > 0 && (
                                                 <div className="mt-6 max-h-48 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200">
-                                                    <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Archivos ({files.length})</h4>
+                                                    <h4 className="text-xs font-bold text-ev-ink3 dark:text-ev-ink3/70 uppercase tracking-wider mb-2">Archivos ({files.length})</h4>
                                                     <div className="space-y-2">
                                                         {files.map((file, idx) => (
-                                                            <div key={`${file.name}-${idx}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                                            <div key={`${file.name}-${idx}`} className="flex items-center justify-between p-3 bg-ev-paper dark:bg-[#0E1813] rounded-lg border border-ev-line/30 dark:border-white/[0.06]">
                                                                 <div className="flex items-center gap-3 overflow-hidden">
-                                                                    <DocumentIcon className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                                                                    <DocumentIcon className="w-5 h-5 text-ev-ink3 dark:text-ev-ink3/70 flex-shrink-0" />
                                                                     <div className="min-w-0">
-                                                                        <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
-                                                                        <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                                        <p className="text-sm font-medium text-ev-ink dark:text-ev-onmark truncate">{file.name}</p>
+                                                                        <p className="text-xs text-ev-ink2/60 dark:text-ev-ink2/50">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                                                     </div>
                                                                 </div>
 
                                                                 <div className="flex items-center gap-2">
                                                                     {uploadProgress[file.name] === 'uploading' && (
-                                                                        <div className="w-5 h-5 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin"></div>
+                                                                        <div className="w-5 h-5 rounded-full border-2 border-ev-cta border-t-transparent animate-spin"></div>
                                                                     )}
                                                                     {uploadProgress[file.name] === 'success' && (
                                                                         <CheckCircleIcon className="w-6 h-6 text-green-500" />
@@ -269,13 +269,13 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                                                                     )}
                                                                     {uploadProgress[file.name] === 'pending' && (
                                                                         uploading ? (
-                                                                            <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                                                            <span className="inline-flex items-center rounded-md bg-ev-paper dark:bg-[#0E1813] px-2 py-1 text-xs font-medium text-ev-ink2 dark:text-ev-ink2/70 ring-1 ring-inset ring-ev-line/30 dark:ring-white/[0.08]">
                                                                                 En cola...
                                                                             </span>
                                                                         ) : (
                                                                             <button
                                                                                 onClick={() => handleRemoveFile(file.name)}
-                                                                                className="text-gray-400 hover:text-red-500 transition-colors"
+                                                                                className="text-ev-ink3 dark:text-ev-ink3/70 hover:text-ev-red transition-colors"
                                                                             >
                                                                                 <XMarkIcon className="w-5 h-5" />
                                                                             </button>
@@ -289,7 +289,7 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                                             )}
 
                                             {uploadError && (
-                                                <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg flex items-center gap-2">
+                                                <div className="mt-4 p-3 bg-ev-red/10 text-ev-red text-sm rounded-xl flex items-center gap-2">
                                                     <ExclamationCircleIcon className="w-5 h-5" />
                                                     {uploadError}
                                                 </div>
@@ -298,7 +298,7 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                                     )}
                                 </div>
 
-                                <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                                <div className="bg-ev-paper dark:bg-[#0E1813] px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                                     {step === 2 && (
                                         <button
                                             type="button"
@@ -306,8 +306,8 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                                             className={`
                             inline-flex w-full justify-center rounded-xl px-3 py-2 text-sm font-semibold text-white shadow-sm sm:ml-3 sm:w-auto transition-all
                             ${files.length === 0 || uploading
-                                                    ? 'bg-indigo-400 cursor-not-allowed'
-                                                    : 'bg-indigo-600 hover:bg-indigo-500 hover:shadow-indigo-200 shadow-lg'
+                                                    ? 'bg-ev-cta/50 cursor-not-allowed'
+                                                    : 'bg-ev-cta hover:bg-ev-green-dark shadow-card-lg-evalen'
                                                 }
                         `}
                                             onClick={handleUpload}
@@ -317,7 +317,7 @@ const DashboardUploadModal: React.FC<DashboardUploadModalProps> = ({
                                     )}
                                     <button
                                         type="button"
-                                        className="mt-3 inline-flex w-full justify-center rounded-xl bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                        className="mt-3 inline-flex w-full justify-center rounded-xl bg-ev-card dark:bg-[#16241C] px-3 py-2 text-sm font-semibold text-ev-ink dark:text-ev-onmark shadow-sm ring-1 ring-inset ring-ev-line/50 dark:ring-white/[0.08] hover:bg-ev-paper dark:hover:bg-[#0E1813] sm:mt-0 sm:w-auto"
                                         onClick={onClose}
                                         disabled={uploading}
                                     >

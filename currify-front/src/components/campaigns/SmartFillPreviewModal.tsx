@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
-import { SparklesIcon } from '@heroicons/react/24/solid';
 import { SmartFillResponse } from '../../services/api';
 import { STAGE_TEMPLATES } from '../../constants/stageTemplates';
 
@@ -15,29 +12,23 @@ interface SmartFillPreviewModalProps {
 
 const detectStageCategory = (title: string): 'it' | 'sales' | 'general' => {
   const upper = (title || '').toUpperCase();
-  
+
   const techKeywords = [
-    'DESARROLLADOR', 'DEVELOPER', 'INGENIERO', 'SOFTWARE', 'PROGRAMADOR', 
+    'DESARROLLADOR', 'DEVELOPER', 'INGENIERO', 'SOFTWARE', 'PROGRAMADOR',
     'IT', 'TECH', 'QA', 'FRONTEND', 'BACKEND', 'FULL STACK', 'FULLSTACK',
-    'SISTEMAS', 'COMPUTACION', 'INFORMÁTICA', 'INFORMATICA', 'DEVOPS', 
-    'TECNOLOGIA', 'TECNOLOGÍA', 'SCRUM', 'PRODUCT OWNER', 'DATA', 'PYTHON', 
+    'SISTEMAS', 'COMPUTACION', 'INFORMÁTICA', 'INFORMATICA', 'DEVOPS',
+    'TECNOLOGIA', 'TECNOLOGÍA', 'SCRUM', 'PRODUCT OWNER', 'DATA', 'PYTHON',
     'NODE', 'REACT', 'ANGULAR', 'VUE', 'JAVA', 'NET', 'C#', 'CLOUD'
   ];
-  
+
   const salesKeywords = [
-    'VENDEDOR', 'VENTAS', 'COMERCIAL', 'SALES', 'EJECUTIVO', 'KEY ACCOUNT', 
+    'VENDEDOR', 'VENTAS', 'COMERCIAL', 'SALES', 'EJECUTIVO', 'KEY ACCOUNT',
     'KAM', 'ACCOUNT EXECUTIVE', 'NEGOCIACION', 'NEGOCIACIÓN', 'MARKETING',
     'PROMOTOR', 'RETAIL', 'STORE', 'BUSINESS DEVELOPMENT', 'BDE'
   ];
 
-  if (techKeywords.some(kw => upper.includes(kw))) {
-    return 'it';
-  }
-  
-  if (salesKeywords.some(kw => upper.includes(kw))) {
-    return 'sales';
-  }
-
+  if (techKeywords.some(kw => upper.includes(kw))) return 'it';
+  if (salesKeywords.some(kw => upper.includes(kw))) return 'sales';
   return 'general';
 };
 
@@ -49,9 +40,9 @@ const SmartFillPreviewModal: React.FC<SmartFillPreviewModalProps> = ({
   isApplying = false,
 }) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const DESCRIPTION_TRUNCATE_LENGTH = 200;
+  const DESCRIPTION_TRUNCATE_LENGTH = 280;
 
-  if (!response) return null;
+  if (!isOpen || !response) return null;
 
   const { fields, suggested_rubric_weights } = response;
   const detectedCategory = detectStageCategory(fields.title);
@@ -62,15 +53,6 @@ const SmartFillPreviewModal: React.FC<SmartFillPreviewModalProps> = ({
     return `$${Number(amount).toLocaleString('es-CL')} ${currency || ''}`;
   };
 
-  const getTruncatedDescription = (text: string) => {
-    if (!text) return '';
-    if (text.length <= DESCRIPTION_TRUNCATE_LENGTH) return text;
-    return text.slice(0, DESCRIPTION_TRUNCATE_LENGTH) + '...';
-  };
-
-  const showDescriptionToggle = fields.description && fields.description.length > DESCRIPTION_TRUNCATE_LENGTH;
-
-  // Modality text formatter
   const getModalityLabel = (mod: string) => {
     if (!mod) return 'No especificado';
     const upper = mod.toUpperCase();
@@ -79,7 +61,6 @@ const SmartFillPreviewModal: React.FC<SmartFillPreviewModalProps> = ({
     return 'Presencial';
   };
 
-  // Duration text formatter
   const getDurationLabel = (dur: string) => {
     if (!dur) return 'No especificado';
     const upper = dur.toUpperCase();
@@ -88,319 +69,214 @@ const SmartFillPreviewModal: React.FC<SmartFillPreviewModalProps> = ({
     return 'Indefinido';
   };
 
+  const showDescriptionToggle = fields.description && fields.description.length > DESCRIPTION_TRUNCATE_LENGTH;
+  const descriptionText = isDescriptionExpanded
+    ? fields.description
+    : fields.description?.slice(0, DESCRIPTION_TRUNCATE_LENGTH) + (showDescriptionToggle ? '...' : '');
+
   return (
-    <Transition show={isOpen} as={React.Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={() => { /* Do not close on click outside as per design guidelines */ }}>
-        <Transition.Child
-          as={React.Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
-        </Transition.Child>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onDiscard} />
 
-        <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <Transition.Child
-              as={React.Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+      {/* Modal */}
+      <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl border border-line bg-card shadow-card t-card t-line animate-fadein">
+        {/* ===== Header ===== */}
+        <div className="sticky top-0 z-10 rounded-t-2xl bg-greendeep px-6 py-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-yellow text-greendeep shadow-gold">
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="m12 2 1.7 4.6L18 8l-4.3 1.4L12 14l-1.7-4.6L6 8l4.3-1.4z"/>
+                  <path d="M18.5 13.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9z"/>
+                  <path d="M5 14l.7 1.9 1.9.7-1.9.7L5 19l-.7-1.7-1.9-.7 1.9-.7z"/>
+                </svg>
+              </span>
+              <div className="min-w-0">
+                <h2 className="font-serif text-[1.3rem] font-bold leading-tight text-onmark truncate">
+                  Borrador generado por IA
+                </h2>
+                <p className="mt-0.5 text-[13px] text-onmark/70 truncate">
+                  Revisa y ajusta antes de aplicar
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onDiscard}
+              disabled={isApplying}
+              className="shrink-0 grid h-8 w-8 place-items-center rounded-lg text-onmark/70 transition hover:bg-onmark/15 hover:text-onmark disabled:opacity-50"
+              aria-label="Cerrar"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-2xl bg-card text-left shadow-2xl transition-all w-full mx-4 md:mx-auto md:max-w-2xl max-h-[90vh] flex flex-col border border-line2">
-                
-                {/* Header — sticky, gradient */}
-                <div className="sticky top-0 z-10 bg-greendeep text-onmark px-6 py-5">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <SparklesIcon className="w-6 h-6 text-yellow-300 flex-shrink-0 animate-pulse" />
-                      <div className="min-w-0">
-                        <Dialog.Title as="h2" className="text-lg md:text-xl font-serif font-bold leading-tight truncate">
-                          Vista Previa: Smart Fill Asistente
-                        </Dialog.Title>
-                        <p className="text-sm text-white/80 mt-0.5 truncate">
-                          Revisa el borrador generado por IA antes de aplicarlo
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={onDiscard}
-                      disabled={isApplying}
-                      className="flex-shrink-0 text-onmark/80 hover:text-onmark transition-colors p-1 -mr-1 -mt-1 rounded-lg hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50"
-                      aria-label="Cerrar modal"
-                    >
-                      <XMarkIcon className="w-6 h-6" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Scrollable Content Container */}
-                <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-6 space-y-4 md:space-y-5 max-h-[calc(90vh-140px)] scrollbar-thin">
-                  
-                  {/* General Info */}
-                  <section>
-                    <h3 className="text-xs font-semibold text-ink3 uppercase tracking-wider mb-2.5">
-                      Información General
-                    </h3>
-                    <div className="bg-card border border-line2 rounded-xl p-4 md:p-5">
-                      <h4 className="text-ink font-bold text-lg md:text-xl mb-3">
-                        {fields.title || 'Sin título'}
-                      </h4>
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 text-ink2 text-sm md:text-base">
-                        <span className="flex items-center gap-2">
-                          <span className="flex-shrink-0">🏠</span>
-                          <span>{getModalityLabel(fields.modality)}</span>
-                        </span>
-                        <span className="flex items-center gap-2">
-                          <span className="flex-shrink-0">⏱</span>
-                          <span>{getDurationLabel(fields.duration)}</span>
-                        </span>
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Description */}
-                  <section>
-                    <h3 className="text-xs font-semibold text-ink3 uppercase tracking-wider mb-2.5">
-                      Descripción del Puesto
-                    </h3>
-                    <div className="bg-card border border-line2 rounded-xl p-4 md:p-5">
-                      <p className="text-ink text-sm md:text-base leading-relaxed whitespace-pre-line">
-                        {isDescriptionExpanded 
-                          ? fields.description 
-                          : getTruncatedDescription(fields.description)}
-                      </p>
-                      {showDescriptionToggle && (
-                        <button
-                          type="button"
-                          onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                          className="mt-3 text-green hover:text-green font-semibold text-sm focus:outline-none focus:underline flex items-center gap-1 transition-all"
-                        >
-                          {isDescriptionExpanded ? 'Ver menos ▴' : 'Ver texto completo ▾'}
-                        </button>
-                      )}
-                    </div>
-                  </section>
-
-                  {/* Requirements */}
-                  <section>
-                    <h3 className="text-xs font-semibold text-ink3 uppercase tracking-wider mb-2.5">
-                      Requisitos
-                    </h3>
-                    <div className="bg-card border border-line2 rounded-xl p-4 md:p-5">
-                      {fields.requirements && fields.requirements.length > 0 ? (
-                        <ul className="space-y-2 text-ink text-sm md:text-base">
-                          {fields.requirements.map((req, idx) => (
-                            <li key={idx} className="flex items-start gap-2.5">
-                              <span className="text-green flex-shrink-0 mt-1.5 text-[8px]">●</span>
-                              <span className="break-words">{req}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-ink3 italic text-sm">No se generaron requisitos</p>
-                      )}
-                    </div>
-                  </section>
-
-                  {/* Salary Card */}
-                  <section>
-                    <h3 className="text-xs font-semibold text-ink3 uppercase tracking-wider mb-2.5">
-                      Salario
-                    </h3>
-                    {fields.salary_range && fields.salary_range.min !== undefined ? (
-                      <div className="bg-greentint border border-green-200 rounded-xl p-4 md:p-5">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl flex-shrink-0">💰</span>
-                          <span className="text-ink font-bold text-base md:text-lg">
-                            {formatCurrency(fields.salary_range.min, fields.salary_range.currency)}
-                            {fields.salary_range.max ? ` – ${formatCurrency(fields.salary_range.max, fields.salary_range.currency)}` : ''}
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-card border border-line2 rounded-xl p-4 md:p-5">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl flex-shrink-0">💰</span>
-                          <span className="text-ink3 italic font-normal text-base md:text-lg">
-                            No especificado
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </section>
-
-                  {/* Conditions & Benefits Preview */}
-                  <section>
-                    <h3 className="text-xs font-semibold text-ink3 uppercase tracking-wider mb-2.5">
-                      Condiciones y Beneficios Sugeridos
-                    </h3>
-                    <div className="bg-card border border-line2 rounded-xl p-4 md:p-5">
-                      <div className="text-ink text-sm md:text-base space-y-3">
-                        <div>
-                          <p className="font-semibold text-ink mb-1">Detalles de contratación:</p>
-                          <ul className="list-disc pl-5 space-y-0.5 text-ink2">
-                            <li><strong>Contrato:</strong> {getDurationLabel(fields.duration)}</li>
-                            <li><strong>Modalidad:</strong> {getModalityLabel(fields.modality)}</li>
-                            {fields.salary_range && fields.salary_range.min !== undefined && (
-                              <li>
-                                <strong>Renta:</strong> {formatCurrency(fields.salary_range.min, fields.salary_range.currency)}
-                                {fields.salary_range.max ? ` – ${formatCurrency(fields.salary_range.max, fields.salary_range.currency)}` : ''}
-                              </li>
-                            )}
-                          </ul>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-ink mb-1">Beneficios corporativos:</p>
-                          <ul className="list-disc pl-5 space-y-0.5 text-ink2">
-                            <li>Oportunidades de crecimiento y desarrollo profesional.</li>
-                            <li>Excelente clima laboral y cultura de trabajo colaborativa.</li>
-                            <li>Equipamiento de trabajo proporcionado por la empresa.</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Selection Stages Preview */}
-                  <section>
-                    <h3 className="text-xs font-semibold text-ink3 uppercase tracking-wider mb-2.5">
-                      Etapas de Selección Sugeridas
-                    </h3>
-                    <div className="bg-card border border-line2 rounded-xl p-4 md:p-5">
-                      <div className="flex items-center gap-3 mb-4 p-3 bg-greentint border border-line rounded-lg">
-                        <span className="text-xl">📋</span>
-                        <div>
-                          <h4 className="text-sm font-bold text-ink">
-                            Plantilla auto-seleccionada: {selectedTemplate.name}
-                          </h4>
-                          <p className="text-xs text-green mt-0.5">
-                            Se configuran automáticamente según la naturaleza del cargo.
-                          </p>
-                        </div>
-                      </div>
-                      <div className="relative border-l-2 border-line ml-4 space-y-4 my-2">
-                        {selectedTemplate.stages.map((stage, idx) => (
-                          <div key={idx} className="relative pl-6">
-                            {/* Dot */}
-                            <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2 border-green bg-card flex items-center justify-center">
-                              <span className="text-[9px] font-bold text-green">{idx + 1}</span>
-                            </div>
-                            <div>
-                              <h5 className="font-semibold text-ink text-sm md:text-base">
-                                {stage.name}
-                              </h5>
-                              <p className="text-xs text-ink3 mt-0.5">
-                                {stage.description}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </section>
-
-                  {/* Suggested Rubric Weights */}
-                  <section>
-                    <h3 className="text-xs font-semibold text-ink3 uppercase tracking-wider mb-2.5">
-                      Pesos de Rúbrica Sugeridos
-                    </h3>
-                    <div className="bg-card border border-line2 rounded-xl p-4 md:p-5 space-y-4">
-                      {/* Technical Skills */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-medium text-ink2">Habilidades Técnicas</span>
-                          <span className="text-sm font-bold text-ink">
-                            {suggested_rubric_weights?.technical_skills ?? 0}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-line2 rounded-full h-3 overflow-hidden">
-                          <div 
-                            className="bg-green h-full rounded-full transition-all duration-500" 
-                            style={{ width: `${suggested_rubric_weights?.technical_skills ?? 0}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Experience */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-medium text-ink2">Experiencia</span>
-                          <span className="text-sm font-bold text-ink">
-                            {suggested_rubric_weights?.experience ?? 0}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-line2 rounded-full h-3 overflow-hidden">
-                          <div 
-                            className="bg-green h-full rounded-full transition-all duration-500" 
-                            style={{ width: `${suggested_rubric_weights?.experience ?? 0}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Education */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-medium text-ink2">Educación</span>
-                          <span className="text-sm font-bold text-ink">
-                            {suggested_rubric_weights?.education ?? 0}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-line2 rounded-full h-3 overflow-hidden">
-                          <div 
-                            className="bg-green h-full rounded-full transition-all duration-500" 
-                            style={{ width: `${suggested_rubric_weights?.education ?? 0}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </section>
-                </div>
-
-                {/* Footer — sticky */}
-                <div className="sticky bottom-0 z-10 bg-card border-t border-line2 px-6 py-4 flex items-center justify-between gap-3 rounded-b-2xl">
-                  <button
-                    type="button"
-                    onClick={onDiscard}
-                    disabled={isApplying}
-                    className="px-5 py-2.5 border border-line2 bg-card text-ink hover:bg-paper2 font-semibold rounded-lg transition-colors text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Descartar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={onApply}
-                    disabled={isApplying}
-                    className="px-5 py-2.5 bg-cta text-ctatext font-semibold rounded-lg shadow-cta hover:-translate-y-0.5 hover:bg-ctah transition-all duration-200 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-green focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:shadow-none"
-                  >
-                    {isApplying ? (
-                      <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Aplicando...
-                      </span>
-                    ) : (
-                      'Aplicar a la campaña'
-                    )}
-                  </button>
-                </div>
-                
-              </Dialog.Panel>
-            </Transition.Child>
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
           </div>
         </div>
-      </Dialog>
-    </Transition>
+
+        {/* ===== Scrollable Content ===== */}
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          {/* Titulo + badge */}
+          <div>
+            <h3 className="font-serif text-[1.5rem] font-semibold tracking-tight text-ink t-ink">
+              {fields.title || 'Sin título'}
+            </h3>
+            <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1.5 text-[13px] text-ink2 t-ink2">
+              {fields.modality && (
+                <span className="inline-flex items-center gap-1.5">
+                  <svg className="h-4 w-4 text-ink3 t-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                  {getModalityLabel(fields.modality)}
+                </span>
+              )}
+              {fields.duration && (
+                <span className="inline-flex items-center gap-1.5">
+                  <svg className="h-4 w-4 text-ink3 t-ink3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                  {getDurationLabel(fields.duration)}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="rounded-xl border border-line2 bg-card p-4 t-card t-line2">
+            <h4 className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink3 t-ink3">Descripcion del puesto</h4>
+            {fields.description ? (
+              <div className="mt-2">
+                <p className="text-[14px] leading-relaxed text-ink2 t-ink2 whitespace-pre-line">{descriptionText}</p>
+                {showDescriptionToggle && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                    className="mt-2 font-mono text-[11px] font-medium text-cta underline-offset-2 hover:underline transition t-cta"
+                  >
+                    {isDescriptionExpanded ? 'Ver menos' : 'Ver texto completo'}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <p className="mt-2 text-[13px] italic text-ink3 t-ink3">Sin contenido.</p>
+            )}
+          </div>
+
+          {/* Requirements */}
+          <div className="rounded-xl border border-line2 bg-card p-4 t-card t-line2">
+            <h4 className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink3 t-ink3">Requisitos</h4>
+            {fields.requirements && fields.requirements.length > 0 ? (
+              <ul className="mt-2 space-y-1.5">
+                {fields.requirements.map((req, idx) => (
+                  <li key={idx} className="flex items-start gap-2.5 text-[14px] leading-relaxed text-ink2 t-ink2">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-green t-good" />
+                    <span>{req}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-2 text-[13px] italic text-ink3 t-ink3">No se generaron requisitos.</p>
+            )}
+          </div>
+
+          {/* Salary */}
+          <div className="rounded-xl border border-line2 bg-card p-4 t-card t-line2">
+            <h4 className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink3 t-ink3">Salario</h4>
+            {fields.salary_range && fields.salary_range.min !== undefined ? (
+              <p className="mt-2 font-sans text-[15px] font-semibold text-ink t-ink">
+                {formatCurrency(fields.salary_range.min, fields.salary_range.currency)}
+                {fields.salary_range.max ? ` – ${formatCurrency(fields.salary_range.max, fields.salary_range.currency)}` : ''}
+              </p>
+            ) : (
+              <p className="mt-2 text-[13px] italic text-ink3 t-ink3">No especificado.</p>
+            )}
+          </div>
+
+          {/* Conditions & Benefits */}
+          <div className="rounded-xl border border-line2 bg-card p-4 t-card t-line2">
+            <h4 className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink3 t-ink3">Condiciones y beneficios sugeridos</h4>
+            <div className="mt-2 space-y-2 text-[14px] text-ink2 t-ink2">
+              <p><span className="font-semibold text-ink t-ink">Contrato:</span> {getDurationLabel(fields.duration)}</p>
+              <p><span className="font-semibold text-ink t-ink">Modalidad:</span> {getModalityLabel(fields.modality)}</p>
+              {fields.salary_range && fields.salary_range.min !== undefined && (
+                <p><span className="font-semibold text-ink t-ink">Renta:</span> {formatCurrency(fields.salary_range.min, fields.salary_range.currency)}{fields.salary_range.max ? ` – ${formatCurrency(fields.salary_range.max, fields.salary_range.currency)}` : ''}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Stages */}
+          <div className="rounded-xl border border-line2 bg-card p-4 t-card t-line2">
+            <h4 className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink3 t-ink3">Etapas de seleccion sugeridas</h4>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {selectedTemplate.stages.map((stage, idx) => (
+                <span key={idx} className="inline-flex items-center gap-1.5 rounded-full bg-greentint px-3 py-1.5 text-[12px] font-medium text-green t-goodt t-green">
+                  <span className="grid h-4 w-4 place-items-center rounded-full bg-green text-[9px] font-bold text-onmark">{idx + 1}</span>
+                  {stage.name}
+                </span>
+              ))}
+            </div>
+            <p className="mt-2 text-[12px] text-ink3 t-ink3">
+              Plantilla auto-seleccionada: <span className="font-medium text-ink2 t-ink2">{selectedTemplate.name}</span>
+            </p>
+          </div>
+
+          {/* Rubric Weights */}
+          {suggested_rubric_weights && (
+            <div className="rounded-xl border border-line2 bg-card p-4 t-card t-line2">
+              <h4 className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink3 t-ink3">Pesos de rubrica sugeridos</h4>
+              <div className="mt-3 space-y-3">
+                {[
+                  { label: 'Habilidades Técnicas', key: 'technical_skills' as const },
+                  { label: 'Experiencia', key: 'experience' as const },
+                  { label: 'Educación', key: 'education' as const },
+                ].map(item => {
+                  const val = suggested_rubric_weights[item.key] ?? 0;
+                  return (
+                    <div key={item.key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[13px] text-ink2 t-ink2">{item.label}</span>
+                        <span className="font-mono text-[12px] font-semibold text-ink t-ink">{val}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-line2 t-line2 overflow-hidden">
+                        <div className="h-full rounded-full bg-good transition-all duration-500" style={{ width: `${val}%` }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ===== Footer ===== */}
+        <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 rounded-b-2xl border-t border-line bg-card px-6 py-4 t-card t-line">
+          <button
+            type="button"
+            onClick={onDiscard}
+            disabled={isApplying}
+            className="inline-flex items-center gap-2 rounded-xl border border-line2 bg-card px-4 py-2.5 text-[14px] font-semibold text-ink transition hover:border-ink disabled:opacity-50 t-card t-ink t-line2"
+          >
+            Descartar
+          </button>
+          <button
+            type="button"
+            onClick={onApply}
+            disabled={isApplying}
+            className="inline-flex items-center gap-2 rounded-xl bg-cta px-5 py-2.5 text-[14px] font-semibold text-ctatext shadow-cta transition hover:-translate-y-0.5 hover:bg-ctah disabled:opacity-60 disabled:hover:translate-y-0"
+          >
+            {isApplying ? (
+              <>
+                <svg className="h-[18px] w-[18px] animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Aplicando...
+              </>
+            ) : (
+              <>
+                <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                Aplicar a la campana
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

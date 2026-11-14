@@ -243,52 +243,12 @@ async def test_full_pipeline_all_sections(sample_cv_text, setup_section_results_
         pytest.fail(f"ResumeData validation failed: {e}")
 
 
-@pytest.mark.asyncio
-async def test_cv_sin_titles_usa_education():
-    """CV sin sección titles → titular desde education."""
-    from app.services.robust_extraction_service import RobustExtractionService
-
-    cv_text = """Pedro Ramírez
-Email: pedro@test.com
-
-EXPERIENCIA
-Desarrollador Senior, TechCo
-2020 - 2023
-
-FORMACIÓN
-Magíster en Ciencias de la Computación
-Universidad de Chile
-2018 - 2020
-"""
-
-    section_results = {
-        "education": SectionResult(
-            section_type="education", success=True,
-            data={"formacion": [
-                {"titulo": "Magíster en Ciencias de la Computación",
-                 "institucion": "Universidad de Chile",
-                 "periodo": {"fecha_inicio": "2018", "fecha_fin": "2020"}}
-            ]},
-            method="llm"
-        ),
-        "experience": SectionResult(
-            section_type="experience", success=True,
-            data={"experiencias": [
-                {"cargo": "Desarrollador Senior", "empresa": "TechCo",
-                 "periodo": {"fecha_inicio": "2020", "fecha_fin": "2023"},
-                 "responsabilidades": []}
-            ]},
-            method="llm"
-        ),
-    }
-
-    mock_llm = MagicMock()
-    svc = RobustExtractionService(mock_llm)
-    merged = svc._merge_section_results(section_results, cv_text, "test-002")
-
-    # Sin titles, debe usar el título de education
-    assert "Magíster" in merged["titular_profesional"]["titular"] or \
-           merged["titular_profesional"]["titular"] == "Magíster en Ciencias de la Computación"
+# NOTA (4c, 2026-08-26): se eliminó test_cv_sin_titles_usa_education.
+# Testeaba la cadena de prioridad de titular PRE-aabd949 (education gana aun
+# con experiencia). El diseño vigente (aabd949 "titular headline vs academic
+# with conditional fallback") prioriza headline > titles > education-junior,
+# contrato cubierto por tests/test_titular_fix.py. Acta:
+# docs/debug/2026-08-26-triage-sin-titles.md
 
 
 @pytest.mark.asyncio

@@ -1,8 +1,11 @@
 
+import json
 import logging
 from typing import Optional
+from app.core.config import settings
 from app.services.llm_service import LLMService
 from app.models.dynamic_rubric import StructuredRubric
+from app.services.skill_classification import is_soft_skill
 
 logger = logging.getLogger(__name__)
 
@@ -36,8 +39,17 @@ class DynamicRubricService:
            - Include SYNONYMS for roles (e.g. "Sales Manager" -> ["Sales Lead", "Account Executive"]).
            - Identify target industries (e.g. 'Mining', 'Health') ONLY if explicitly mentioned.
         3. SKILLS: Separate into MANDATORY (Must Have) and NICE-TO-HAVE.
-           - Mandatory: Skills that if missing, the candidate cannot do the job.
-           - Nice-to-Have: Bonus skills.
+           - Mandatory = EXCLUSIVE conditions ONLY ("Requisito:", required professional
+             title, legally required certification). If missing, the candidate cannot do the job.
+           - Nice-to-Have = complementary capabilities phrased as "deseable", "se valora",
+             "valorable", "ideal", complementary tools, or BASIC tool proficiency.
+           - CLASSIFICATION EXAMPLES (follow them strictly):
+             * "Manejo de herramientas tecnológicas básicas para la planificación" -> NICE-TO-HAVE
+               (basic/complementary tools are NOT exclusive conditions).
+             * "Deseable experiencia con SAP" -> NICE-TO-HAVE.
+             * "Se valora inglés avanzado" -> NICE-TO-HAVE.
+             * "Título de Educadora de Párvulos (excluyente)" -> MANDATORY (explicit exclusive condition).
+             * "Licencia SEC indispensable" -> MANDATORY (legal requirement).
         4. LOGISTICS: Identify location (City/Comuna). Check for 'Shift Work' (Turnos) or specific modality.
         5. CERTIFICATIONS: Extract any license/cert that is legally required (e.g 'Driving License A4', 'SEC License').
         
@@ -71,15 +83,77 @@ class DynamicRubricService:
             
             # 0. INJECT PARSED SKILLS (Reliability Fix)
             # If we already have parsed structural data (from FastAPI layer), prioritize it!
+            # Batch-fix F2 (2026-08-25): filtro anti-soft DETERMINISTA — una entrada
+            # clasificable como blanda (léxico estático, sin LLM) NUNCA entra a
+            # mandatory_skills; se redirige a skills.soft_skills (bucket correcto).
             if parsed_data and parsed_data.get('requisitos', {}).get('habilidades_requeridas'):
                 skills_from_parser = parsed_data['requisitos']['habilidades_requeridas']
                 if skills_from_parser:
-                    logger.info(f"🧩 Injecting {len(skills_from_parser)} parsed skills into Rubric as Mandatory.")
+                    logger.info(f"🧩 Injecting {len(skills_from_parser)} parsed skills into Rubric (filtro anti-soft activo).")
                     # Merge logic: Add if not present
                     current_mandatory = set(s.lower() for s in rubric.skills.mandatory_skills)
+                    current_soft = set(s.lower() for s in (getattr(rubric.skills, 'soft_skills', None) or []))
                     for skill in skills_from_parser:
-                        if skill.lower() not in current_mandatory:
-                            rubric.skills.mandatory_skills.append(skill)
+                        s_clean = str(skill).strip()
+                        if not s_clean:
+                            continue
+                        s_key = s_clean.lower()
+                        if is_soft_skill(s_clean):
+                            if s_key not in current_soft and s_key not in current_mandatory:
+                                rubric.skills.soft_skills.append(s_clean)
+                                current_soft.add(s_key)
+                                logger.info(f"🧩 Anti-soft: '{s_clean}' redirigida a skills.soft_skills (no mandatory)")
+                            continue
+                        if s_key not in current_mandatory:
+                            rubric.skills.mandatory_skills.append(s_clean)
+                            current_mandatory.add(s_key)
+
+            # Fase B P3 (SDD §4.3): re-clasificación determinista mandatory→nice.
+            # Orden OBLIGATORIO: DESPUÉS del filtro anti-soft (una blanda ya fue
+            # desviada a soft_skills y NUNCA llega aquí como mandatory). Gated por
+            # RUBRIC_TIER_RECLASS (default OFF = comportamiento actual intacto).
+            # REGLA DE ORO: jamás promover a mandatory; solo degradar a nice con
+            # evidencia léxica explícita (classify_requirement_tier).
+            if getattr(settings, "rubric_tier_reclass", False):
+                from app.services.rubric_tier_classifier import (
+                    classify_requirement_tier,
+                    normalize_requirement_text,
+                    structured_reclass_log_payload,
+                    first_triggering_hint,
+                    record_reclass_event,
+                )
+
+                still_mandatory = []
+                current_nice_lower = set(
+                    s.lower() for s in (rubric.skills.nice_to_have_skills or [])
+                )
+                for skill in rubric.skills.mandatory_skills:
+                    decision = classify_requirement_tier(skill)
+                    if decision == "nice":
+                        pista = first_triggering_hint(normalize_requirement_text(skill))
+                        if skill.lower() not in current_nice_lower:
+                            rubric.skills.nice_to_have_skills.append(skill)
+                            current_nice_lower.add(skill.lower())
+                        event = record_reclass_event(
+                            requisito_original=skill,
+                            decision="nice",
+                            pista=pista,
+                        )
+                        logger.info(
+                            "🧩 [TIER-RECLASS] %s",
+                            structured_reclass_log_payload(event),
+                        )
+                        continue  # degradado: sale de mandatory
+                    # "mandatory" (confirmado con evidencia fuerte) o None
+                    # (sin pista → se respeta el LLM): permanece en mandatory.
+                    still_mandatory.append(skill)
+                if len(still_mandatory) != len(rubric.skills.mandatory_skills):
+                    logger.info(
+                        "🧩 Tier-reclass: mandatory %d -> %d (degradados a nice_to_have).",
+                        len(rubric.skills.mandatory_skills),
+                        len(still_mandatory),
+                    )
+                    rubric.skills.mandatory_skills = still_mandatory
             
             # CRITICAL: Do NOT inject the generic fallback title, as it will cause FALSE NEGATIVES (0 Score)
             GENERIC_FALLBACK = "Requerimientos Técnicos Generales"

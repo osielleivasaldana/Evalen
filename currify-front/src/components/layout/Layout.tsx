@@ -14,13 +14,11 @@ const Layout: React.FC<LayoutProps> = ({
   showFooter = true
 }) => {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-paper t-paper">
       {showNavBar && <NavBar />}
-
       <main className="flex-grow flex flex-col">
         {children}
       </main>
-
       {showFooter && <FooterFinal />}
     </div>
   );
